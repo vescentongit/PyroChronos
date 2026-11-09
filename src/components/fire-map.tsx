@@ -21,6 +21,13 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
     let map: maplibregl.Map;
 
     try {
+      maplibregl.setWorkerUrl(
+        new URL(
+          "maplibre-gl/dist/maplibre-gl-worker.mjs",
+          import.meta.url,
+        ).toString(),
+      );
+
       map = new maplibregl.Map({
         container: container.current,
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
