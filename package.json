@@ -9,6 +9,8 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit --incremental false",
     "check:frontend": "node --test scripts/frontend-checks.mjs",
+    "check:contracts": "node scripts/check-contracts.mjs",
+    "check:browser": "node scripts/browser-acceptance.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "keywords": [],

@@ -12,6 +12,9 @@ MVP jujur dan dapat digunakan.
 
 Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
 
+
+**Acuan payload yang ditetapkan Orkhan atas mandat tim:** [API v1](../../docs/contracts/api-v1.md). Schema dan contoh siap dipakai; tidak perlu menunggu penetapan draft. Polygon final serta hasil validasi ilmiah tetap terpisah.
+
 ## Koordinasi dan dependensi
 
 Sepakati estimasi dan kontrak data/API bersama sebelum implementasi. Target beban kerja setiap anggota adalah sepertiga kapasitas tim, termasuk coding, review, integrasi, dan persiapan demo. Pindahkan potongan task coding jika estimasi timpang.
