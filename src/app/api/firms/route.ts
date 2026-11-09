@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-const boxes: Record<string, string> = {
-  kalteng: "113,-3.6,115,-1.5",
-  papua: "139.5,-8.8,141,-7.5",
-};
+import { getRegion } from "@/lib/regions";
 export async function GET(req: NextRequest) {
   const region = req.nextUrl.searchParams.get("region") || "kalteng";
-  if (!boxes[region])
+  const studyRegion = getRegion(region);
+  if (!studyRegion)
     return NextResponse.json(
       { error: "Wilayah tidak tersedia." },
       { status: 400 },
@@ -21,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const source = "VIIRS_NOAA20_NRT";
     const response = await fetch(
-      `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${source}/${boxes[region]}/2`,
+      `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${source}/${studyRegion.bounds.join(",")}/2`,
       { signal: AbortSignal.timeout(20000), next: { revalidate: 3600 } },
     );
     if (!response.ok) throw new Error("upstream");

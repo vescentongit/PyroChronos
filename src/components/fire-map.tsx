@@ -3,20 +3,35 @@
 import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 
-import type { Candidate } from "@/lib/data";
+import type { Language, StudyRegion } from "@/lib/regions";
+import { candidateWindow, type SnapshotCandidate } from "@/lib/snapshot";
 
 type FireMapProps = {
-  points: Candidate[];
+  points: SnapshotCandidate[];
+  region: StudyRegion;
+  language: Language;
+  assessedAt: string;
+  label: string;
   selected: string;
   onSelect: (id: string) => void;
 };
 
-export default function FireMap({ points, selected, onSelect }: FireMapProps) {
+export default function FireMap({
+  points,
+  selected,
+  onSelect,
+  region,
+  language,
+  assessedAt,
+  label,
+}: FireMapProps) {
   const container = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!container.current) return;
+    setError(false);
 
     let map: maplibregl.Map;
 
@@ -33,41 +48,51 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
         style: {
           version: 8,
           sources: {
-            'esri-satellite': {
-              type: 'raster',
+            "esri-satellite": {
+              type: "raster",
               tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
               ],
               tileSize: 256,
-              attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-            }
+              attribution:
+                "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+            },
           },
           layers: [
             {
-              id: 'esri-satellite-layer',
-              type: 'raster',
-              source: 'esri-satellite',
+              id: "esri-satellite-layer",
+              type: "raster",
+              source: "esri-satellite",
               minzoom: 0,
-              maxzoom: 19
-            }
-          ]
+              maxzoom: 19,
+            },
+          ],
         },
-        center: [points[0].lng, points[0].lat],
-        zoom: 7,
+        bounds: [
+          [region.bounds[0], region.bounds[1]],
+          [region.bounds[2], region.bounds[3]],
+        ],
+        fitBoundsOptions: { padding: 35 },
         attributionControl: { compact: true },
       });
 
       map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-      points.forEach((point) => {
-        const marker = document.createElement("button");
-        marker.className = `fire-marker ${point.id === selected ? "selected" : ""} ${point.hours > 24 ? "old" : ""}`;
-        marker.setAttribute("aria-label", `Pilih ${point.name}`);
-        marker.onclick = () => onSelect(point.id);
-
-        new maplibregl.Marker({ element: marker })
-          .setLngLat([point.lng, point.lat])
-          .addTo(map);
+      mapRef.current = map;
+      map.on("load", () => {
+        map.addSource("study-boundary", {
+          type: "geojson",
+          data: { type: "Feature", properties: {}, geometry: region.geometry },
+        });
+        map.addLayer({
+          id: "study-boundary",
+          type: "line",
+          source: "study-boundary",
+          paint: {
+            "line-color": "#f3d2a4",
+            "line-width": 2,
+            "line-dasharray": [3, 2],
+          },
+        });
       });
 
       map.on("error", () => setError(true));
@@ -75,13 +100,43 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
       setError(true);
     }
 
-    return () => map?.remove();
-  }, [points, selected, onSelect]);
+    return () => {
+      mapRef.current = null;
+      map?.remove();
+    };
+  }, [region]);
 
-  const west = Math.min(...points.map((point) => point.lng)) - 0.15;
-  const east = Math.max(...points.map((point) => point.lng)) + 0.15;
-  const south = Math.min(...points.map((point) => point.lat)) - 0.15;
-  const north = Math.max(...points.map((point) => point.lat)) + 0.15;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const markers = points.map((point) => {
+      const element = document.createElement("button");
+      element.type = "button";
+      element.dataset.candidateId = point.id;
+      element.className = `fire-marker ${candidateWindow(point.observedAt, assessedAt) === "latest" ? "" : "old"}`;
+      element.setAttribute(
+        "aria-label",
+        `${language === "id" ? "Pilih" : "Select"} ${point.name}`,
+      );
+      element.onclick = () => onSelect(point.id);
+      return new maplibregl.Marker({ element })
+        .setLngLat([point.lng, point.lat])
+        .addTo(map);
+    });
+    return () => markers.forEach((marker) => marker.remove());
+  }, [points, region, language, assessedAt, onSelect]);
+
+  useEffect(() => {
+    container.current
+      ?.querySelectorAll<HTMLButtonElement>("[data-candidate-id]")
+      .forEach((element) => {
+        const active = element.dataset.candidateId === selected;
+        element.classList.toggle("selected", active);
+        element.setAttribute("aria-pressed", String(active));
+      });
+  }, [selected, points, region, language, assessedAt]);
+
+  const [west, south, east, north] = region.bounds;
 
   return (
     <div className="map-wrap">
@@ -92,7 +147,11 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
           <div className="offline-map">
             <svg
               viewBox="0 0 600 360"
-              aria-label="Posisi relatif kandidat menurut koordinat, tanpa basemap"
+              aria-label={
+                language === "id"
+                  ? "Koordinat relatif, tanpa informasi medan"
+                  : "Relative coordinates, no terrain information"
+              }
             >
               {[80, 150, 220, 290].map((y) => (
                 <line
@@ -109,14 +168,17 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
               {points.map((point) => {
                 const x = 60 + ((point.lng - west) / (east - west)) * 440;
                 const y = 290 - ((point.lat - south) / (north - south)) * 210;
-                const color = point.hours > 24 ? "#879c84" : "#c87544";
+                const color =
+                  candidateWindow(point.observedAt, assessedAt) === "latest"
+                    ? "#c87544"
+                    : "#879c84";
 
                 return (
                   <g
                     key={point.id}
                     tabIndex={0}
                     role="button"
-                    aria-label={`Pilih ${point.name}`}
+                    aria-label={`${language === "id" ? "Pilih" : "Select"} ${point.name}`}
                     onClick={() => onSelect(point.id)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -130,7 +192,12 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
                       cx={x}
                       cy={y}
                       r={point.id === selected ? 18 : 11}
-                      fill={point.hours > 24 ? "#879c84" : "#d47c49"}
+                      fill={
+                        candidateWindow(point.observedAt, assessedAt) ===
+                        "latest"
+                          ? "#d47c49"
+                          : "#879c84"
+                      }
                       fillOpacity=".18"
                     />
                     <circle cx={x} cy={y} r="5" fill={color} />
@@ -142,21 +209,27 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
               })}
 
               <text x="35" y="335" fontSize="10" fill="#7f8e76">
-                Posisi relatif menurut koordinat Â· tanpa informasi medan
+                {language === "id"
+                  ? "Koordinat relatif — tanpa informasi medan"
+                  : "Relative coordinates — no terrain information"}
               </text>
             </svg>
           </div>
           <div className="map-error">
-            Basemap/WebGL tidak tersedia. Tampilan koordinat digunakan.
+            {language === "id"
+              ? "Basemap/WebGL tidak tersedia. Tampilan koordinat digunakan."
+              : "Basemap/WebGL unavailable. Showing relative coordinates."}
           </div>
         </>
       )}
 
       <div className="map-tag">
-        <span className="status-dot" /> Kandidat verifikasi · data ilustratif
+        <span className="status-dot" /> {label}
       </div>
       <div className="map-key">
-        <i /> Deteksi 24 jam <i className="muted-dot" /> Perlu dicek kembali
+        <i /> ≤24 {language === "id" ? "jam" : "hours"}{" "}
+        <i className="muted-dot" />{" "}
+        {language === "id" ? "Riwayat / cek kembali" : "History / recheck"}
       </div>
     </div>
   );

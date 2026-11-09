@@ -2,7 +2,9 @@
 
 **Fokus:** Peta, grafik, kandidat, laporan, ekspor, dan integrasi antarmuka.  
 **Reviewer utama:** Nathan  
-**Status:** belum dimulai.
+**Status:** sedang dikerjakan. Frontend dan kontrak draft tersedia; backend nyata, persetujuan geometri/kontrak, acceptance browser, dan review masih terbuka.
+
+Rincian hasil, verifikasi, dan blocker: [catatan implementasi](../../docs/orkhan-sprint-1-progress.md). Handoff: [kontrak snapshot v1](../../docs/contracts/snapshot-v1.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
 
@@ -30,7 +32,7 @@ Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Bagas](../Bagas
 **Tujuan integrasi tim:** menghasilkan snapshot dari FIRMS nyata dan membandingkan periode terbaru dengan konteks historis sebanding.
 
 - [ ] **P0-S2-O1 — Ganti fixture operasional.** Hubungkan peta, kandidat, grafik, dan ekspor ke snapshot API; pertahankan mode demo/replay terpisah. **Selesai bila:** mode operasional tidak membaca angka hard-coded dan ekspor membawa timestamp/provenance.
-- [ ] **P0-S2-O2 — Visualisasi konteks dan kualitas.** Tampilkan terbaru vs baseline musiman, sensor, umur data, komponen alasan, dan status kualitas. **Selesai bila:** satuan/periode jelas; copy tidak menyebut aktivitas deteksi sebagai luas terbakar atau konfirmasi api.
+- [x] **P0-S2-O2 — Visualisasi konteks dan kualitas.** Tampilkan terbaru vs baseline musiman, sensor, umur data, komponen alasan, dan status kualitas. **Selesai bila:** satuan/periode jelas; copy tidak menyebut aktivitas deteksi sebagai luas terbakar atau konfirmasi api.
 
 ## Tahap 3 — Laporan koordinator, keamanan, dan rilis demo
 
@@ -48,7 +50,7 @@ Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Bagas](../Bagas
 - [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
 - [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
 - [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [ ] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
+- [x] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
 - [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
 - [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
 - [ ] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.

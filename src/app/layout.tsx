@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
+import "./workspace.css";
 
 const plusJakartaSans = localFont({
   src: [

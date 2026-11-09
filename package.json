@@ -8,6 +8,7 @@
     "build": "prisma generate && next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
+    "check:frontend": "node --test scripts/frontend-checks.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "keywords": [],
