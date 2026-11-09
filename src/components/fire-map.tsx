@@ -88,7 +88,7 @@ export default function FireMap({
           type: "line",
           source: "study-boundary",
           paint: {
-            "line-color": "#f3d2a4",
+            "line-color": "#ffffff",
             "line-width": 2,
             "line-dasharray": [3, 2],
           },
@@ -140,7 +140,13 @@ export default function FireMap({
 
   return (
     <div className="map-wrap">
-      <div ref={container} className="map" />
+      <div
+        ref={container}
+        className="map"
+        inert={error}
+        aria-hidden={error}
+        style={{ visibility: error ? "hidden" : "visible" }}
+      />
 
       {error && (
         <>
@@ -153,6 +159,15 @@ export default function FireMap({
                   : "Relative coordinates, no terrain information"
               }
             >
+              <rect
+                x="60"
+                y="80"
+                width="440"
+                height="210"
+                fill="none"
+                stroke="#7897c9"
+                strokeDasharray="4 6"
+              />
               {[80, 150, 220, 290].map((y) => (
                 <line
                   key={y}
@@ -160,7 +175,7 @@ export default function FireMap({
                   x2="565"
                   y1={y}
                   y2={y}
-                  stroke="#d6dfcf"
+                  stroke="#ffffff22"
                   strokeDasharray="4 6"
                 />
               ))}
@@ -170,8 +185,8 @@ export default function FireMap({
                 const y = 290 - ((point.lat - south) / (north - south)) * 210;
                 const color =
                   candidateWindow(point.observedAt, assessedAt) === "latest"
-                    ? "#c87544"
-                    : "#879c84";
+                    ? "#fc3c23"
+                    : "#ba1e68";
 
                 return (
                   <g
@@ -195,20 +210,20 @@ export default function FireMap({
                       fill={
                         candidateWindow(point.observedAt, assessedAt) ===
                         "latest"
-                          ? "#d47c49"
-                          : "#879c84"
+                          ? "#fc3c23"
+                          : "#ba1e68"
                       }
                       fillOpacity=".18"
                     />
                     <circle cx={x} cy={y} r="5" fill={color} />
-                    <text x={x + 12} y={y - 12} fontSize="11" fill="#607459">
+                    <text x={x + 12} y={y - 12} fontSize="11" fill="#ffffff">
                       {point.name}
                     </text>
                   </g>
                 );
               })}
 
-              <text x="35" y="335" fontSize="10" fill="#7f8e76">
+              <text x="35" y="335" fontSize="10" fill="#bdbdbd">
                 {language === "id"
                   ? "Koordinat relatif — tanpa informasi medan"
                   : "Relative coordinates — no terrain information"}

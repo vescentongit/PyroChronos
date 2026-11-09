@@ -115,6 +115,11 @@ export default function DashboardWorkspace() {
   ];
 
   useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const requestedRegion = query.get("region");
+    if (studyRegions.some((item) => item.id === requestedRegion))
+      setRegionId(requestedRegion as RegionId);
+    if (query.get("mode") === "operational") setMode("operational");
     try {
       const saved = localStorage.getItem("pyro-language");
       if (saved === "id" || saved === "en") setLanguage(saved);
@@ -666,17 +671,17 @@ export default function DashboardWorkspace() {
                             <CartesianGrid
                               strokeDasharray="3 5"
                               vertical={false}
-                              stroke="#e9ede9"
+                              stroke="#303030"
                             />
                             <XAxis
                               dataKey="day"
-                              tick={{ fontSize: 11, fill: "#607459" }}
+                              tick={{ fontSize: 11, fill: "#bdbdbd" }}
                               tickLine={false}
                               axisLine={false}
                               interval={3}
                             />
                             <YAxis
-                              tick={{ fontSize: 11, fill: "#607459" }}
+                              tick={{ fontSize: 11, fill: "#bdbdbd" }}
                               tickLine={false}
                               axisLine={false}
                             />
@@ -685,8 +690,8 @@ export default function DashboardWorkspace() {
                               type="monotone"
                               dataKey="baseline"
                               name={t("Baseline", "Baseline")}
-                              stroke="#819777"
-                              fill="#edf2eb"
+                              stroke="#7897c9"
+                              fill="#0a3c9133"
                               strokeDasharray="5 4"
                               connectNulls={false}
                             />
@@ -694,8 +699,8 @@ export default function DashboardWorkspace() {
                               type="monotone"
                               dataKey="observed"
                               name={t("Teramati", "Observed")}
-                              stroke="#c36c3d"
-                              fill="#f7e3d5"
+                              stroke="#fc3c23"
+                              fill="#fc3c2320"
                               connectNulls={false}
                             />
                           </AreaChart>

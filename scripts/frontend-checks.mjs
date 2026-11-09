@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { studyRegions } from "../src/lib/regions.ts";
+import { isFrontFacing, constrainZoom } from "../src/lib/globe-geometry.ts";
 import {
   candidateWindow,
   parseSnapshot,
@@ -16,6 +17,28 @@ const example = JSON.parse(
 );
 const region = studyRegions[0];
 const make = () => structuredClone(example);
+
+test("globe clips the far hemisphere and bounds interactive zoom", () => {
+  assert.equal(isFrontFacing([119, -4], [119, -4]), true);
+  assert.equal(isFrontFacing([-61, 4], [119, -4]), false);
+  assert.equal(isFrontFacing([90, 0], [0, 0]), false);
+  assert.equal(constrainZoom(0.1), 0.7);
+  assert.equal(constrainZoom(4), 1.65);
+  assert.equal(constrainZoom(1.2), 1.2);
+  const dots = JSON.parse(
+    readFileSync(new URL("../public/geo/land-dots.json", import.meta.url)),
+  );
+  assert(dots.points.length > 2000);
+  assert(
+    dots.points.every(
+      ([longitude, latitude]) =>
+        longitude >= -180 &&
+        longitude <= 180 &&
+        latitude >= -90 &&
+        latitude <= 90,
+    ),
+  );
+});
 
 test("shared study registry has closed polygons, positive areas and all candidates inside", () => {
   assert.deepEqual(

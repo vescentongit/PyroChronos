@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T15:25:09.960830+00:00",
+  "title": "Design System: PyroChronos",
+  "extensions": {
+    "colorMeta": {
+      "signal": {
+        "role": "primary",
+        "displayName": "Signal red",
+        "tonalRamp": [
+          "oklch(0.15 0.2302 30.99)",
+          "oklch(0.26 0.2302 30.99)",
+          "oklch(0.38 0.2302 30.99)",
+          "oklch(0.49 0.2302 30.99)",
+          "oklch(0.61 0.2302 30.99)",
+          "oklch(0.72 0.2302 30.99)",
+          "oklch(0.84 0.2302 30.99)",
+          "oklch(0.95 0.2302 30.99)"
+        ]
+      },
+      "mission": {
+        "role": "secondary",
+        "displayName": "Mission blue",
+        "tonalRamp": [
+          "oklch(0.15 0.1496 260.84)",
+          "oklch(0.26 0.1496 260.84)",
+          "oklch(0.38 0.1496 260.84)",
+          "oklch(0.49 0.1496 260.84)",
+          "oklch(0.61 0.1496 260.84)",
+          "oklch(0.72 0.1496 260.84)",
+          "oklch(0.84 0.1496 260.84)",
+          "oklch(0.95 0.1496 260.84)"
+        ]
+      },
+      "spectral": {
+        "role": "tertiary",
+        "displayName": "Spectral magenta",
+        "tonalRamp": [
+          "oklch(0.15 0.1953 358.75)",
+          "oklch(0.26 0.1953 358.75)",
+          "oklch(0.38 0.1953 358.75)",
+          "oklch(0.49 0.1953 358.75)",
+          "oklch(0.61 0.1953 358.75)",
+          "oklch(0.72 0.1953 358.75)",
+          "oklch(0.84 0.1953 358.75)",
+          "oklch(0.95 0.1953 358.75)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "space": {
+        "role": "neutral",
+        "displayName": "Space",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "control": {
+        "role": "neutral",
+        "displayName": "Control",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "notice": {
+        "role": "neutral",
+        "displayName": "Notice",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "quiet": {
+        "role": "neutral",
+        "displayName": "Quiet",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.26 0.0000 89.88)",
+          "oklch(0.38 0.0000 89.88)",
+          "oklch(0.49 0.0000 89.88)",
+          "oklch(0.61 0.0000 89.88)",
+          "oklch(0.72 0.0000 89.88)",
+          "oklch(0.84 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "baseline": {
+        "role": "secondary",
+        "displayName": "Baseline blue",
+        "tonalRamp": [
+          "oklch(0.15 0.0824 259.78)",
+          "oklch(0.26 0.0824 259.78)",
+          "oklch(0.38 0.0824 259.78)",
+          "oklch(0.49 0.0824 259.78)",
+          "oklch(0.61 0.0824 259.78)",
+          "oklch(0.72 0.0824 259.78)",
+          "oklch(0.84 0.0824 259.78)",
+          "oklch(0.95 0.0824 259.78)"
+        ]
+      },
+      "signal-hover": {
+        "role": "primary",
+        "displayName": "Signal hover",
+        "tonalRamp": [
+          "oklch(0.15 0.1783 29.77)",
+          "oklch(0.26 0.1783 29.77)",
+          "oklch(0.38 0.1783 29.77)",
+          "oklch(0.49 0.1783 29.77)",
+          "oklch(0.61 0.1783 29.77)",
+          "oklch(0.72 0.1783 29.77)",
+          "oklch(0.84 0.1783 29.77)",
+          "oklch(0.95 0.1783 29.77)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Home display",
+        "purpose": "Two-line statement above the sensor explanation."
+      },
+      "headline": {
+        "displayName": "Explanatory headline",
+        "purpose": "Home information section."
+      },
+      "workspace-heading": {
+        "displayName": "Workspace heading",
+        "purpose": "Main operational title."
+      },
+      "title": {
+        "displayName": "Panel title",
+        "purpose": "Map, history, candidates, and reports."
+      },
+      "body": {
+        "displayName": "Workspace body",
+        "purpose": "Compact operational reading."
+      },
+      "introduction": {
+        "displayName": "Introduction",
+        "purpose": "Home explanatory copy with a limited measure."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Controls and metadata."
+      }
+    },
+    "shadows": [
+      {
+        "name": "toast",
+        "value": "0 8px 30px #0002",
+        "purpose": "Transient notification overlay."
+      },
+      {
+        "name": "mobile-sidebar",
+        "value": "10px 0 30px #0002",
+        "purpose": "Open operational navigation overlay."
+      }
+    ],
+    "motion": [
+      {
+        "name": "home-action",
+        "value": "background 0.2s",
+        "purpose": "Primary CTA hover."
+      },
+      {
+        "name": "workspace-action",
+        "value": "background 0.15s, color 0.15s",
+        "purpose": "Operational links and buttons."
+      },
+      {
+        "name": "globe-rotation",
+        "value": "0.004 degrees/ms",
+        "purpose": "Elapsed-time rotation; pauses on hover, focus, drag, hidden tab, or offscreen state."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation-duration:0.01ms;transition-duration:0.01ms;scroll-behavior:auto",
+        "purpose": "Global reduced-motion treatment; globe begins paused."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "home-intermediate",
+        "value": "1000px"
+      },
+      {
+        "name": "home-stack",
+        "value": "720px"
+      },
+      {
+        "name": "workspace-compact-sidebar",
+        "value": "1150px"
+      },
+      {
+        "name": "workspace-overlay-sidebar",
+        "value": "850px"
+      },
+      {
+        "name": "workspace-mobile",
+        "value": "620px"
+      },
+      {
+        "name": "wide-desktop",
+        "value": "1600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Home primary",
+      "kind": "button",
+      "description": "Main destination beneath the globe.",
+      "html": "<a class=\"ds-primary\" href=\"/simulation\">Buka Simulation<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a>",
+      "css": ".ds-primary{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:42px;padding:17px 24px;color:var(--space,#0e0e0e);background:var(--signal,#fc3c23);border-radius:6px;font-size:14px;font-weight:700;text-decoration:none;transition:background .2s}.ds-primary:hover{background:#ff705d}.ds-primary:focus-visible{outline:2px solid var(--white,#ffffff);outline-offset:5px;}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Workspace primary",
+      "kind": "button",
+      "description": "Dense inspection action inside candidate detail.",
+      "html": "<button class=\"ds-workspace-primary\">Catat pemeriksaan</button>",
+      "css": ".ds-workspace-primary{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:11px 15px;border:0;border-radius:6px;background:var(--signal,#fc3c23);color:var(--space,#0e0e0e);font-size:11px;font-weight:700;cursor:pointer;transition:background .15s}.ds-workspace-primary:hover{background:#ff705d}.ds-workspace-primary:focus-visible{outline:3px solid var(--white,#ffffff);outline-offset:3px;}.ds-workspace-primary:disabled{opacity:.6;cursor:wait}",
+      "refersTo": "button-workspace"
+    },
+    {
+      "name": "Outline action",
+      "kind": "button",
+      "description": "Exports and refresh controls.",
+      "html": "<button class=\"ds-outline\">CSV</button>",
+      "css": ".ds-outline{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:inline-flex;justify-content:center;align-items:center;gap:9px;padding:11px 15px;border-radius:6px;font-size:11px;border:1px solid #383838;background:#171717;color:#fff;cursor:pointer;transition:background .15s,color .15s}.ds-outline:hover{background:#292929}.ds-outline:focus-visible{outline:3px solid var(--white,#ffffff);outline-offset:3px;}.ds-outline:disabled{opacity:.6;cursor:wait}",
+      "refersTo": "button-outline"
+    },
+    {
+      "name": "Region selection",
+      "kind": "input",
+      "description": "Native region selector; occupies a full mobile toolbar row.",
+      "html": "<label class=\"ds-region\"><span>Wilayah</span><select aria-label=\"Wilayah studi\"><option>Subset Kalimantan Tengah</option><option>Subset Papua Selatan</option></select></label>",
+      "css": ".ds-region{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #383838;border-radius:6px;background:#171717;color:white;max-width:100%;font-size:12px}.ds-region select{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;min-width:0;flex:1;border:0;appearance:auto;background:transparent;color:inherit;font-size:12px;cursor:pointer}.ds-region option{background:#171717}.ds-region:hover{border-color:#666}.ds-region:focus-within{border-color:#7897c9}.ds-region select:focus-visible{outline:2px solid white;outline-offset:3px}@media(max-width:620px){.ds-region{width:100%}.ds-region select{width:100%;font-size:14px}}",
+      "refersTo": "region-select"
+    },
+    {
+      "name": "Inspection field",
+      "kind": "input",
+      "description": "Readable labeled input from the retained report dialog.",
+      "html": "<label class=\"ds-field\">Waktu pemeriksaan<input type=\"datetime-local\" /></label>",
+      "css": ".ds-field{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:block;font-size:11px;color:#bbb;margin:17px 0}.ds-field input{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:block;width:100%;border:1px solid #383838;background:#202020;border-radius:5px;padding:11px;margin-top:7px;color:white;font-size:16px}.ds-field input:hover{border-color:#666}.ds-field input:focus-visible{outline:3px solid var(--white,#ffffff);outline-offset:3px;}.ds-field input:disabled{opacity:.6}"
+    },
+    {
+      "name": "Operational navigation",
+      "kind": "nav",
+      "description": "Blue current item and restrained neutral hover.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Ruang kerja\"><a aria-current=\"page\" href=\"/simulation\">Dashboard</a><a href=\"#activity-map\">Peta aktivitas</a></nav>",
+      "css": ".ds-nav{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;max-width:244px;background:#151515;padding:12px}.ds-nav a{display:flex;align-items:center;gap:12px;padding:13px 14px;margin:5px 0;border-radius:7px;font-size:13px;color:#bbb;text-decoration:none;transition:background .15s,color .15s}.ds-nav a[aria-current]{background:var(--mission,#0a3c91);color:white;font-weight:600}.ds-nav a:hover{background:#ffffff0c;color:white}.ds-nav a:focus-visible{outline:3px solid var(--white,#ffffff);outline-offset:3px;}",
+      "refersTo": "navigation-active"
+    },
+    {
+      "name": "Priority badge",
+      "kind": "chip",
+      "description": "Written priority paired with a subdued semantic tint.",
+      "html": "<span class=\"ds-priority\">Tinggi</span>",
+      "css": ".ds-priority{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:inline-block;padding:5px 8px;border-radius:4px;background:#fc3c2322;color:#ff9d90;font-size:9px;white-space:nowrap}"
+    },
+    {
+      "name": "Evidence panel",
+      "kind": "card",
+      "description": "Thin-border operational container with source explanation.",
+      "html": "<section class=\"ds-panel\"><h2>Aktivitas dalam perspektif</h2><p>Aktivitas deteksi teramati ? data ilustratif</p></section>",
+      "css": ".ds-panel{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;padding:23px;background:#151515;color:white;border:1px solid #303030;border-radius:8px}.ds-panel h2{font-size:17px;font-weight:550;letter-spacing:-.3px;margin:0}.ds-panel p{font-size:12px;color:#bdbdbd;line-height:1.7;margin:8px 0 0}",
+      "refersTo": "panel"
+    },
+    {
+      "name": "Globe controls",
+      "kind": "custom",
+      "description": "Compact pause/zoom/reset controls below the geographic Canvas.",
+      "html": "<div class=\"ds-globe-controls\"><button aria-label=\"Zoom keluar\">?</button><button aria-label=\"Zoom masuk\">+</button><button aria-pressed=\"true\">Hotspot demo</button></div>",
+      "css": ".ds-globe-controls{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;display:flex;justify-content:center;gap:5px}.ds-globe-controls button{font-family:var(--font-plus-jakarta,'Plus Jakarta Sans'),sans-serif;min-width:36px;min-height:36px;display:inline-flex;justify-content:center;align-items:center;gap:7px;border:1px solid #303030;border-radius:6px;color:#bdbdbd;background:#141414;padding:8px;cursor:pointer}.ds-globe-controls button:hover{border-color:#666;color:white}.ds-globe-controls button[aria-pressed=\"true\"]{color:var(--signal,#fc3c23);border-color:var(--signal,#fc3c23);font-size:11px;padding-inline:12px;margin-left:8px}.ds-globe-controls button:focus-visible{outline:2px solid var(--white,#ffffff);outline-offset:5px;}",
+      "refersTo": "globe-control"
+    }
+  ],
+  "narrative": {
+    "northStar": "Earth, in perspective",
+    "overview": "A near-black observatory with crisp white geography, restrained mission blue, and vivid red evidence. The user-pinned NASA palette and Plus Jakarta Sans establish the identity. Open space, fine dividers, compact controls, and a geographic globe connect exploration to careful analysis.\n\nHome introduces the product through an interactive Earth; Simulation supports the existing analyst workflow with denser, bounded evidence surfaces. These are two expressions of one visual system. This document records the implemented replacement for the former green interface, extracted from source and final desktop/mobile captures in `.cache/new-design-final/`.",
+    "keyCharacteristics": [
+      "Near-black ground, white type, red detections, blue information, magenta historical markers.",
+      "A geographic Canvas globe with dotted land, thin outlines, and restrained graticules.",
+      "Generous introductory composition and compact operational panels.",
+      "Visible demo context, textual status, and persistent keyboard focus.",
+      "Indonesian and English copy within the same responsive patterns."
+    ],
+    "rules": [
+      {
+        "name": "The Evidence Rule",
+        "body": "Give color a visible meaning through labels, legends, outlines, or explanatory copy; color alone does not establish priority, quality, or current fire conditions.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scope Rule",
+        "body": "Shared base CSS owns the font, palette, reset, global focus, and motion preference. Home styles stay namespaced to the landing surface; operational selectors stay inside the Simulation wrapper. Navigating between routes must not restyle the other surface.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "**Do** use the five pinned NASA colors and the locally served Plus Jakarta Sans family.",
+      "**Do** keep globe controls, a readout, study-region links, and a Simulation CTA available across screen sizes.",
+      "**Do** preserve explicit illustrative/demo labels, source timing, unavailable states, and textual status alongside color.",
+      "**Do** scope operational CSS and verify both routes after changing shared styles.",
+      "**Do** preserve visible select, link, button, Canvas, and fallback-marker keyboard focus.",
+      "**Do** retain the existing workflow and its source/provenance context when extending the interface."
+    ],
+    "donts": [
+      "**Don't** reintroduce the superseded forest-green visual identity or an unrelated font pairing.",
+      "**Don't** present the globe's illustrative points or dashboard fixtures as current fire conditions or validated rankings.",
+      "**Don't** claim the real snapshot analytics API, individual authentication, or production report-correction workflow is complete; those integrations remain pending.",
+      "**Don't** show interactive fallback-map controls over a working map or infer a click from stale hover state.",
+      "**Don't** make animation, hover, or color the only way to understand evidence or reach Simulation.",
+      "**Don't** use rounded cards and glow as the default treatment for the open Home narrative."
+    ]
+  }
+}

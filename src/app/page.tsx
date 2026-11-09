@@ -1,1 +1,1 @@
-export { default } from "@/components/dashboard-workspace";
+export { default } from "@/components/home-page";
