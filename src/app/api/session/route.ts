@@ -1,4 +1,42 @@
-import {NextRequest,NextResponse} from 'next/server';
-import {timingSafeEqual} from 'node:crypto';
-export async function POST(req:NextRequest){const expected=process.env.COORDINATOR_TOKEN;if(!expected||expected.length<32)return NextResponse.json({error:'Akses koordinator belum dikonfigurasi.'},{status:503});let token;try{token=(await req.json()).token;}catch{return NextResponse.json({error:'Permintaan tidak valid.'},{status:400});}if(typeof token!=='string'||Buffer.byteLength(token)!==Buffer.byteLength(expected)||!timingSafeEqual(Buffer.from(token),Buffer.from(expected)))return NextResponse.json({error:'Kode akses tidak cocok.'},{status:401});const res=NextResponse.json({ok:true});res.cookies.set('pyro_session',token,{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'strict',maxAge:8*3600,path:'/'});return res;}
-export async function DELETE(){const res=NextResponse.json({ok:true});res.cookies.delete('pyro_session');return res;}
+import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
+export async function POST(req: NextRequest) {
+  const expected = process.env.COORDINATOR_TOKEN;
+  if (!expected || expected.length < 32)
+    return NextResponse.json(
+      { error: "Akses koordinator belum dikonfigurasi." },
+      { status: 503 },
+    );
+  let token;
+  try {
+    token = (await req.json()).token;
+  } catch {
+    return NextResponse.json(
+      { error: "Permintaan tidak valid." },
+      { status: 400 },
+    );
+  }
+  if (
+    typeof token !== "string" ||
+    Buffer.byteLength(token) !== Buffer.byteLength(expected) ||
+    !timingSafeEqual(Buffer.from(token), Buffer.from(expected))
+  )
+    return NextResponse.json(
+      { error: "Kode akses tidak cocok." },
+      { status: 401 },
+    );
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set("pyro_session", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 8 * 3600,
+    path: "/",
+  });
+  return res;
+}
+export async function DELETE() {
+  const res = NextResponse.json({ ok: true });
+  res.cookies.delete("pyro_session");
+  return res;
+}
