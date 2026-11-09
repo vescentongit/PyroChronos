@@ -7,7 +7,8 @@
 **Pengguna utama:** Analis lingkungan atau koordinator pemantauan yang menyiapkan prioritas verifikasi lapangan/patroli  
 **Tindakan utama:** Memilih lokasi untuk diperiksa lebih dahulu berdasarkan bukti aktivitas terbaru dan konteks historis  
 **Cakupan peta/heatmap:** Global; pengguna dapat menjelajah hotspot seluruh dunia sesuai ketersediaan sumber
-**Fokus analitik MVP:** Harmonisasi dan baseline pada subset Kalimantan Tengah dan Papua Selatan
+**Cakupan analitik:** Global (keputusan tim 10 Nov 2026); kalender, baseline, dan harmonisasi dapat dihitung untuk area mana pun dari grid global
+**Area unggulan (highlight):** Subset Kalimantan Tengah dan Papua Selatan; ditonjolkan di UI dan cerita, bukan batas cakupan
 **Dasar:** *PyroChronos Technical Research & Feasibility Paper.pdf*, 8 halaman  
 **Tanggal:** 9 November 2026
 

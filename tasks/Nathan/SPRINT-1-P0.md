@@ -2,7 +2,7 @@
 
 **Fokus:** Pipeline FIRMS, agregasi, baseline, harmonisasi, dan evaluasi analitik.  
 **Reviewer utama:** Bagas  
-**Status:** belum dimulai.
+**Status:** sedang dikerjakan. Tahap 1 selesai; cakupan diubah menjadi global dengan Kalteng/Papua sebagai area unggulan (keputusan tim 10 Nov 2026). Grid global MODIS dan kalender area bebas tersedia; harmonisasi berikutnya. Detail: [data FIRMS dan kalender global](../../docs/data/firms-sources.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
 
@@ -25,14 +25,14 @@ Rujukan pekerjaan rekan: [Bagas](../Bagas/SPRINT-1-P0.md) — [Orkhan](../Orkhan
 
 **Tujuan integrasi tim:** menyiapkan ingest FIRMS MODIS/VIIRS yang dapat ditelusuri untuk dua polygon MVP serta kontrak data yang dipakai ketiga jalur.
 
-- [ ] **P0-S1-N1 — Katalog sumber FIRMS.** Tetapkan feed, nama produk/satelit, periode arsip, atribut, format waktu, revisi NRT→standard, dan batas API. **Selesai bila:** manifest sumber dan contoh data kedua wilayah tersedia serta berversi.
-- [ ] **P0-S1-N2 — Parser dan validator.** Normalisasi koordinat, waktu observasi, confidence, FRP, sensor; tangani skema berubah, baris invalid, duplikat, data terlambat, respons kosong, dan error/rate limit. **Selesai bila:** kasus valid/gagal tercakup tes dan raw row tidak hilang saat parse gagal.
+- [x] **P0-S1-N1 — Katalog sumber FIRMS.** Tetapkan feed, nama produk/satelit, periode arsip, atribut, format waktu, revisi NRT→standard, dan batas API. **Selesai bila:** manifest sumber dan contoh data kedua wilayah tersedia serta berversi.
+- [x] **P0-S1-N2 — Parser dan validator.** Normalisasi koordinat, waktu observasi, confidence, FRP, sensor; tangani skema berubah, baris invalid, duplikat, data terlambat, respons kosong, dan error/rate limit. **Selesai bila:** kasus valid/gagal tercakup tes dan raw row tidak hilang saat parse gagal.
 
 ## Tahap 2 — Baseline, harmonisasi, snapshot, dan analitik dashboard
 
 **Tujuan integrasi tim:** menghasilkan snapshot dari FIRMS nyata dan membandingkan periode terbaru dengan konteks historis sebanding.
 
-- [ ] **P0-S2-N1 — Unit analisis dan agregasi.** Tentukan grid/unit spasial stabil, clustering kandidat, metrik aktivitas, dan aturan referensi/overlap sensor. **Selesai bila:** konfigurasi berversi, ingest ulang idempotent, dan hitungan hotspot mentah tidak disamakan antar sensor.
+- [ ] **P0-S2-N1 — Unit analisis dan agregasi.** *Progres:* grid global 0,25° bulanan berversi per sumber (`firms_archive.py`) dan kalender area bebas (`firms_calendar.py`) tersedia; clustering kandidat dan aturan overlap sensor belum. Tentukan grid/unit spasial stabil, clustering kandidat, metrik aktivitas, dan aturan referensi/overlap sensor. **Selesai bila:** konfigurasi berversi, ingest ulang idempotent, dan hitungan hotspot mentah tidak disamakan antar sensor.
 - [ ] **P0-S2-N2 — Baseline musiman dan evaluasi kalibrasi.** Buat baseline per wilayah; pisahkan latih/uji menurut waktu; bandingkan raw, baseline sederhana, EQM. **Selesai bila:** manifest mencatat periode, n, missingness, MAE/bias, dan calibrated output hanya terbit bila didukung held-out evaluation.
 - [ ] **P0-S2-N3 — Anomali, kebaruan, persistensi.** Hitung perbandingan waktu sebanding, alasan prioritas, dan status bukti kurang. **Selesai bila:** waktu observasi menentukan kebaruan; nilai tak cukup data nullable; tiadanya deteksi tidak berarti api padam.
 
