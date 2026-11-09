@@ -1,6 +1,6 @@
-# Kontrak snapshot frontend v1 — draft untuk review tim
+# Kontrak snapshot frontend v1 - acuan implementasi
 
-**Status:** sudah diimplementasikan pada frontend, belum disetujui Nathan/Bagas/Orkhan. Endpoint analitik belum tersedia di repository. Kontrak ini tidak membuktikan adanya ingest atau kalibrasi nyata.
+**Status:** ditetapkan Orkhan atas mandat tim. Kontrak normatif lengkap ada di [api-v1.md](api-v1.md). Endpoint analitik belum tersedia; dokumen ini tidak membuktikan ingest atau kalibrasi nyata.
 
 ## Endpoint yang diharapkan
 
@@ -43,9 +43,6 @@ Mode demo menyimpan laporan dan koreksi dengan nilai sebelumnya pada localStorag
 
 Bagas perlu menambahkan referensi lokasi/region yang persisten pada laporan, autentikasi individual, API koreksi dengan audit, dan endpoint snapshot. Ketika laporan tidak ada pada snapshot terbaru, backend tetap harus mengembalikan region/nama/posisi stabil. Bukti baru setelah waktu pemeriksaan tidak boleh disembunyikan.
 
-## Persetujuan kontrak
+## Penetapan kontrak
 
-- [ ] Nathan menyetujui unit, aggregation/reference rule, field nullable, ID lokasi, status evaluasi, dan kebijakan waktu/freshness.
-- [ ] Bagas menyetujui endpoint, provenance storage, publikasi atomik, referensi laporan, dan penanganan error.
-- [ ] Orkhan mereview payload terhadap UI, dua bahasa, ekspor, serta state kosong/gagal.
-- [ ] Tim menyetujui polygon final dan periode arsip untuk kedua area.
+Penetapan payload oleh Orkhan sudah diotorisasi tim. Tidak perlu menunggu persetujuan draft per anggota untuk mulai implementasi. Polygon final, validasi ilmiah, serta review kode tetap pekerjaan tersendiri. Aturan TTL, error, idempotensi dan target API laporan mengikuti [kontrak normatif v1](api-v1.md).

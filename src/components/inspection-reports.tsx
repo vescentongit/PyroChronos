@@ -292,6 +292,7 @@ export function InspectionReports({
           body: JSON.stringify({
             requestId: report.id,
             candidateId: report.candidateId,
+            regionId: region.id,
             observedAt,
             result: report.result,
             notes: report.notes,
