@@ -74,5 +74,5 @@ assert.equal(
   false,
 );
 console.log(
-  `Contract v1: 5 schemas, ${examples.snapshots.length} snapshots, report create/correction/history, error and negative cases passed.`,
+  `Contract v1: ${Object.keys(contracts).length} schemas, ${examples.snapshots.length} snapshots, report create/correction/history, error and negative cases passed.`,
 );

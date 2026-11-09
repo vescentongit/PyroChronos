@@ -122,15 +122,35 @@ Semua kegagalan API mengembalikan JSON `{error:string,code:string,retryable:bool
 
 ## 7. Kompatibilitas dan definition of done
 
-**Perluasan scope peta global:** Snapshot v1 ini tetap kontrak analitik wilayah siap pakai (`kalteng`, `papua`), bukan pembatas cakupan peta. Heatmap global memerlukan kontrak terpisah untuk deteksi/tile berbasis viewport, sensor dan periode. Jangan mengubah regionId menjadi negara bebas atau mengirim snapshot wilayah lain untuk memenuhi peta global. Kontrak viewport berikutnya harus ditetapkan sebelum implementasi integrasi; endpoint tersebut belum tersedia.
+**Perluasan scope peta global:** Snapshot v1 ini tetap kontrak analitik wilayah siap pakai (`kalteng`, `papua`), bukan pembatas cakupan peta. Heatmap global memakai kontrak terpisah `hotspots-1` (bagian 8). Jangan mengubah regionId menjadi negara bebas atau mengirim snapshot wilayah lain untuk memenuhi peta global.
 
 Snapshot sukses tetap kompatibel dengan frontend saat ini. Report v1 adalah **target backend baru**; response legacy sekarang belum menyediakan identitas/lokasi/audit lengkap. Frontend menerima field tambahan dan mengirim regionId pada create; koreksi operasional tetap disabled sampai endpoint tersedia. Kontrak tidak mengklaim backend sudah sesuai.
 
 Field wajib/enum/satuan/semantik yang berubah memerlukan versi baru dan migrasi consumer. Field opsional additive diperbolehkan tanpa mengganti versi. Data demo tidak dipromosikan dengan mengubah label mode saja; seluruh output operasional harus diturunkan dari batch nyata dan manifest.
 
 - [x] Orkhan menetapkan payload v1 atas mandat tim.
-- [x] Contoh kedua wilayah dan lima JSON Schema tersedia serta dapat diperiksa otomatis.
+- [x] Contoh kedua wilayah dan tujuh JSON Schema (termasuk `hotspots` dan `hotspots-query`) tersedia serta dapat diperiksa otomatis.
 - [ ] Nathan menghasilkan output dan manifest yang sesuai pada data nyata.
 - [ ] Bagas menerapkan storage, endpoint dan aturan transaksi/otorisasi sesuai kontrak.
 - [ ] Integrasi lintas anggota, migrasi, serta review kode aktual dilakukan.
 - [ ] Polygon final dan kebijakan ilmiah divalidasi sesuai proses produk.
+
+## 8. Heatmap global (`hotspots-1`)
+
+`GET /api/hotspots?bbox=west,south,east,north&source=<sumber>&hours=<24|48|72|96>&zoom=<0-16>`
+
+Endpoint mengambil satu batch FIRMS NRT global per sumber/jendela di server (key `FIRMS_MAP_KEY` tidak pernah dikirim ke browser), lalu hanya mengirim deteksi di dalam viewport. Schema runtime: [hotspots.ts](../../src/lib/hotspots.ts). JSON Schema: [hotspots](hotspots.schema.json), [hotspots-query](hotspots-query.schema.json).
+
+| Field | Makna |
+|---|---|
+| `source` | Satu feed FIRMS: `VIIRS_NOAA20_NRT`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA21_NRT`, `MODIS_NRT`. Sensor tidak dijumlahkan; heatmap global bukan hasil harmonisasi. |
+| `bbox` | `[west, south, east, north]` WGS84. `west > east` berarti viewport melintasi antimeridian. |
+| `hours` | Jendela bergerak yang berakhir pada `evaluatedAt`; `observedTo - observedFrom = hours`. |
+| `status` | `available`, atau `stale` bila unduhan gagal dan server memakai batch terakhir (maks. 4 jam). Frontend juga menganggap data lama setelah `freshUntil`. |
+| `fetchedAt`, `checksum` | Waktu unduh dan SHA-256 CSV mentah untuk provenance. |
+| `total` | Jumlah deteksi di viewport dan jendela, tidak terpotong oleh agregasi. |
+| `gridDegrees` | `0` = titik asli; `>0` = deteksi diagregasi ke sel grid berukuran tersebut agar fitur ≤ 6000. |
+| `features` | GeoJSON Point dengan `count` dan `observedAt` terbaru per sel. Jumlah `count` = `total`. |
+| `sample` | Maks. 30 deteksi terbaru di viewport, dengan satelit, confidence sumber, dan FRP (MW, nullable). |
+
+Kegagalan mengikuti bagian 6: 400 `INVALID_REQUEST` untuk bbox/sumber/periode tidak valid, 429 `RATE_LIMITED`, 503 `DEPENDENCY_UNAVAILABLE` (termasuk key belum dikonfigurasi). Kepadatan heatmap adalah kepadatan deteksi relatif, bukan jumlah kebakaran, luas terbakar, atau tingkat bahaya; tidak ada deteksi bukan berarti tidak ada api.
