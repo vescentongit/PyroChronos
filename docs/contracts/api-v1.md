@@ -122,6 +122,8 @@ Semua kegagalan API mengembalikan JSON `{error:string,code:string,retryable:bool
 
 ## 7. Kompatibilitas dan definition of done
 
+**Perluasan scope peta global:** Snapshot v1 ini tetap kontrak analitik wilayah siap pakai (`kalteng`, `papua`), bukan pembatas cakupan peta. Heatmap global memerlukan kontrak terpisah untuk deteksi/tile berbasis viewport, sensor dan periode. Jangan mengubah regionId menjadi negara bebas atau mengirim snapshot wilayah lain untuk memenuhi peta global. Kontrak viewport berikutnya harus ditetapkan sebelum implementasi integrasi; endpoint tersebut belum tersedia.
+
 Snapshot sukses tetap kompatibel dengan frontend saat ini. Report v1 adalah **target backend baru**; response legacy sekarang belum menyediakan identitas/lokasi/audit lengkap. Frontend menerima field tambahan dan mengirim regionId pada create; koreksi operasional tetap disabled sampai endpoint tersedia. Kontrak tidak mengklaim backend sudah sesuai.
 
 Field wajib/enum/satuan/semantik yang berubah memerlukan versi baru dan migrasi consumer. Field opsional additive diperbolehkan tanpa mengganti versi. Data demo tidak dipromosikan dengan mengubah label mode saja; seluruh output operasional harus diturunkan dari batch nyata dan manifest.

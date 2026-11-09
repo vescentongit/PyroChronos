@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { snapshotSchema, parseSnapshot } from "../src/lib/snapshot.ts";
 import { studyRegions } from "../src/lib/regions.ts";
+import { hotspotsSchema, querySchema } from "../src/lib/hotspots.ts";
 import {
   createReportSchema,
   correctReportSchema,
@@ -11,6 +12,8 @@ import {
 } from "../src/lib/api-contracts.ts";
 
 const contracts = {
+  hotspots: hotspotsSchema,
+  "hotspots-query": querySchema,
   snapshot: snapshotSchema,
   "report-create": createReportSchema,
   "report-correction": correctReportSchema,
