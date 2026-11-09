@@ -1,14 +1,25 @@
-import assert from 'node:assert/strict';
-const base=process.env.TEST_URL||'http://localhost:3000';
-const page=await fetch(base);
-assert.equal(page.status,200);
-assert.match(await page.text(),/PyroChronos/);
-const reports=await fetch(`${base}/api/reports`);
-assert.equal(reports.status,401,'Unauthenticated reports must be private');
-const write=await fetch(`${base}/api/reports`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
-assert.equal(write.status,401,'Unauthenticated writes must be rejected');
-const invalidRegion=await fetch(`${base}/api/firms?region=unknown`);
-assert.equal(invalidRegion.status,400);
+import assert from "node:assert/strict";
+const base = process.env.TEST_URL || "http://localhost:3000";
+const page = await fetch(base);
+assert.equal(page.status, 200);
+assert.match(await page.text(), /PyroChronos/);
+const simulation = await fetch(`${base}/simulation`);
+assert.equal(
+  simulation.status,
+  200,
+  "Simulation route must serve the dashboard",
+);
+assert.match(await simulation.text(), /Dashboard/);
+const reports = await fetch(`${base}/api/reports`);
+assert.equal(reports.status, 401, "Unauthenticated reports must be private");
+const write = await fetch(`${base}/api/reports`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({}),
+});
+assert.equal(write.status, 401, "Unauthenticated writes must be rejected");
+const invalidRegion = await fetch(`${base}/api/firms?region=unknown`);
+assert.equal(invalidRegion.status, 400);
 const prototypeRegion=await fetch(`${base}/api/firms?region=__proto__`);
 assert.equal(prototypeRegion.status,400);
 const prototypeSource=await fetch(`${base}/api/firms?source=constructor`);
@@ -17,6 +28,16 @@ const arbitraryBox=await fetch(`${base}/api/firms?bbox=0,0,1,1`);
 assert.equal(arbitraryBox.status,400);
 const publicIngest=await fetch(`${base}/api/firms`,{method:'POST'});
 assert.equal(publicIngest.status,405,'Public FIRMS route must not accept ingest writes');
-const session=await fetch(`${base}/api/session`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:'invalid'})});
-assert.ok([401,503].includes(session.status),'Invalid session must not authenticate');
-console.log('9 smoke checks passed: page, report privacy, write authorization, region validation, prototype region/source rejection, arbitrary bbox rejection, FIRMS method boundary, session rejection.');
+
+const session = await fetch(`${base}/api/session`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ token: "invalid" }),
+});
+assert.ok(
+  [401, 503].includes(session.status),
+  "Invalid session must not authenticate",
+);
+console.log(
+  "10 smoke checks passed: home, simulation, report privacy, write authorization, region validation, prototype region/source rejection, arbitrary bbox rejection, FIRMS method boundary, session rejection.",
+);

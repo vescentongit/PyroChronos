@@ -10,18 +10,7 @@ export type Candidate = {
   priority: "Tinggi" | "Sedang";
   sensor: string;
 };
-export const regions = [
-  {
-    id: "kalteng",
-    name: "Kalimantan Tengah",
-    center: [114.0, -2.4] as [number, number],
-  },
-  {
-    id: "papua",
-    name: "Papua Selatan",
-    center: [140.2, -7.4] as [number, number],
-  },
-];
+export { studyRegions as regions } from "./regions";
 export const candidates: Record<string, Candidate[]> = {
   kalteng: [
     {

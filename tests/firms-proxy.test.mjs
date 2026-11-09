@@ -4,8 +4,26 @@ import { Readable } from 'node:stream';
 import { test } from 'node:test';
 
 import * as proxy from '../src/lib/firms-proxy.ts';
+import { getRegion } from '../src/lib/regions.ts';
 const SECRET = 'sentinel-FIRMS-private-key-never-expose';
 const CSV = Buffer.from('latitude,longitude,acq_date,acq_time,satellite,confidence,version,frp\n-2.5,114,2026-11-09,0045,N,n,2,7\n');
+test('proxy uses the shared dev region registry without bypassing the B2 allowlist', async () => {
+  const saved = process.env.FIRMS_MAP_KEY;
+  process.env.FIRMS_MAP_KEY = SECRET;
+  const lookups = [];
+  try {
+    const handle = proxy.createFirmsProxy(async (_key, _source, bounds) => {
+      assert.deepEqual(bounds, getRegion('papua').bounds);
+      return { ok: true, body: CSV };
+    }, (id) => { lookups.push(id); return getRegion(id); });
+    assert.equal((await handle(request('?region=papua'))).status, 200);
+    assert.deepEqual(lookups, ['papua']);
+    assert.equal((await handle(request('?region=__proto__'))).status, 400);
+    assert.deepEqual(lookups, ['papua']);
+    const unavailable = proxy.createFirmsProxy(async () => { throw new Error('must not fetch'); }, () => undefined);
+    assert.equal((await unavailable(request('?region=papua'))).status, 400);
+  } finally { if (saved === undefined) delete process.env.FIRMS_MAP_KEY; else process.env.FIRMS_MAP_KEY = saved; }
+});
 function request(query = '') { return new Request(`https://pyro.invalid/api/firms${query}`); }
 function mockGet(chunks, { statusCode = 200, headers = {}, complete = true, delay = 0 } = {}) {
   const calls = [];

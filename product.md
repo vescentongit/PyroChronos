@@ -6,8 +6,8 @@
 **Pengalaman utama:** Menilai kondisi terbaru terhadap pola historis musiman  
 **Pengguna utama:** Analis lingkungan atau koordinator pemantauan yang menyiapkan prioritas verifikasi lapangan/patroli  
 **Tindakan utama:** Memilih lokasi untuk diperiksa lebih dahulu berdasarkan bukti aktivitas terbaru dan konteks historis  
-**Wilayah sasaran:** Kalimantan dan Papua bagian Indonesia  
-**Fokus MVP:** Subset Kalimantan Tengah dan Papua Selatan  
+**Cakupan peta/heatmap:** Global; pengguna dapat menjelajah hotspot seluruh dunia sesuai ketersediaan sumber
+**Fokus analitik MVP:** Harmonisasi dan baseline pada subset Kalimantan Tengah dan Papua Selatan
 **Dasar:** *PyroChronos Technical Research & Feasibility Paper.pdf*, 8 halaman  
 **Tanggal:** 9 November 2026
 
@@ -54,9 +54,19 @@ Judul challenge memiliki halaman resmi [S1]. Isi lengkap halaman tersebut belum 
 
 Gunakan batas geografis yang konsisten sepanjang deret waktu, dengan versi batas administrasi tercatat. Perubahan administrasi tidak boleh tampak sebagai perubahan aktivitas kebakaran. Konteks karhutla terkini dapat ditampilkan dengan tanggal pembaruan, tetapi evaluasi historis tetap menggunakan periode uji yang dibekukan.
 
-### Pemilihan wilayah dalam MVP
+### Peta dan heatmap global
 
-Pengguna memilih wilayah dari daftar yang sudah disediakan; menggambar polygon sendiri dan mengunggah batas wilayah berada di luar MVP. Daftar awal mencakup area studi di Kalimantan Tengah dan Papua Selatan. Kabupaten dapat digunakan sebagai unit pilihan, tetapi nama dan jumlah area final ditetapkan setelah pemeriksaan ketersediaan data historis dan biaya pengolahan. Jangan menampilkan area sebagai tersedia jika datasetnya belum disiapkan.
+Pengguna dapat menggeser, memperbesar, dan menelusuri peta/heatmap seluruh dunia tanpa dibatasi polygon studi Kalimantan Tengah atau Papua Selatan. Dua subset Indonesia tetap menjadi studi awal untuk harmonisasi dan baseline historis yang dievaluasi. Heatmap global belum diimplementasikan pada prototype saat keputusan ini dicatat; peta saat ini masih menampilkan kandidat demo dua subset.
+
+Heatmap menunjukkan kepadatan deteksi teramati menurut jendela waktu dan sensor pilihan. Label tidak menyebutnya luas terbakar, jumlah kejadian, atau tingkat bahaya. Sediakan filter sensor/satelit; jumlah titik MODIS dan VIIRS tidak dicampur sebagai intensitas setara tanpa metode yang sudah diuji. Tampilkan waktu observasi/pembaruan, sumber, dan keterbatasan. Data tidak tersedia tidak berarti bebas api.
+
+Muat data mengikuti viewport/zoom: tile atau agregat untuk tampilan luas, detail saat diperbesar. Jangan mengunduh seluruh dunia dalam satu respons browser. Backend menjaga key FIRMS, batas volume dan cache. Perpindahan viewport membatalkan request lama; area melintasi antimeridian ditangani konsisten.
+
+Polygon analisis tetap diperlukan untuk membandingkan periode historis pada wilayah yang sama, tetapi tidak membatasi penjelajahan global. Di luar area analitik siap pakai, hotspot tetap dapat ditampilkan sesuai ketersediaan sumber; baseline/anomali/harmonisasi diberi status belum tersedia dan tidak meminjam hasil wilayah lain.
+
+### Pemilihan wilayah analitik dalam MVP
+
+Untuk analitik historis dan harmonisasi, pengguna memilih wilayah dari daftar yang sudah disediakan; menggambar polygon sendiri dan mengunggah batas wilayah berada di luar MVP. Daftar awal mencakup area studi di Kalimantan Tengah dan Papua Selatan. Kabupaten dapat digunakan sebagai unit pilihan, tetapi nama dan jumlah area final ditetapkan setelah pemeriksaan ketersediaan data historis dan biaya pengolahan. Jangan menampilkan area sebagai tersedia jika datasetnya belum disiapkan.
 
 Setiap pilihan memiliki ID stabil, nama, polygon, versi batas, luas, dan periode data tersedia. Gunakan polygon yang sama untuk deteksi terbaru, baseline historis, serta ekspor. Siapkan agregat historis per wilayah agar interaksi cepat; pemilihan wilayah tidak memicu pengunduhan seluruh arsip. Daftar kandidat lokasi patroli tetap menunjukkan posisi di dalam wilayah pilihan, bukan hanya satu skor untuk seluruh wilayah.
 
@@ -75,7 +85,7 @@ Analis lingkungan atau koordinator pemantauan yang menyiapkan daftar lokasi untu
 
 ### Alur penggunaan
 
-1. Pengguna memilih area dari daftar wilayah yang sudah disiapkan di Kalimantan Tengah atau Papua Selatan; halaman utama membuka periode terbaru.
+1. Pengguna dapat menjelajah hotspot melalui peta/heatmap global. Untuk analitik historis dan harmonisasi, pengguna memilih area studi yang sudah disiapkan di Kalimantan Tengah atau Papua Selatan.
 2. Peta menampilkan deteksi terbaru, waktu akuisisi, serta waktu pembaruan aplikasi.
 3. Panel perbandingan menunjukkan aktivitas teramati versus distribusi historis pada musim dan durasi yang sebanding, beserta status keterbandingan datanya.
 4. Pengguna membuka kalender dan grafik untuk memeriksa riwayat, sensor penyumbang, serta pengaruh harmonisasi.
@@ -124,7 +134,7 @@ Batasi MVP pada formulir online ringkas untuk koordinator dan riwayat laporan. F
 
 | Tahap | Kemampuan | Batasan |
 |---|---|---|
-| MVP 48 jam | Feed FIRMS terbaru untuk dua subset, pembanding historis musiman, peta, kalender, grafik sensor, kandidat patroli, formulir hasil pemeriksaan dan riwayat laporan, baseline dan kandidat kalibrasi, ekspor | Arsip pembanding disiapkan sebelum acara; laporan berupa form ringkas, bukan sistem manajemen operasi lengkap |
+| MVP 48 jam | Peta/heatmap global berbasis viewport dan sensor; feed FIRMS analitik untuk dua subset, pembanding historis musiman, peta, kalender, grafik sensor, kandidat patroli, formulir hasil pemeriksaan dan riwayat laporan, baseline dan kandidat kalibrasi, ekspor | Arsip pembanding disiapkan sebelum acara; laporan berupa form ringkas, bukan sistem manajemen operasi lengkap |
 | Pengembangan berikutnya | Perluasan periode/wilayah, API kueri, ketidakpastian, laporan wilayah | Membutuhkan pengujian generalisasi dan anggaran komputasi |
 | Riset lanjutan | Konteks CO, kelembapan tanah, angin, dan gambut | Indikasi pendukung, bukan deteksi terverifikasi kebakaran bawah tanah |
 

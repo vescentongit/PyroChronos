@@ -8,6 +8,13 @@ import config from "../../config/firms.json" with { type: "json" };
 type Failure = { ok: false; errorCode: string; retryable: boolean; httpStatus: number };
 type Download = { ok: true; body: Buffer } | Failure;
 type Downloader = (key: string, source: string, bbox: number[]) => Promise<Download>;
+type RegionResolver = (id: string) => { bounds: number[] } | undefined;
+const configuredRegion: RegionResolver = (id) => {
+  if (!Object.hasOwn(config.regions, id)) return undefined;
+  const ring = config.regions[id as keyof typeof config.regions].geometry.coordinates[0];
+  const xs = ring.map((point) => point[0]), ys = ring.map((point) => point[1]);
+  return { bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
+};
 const errorCodes = new Set(["CONFIG_MISSING", "REGION_NOT_ALLOWED", "SOURCE_NOT_ALLOWED", "INVALID_REQUEST",
   "UPSTREAM_TIMEOUT", "UPSTREAM_REDIRECT", "UPSTREAM_RATE_LIMITED", "UPSTREAM_DENIED",
   "UPSTREAM_UNAVAILABLE", "INVALID_RESPONSE", "PAYLOAD_TOO_LARGE"]);
@@ -97,7 +104,7 @@ export function downloadFirms(
   });
 }
 
-export function createFirmsProxy(download: Downloader = downloadFirms) {
+export function createFirmsProxy(download: Downloader = downloadFirms, resolveRegion: RegionResolver = configuredRegion) {
   return async (request: Request): Promise<Response> => {
     const params = new URL(request.url).searchParams;
     const error = (failure: Failure) => {
@@ -113,14 +120,14 @@ export function createFirmsProxy(download: Downloader = downloadFirms) {
     const sourceId = params.get("source") ?? "VIIRS_NOAA20_NRT";
     if (!Object.hasOwn(config.regions, regionId)) return error(fail("REGION_NOT_ALLOWED", false, 400));
     if (!Object.hasOwn(config.sources, sourceId)) return error(fail("SOURCE_NOT_ALLOWED", false, 400));
+    // The application supplies dev's shared region registry; IDs must still
+    // pass the strict B2 allowlist before consulting that trusted resolver.
+    const studyRegion = resolveRegion(regionId);
+    if (!studyRegion) return error(fail("REGION_NOT_ALLOWED", false, 400));
     const key = process.env.FIRMS_MAP_KEY;
     if (!key || key.length > 256 || /[^\x21-\x7e]/.test(key)) return error(fail("CONFIG_MISSING", false, 503));
-    const region = config.regions[regionId as keyof typeof config.regions];
-    const ring = region.geometry.coordinates[0];
-    const xs = ring.map((point) => point[0]), ys = ring.map((point) => point[1]);
-    const bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
     try {
-      const result = await download(key, sourceId, bbox);
+      const result = await download(key, sourceId, studyRegion.bounds);
       if (!result.ok) return error(result);
       if (result.body.includes(key) || result.body.includes(encodeURIComponent(key)))
         return error(fail("INVALID_RESPONSE"));

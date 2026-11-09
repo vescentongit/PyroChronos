@@ -51,6 +51,10 @@ Living checklist for the agreed product scope in [`product.md`](../product.md). 
 
 ### Dashboard and release
 
+- [ ] Orkhan: implement global heatmap browsing with viewport/zoom loading and sensor/time filters, independently of fixed analysis-region selection.
+- [ ] Bagas: serve bounded global viewport data/tiles with caching, volume limits, safe FIRMS access, cancellation handling, and antimeridian support.
+- [ ] Nathan: supply normalized global detection/aggregation semantics with provenance; keep unvalidated cross-sensor counts separate and expose regional analysis availability explicitly.
+
 - [ ] Complete English and Indonesian coverage for navigation, map details, empty/loading/error states, reports, export headers, and date/time formatting.
 - [ ] Verify responsive map fallback, keyboard access, focus handling, and readable status labels.
 - [ ] Add scheduled ingestion with retry/backoff, atomic publication of completed analysis runs, and visible last-success/failure status.

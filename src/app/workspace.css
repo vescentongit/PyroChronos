@@ -1,0 +1,166 @@
+.export-actions {
+  display: flex;
+  gap: 8px;
+}
+.mode-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.mode-select select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  color: var(--ink);
+  padding: 9px;
+  font: inherit;
+}
+.region-metadata {
+  margin-block: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #53664e;
+}
+.region-metadata summary,
+.source-status summary {
+  cursor: pointer;
+}
+.region-metadata p,
+.source-status p {
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.snapshot-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 11px;
+  color: #53664e;
+  padding-block: 12px;
+}
+.snapshot-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.source-status {
+  margin-block: 24px;
+  padding-block: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: #53664e;
+}
+.source-status h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.source-status details {
+  padding-block: 10px;
+}
+.inspection-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 0;
+  width: min(480px, calc(100vw - 32px));
+  color: var(--ink);
+}
+.inspection-dialog::backdrop {
+  background: #172b2470;
+}
+.inspection-dialog input,
+.inspection-dialog textarea,
+.inspection-dialog select {
+  font-size: 16px;
+}
+.inspection-dialog [role="alert"] {
+  color: #8e3618;
+  font-size: 13px;
+}
+.report-row details {
+  margin-block: 12px;
+  font-size: 12px;
+}
+.report-row .outline {
+  margin-block: 12px;
+}
+.report-row small {
+  display: block;
+  line-height: 1.8;
+}
+.tabs {
+  flex-wrap: wrap;
+}
+.location-detail dl > div {
+  flex-wrap: wrap;
+}
+.location-detail dd {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.unavailable-state {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-block: 15px;
+}
+.empty {
+  color: #52664d;
+}
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 12px;
+  z-index: 100;
+  padding: 12px;
+  background: var(--green);
+  color: white;
+}
+.skip-link:focus {
+  top: 12px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+@media (max-width: 620px) {
+  .heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .heading .outline {
+    font-size: 11px;
+  }
+  .toolbar {
+    align-items: flex-start;
+  }
+  .mode-select {
+    flex: 1;
+  }
+  .snapshot-status {
+    display: grid;
+  }
+  .region-select select {
+    font-size: 11px;
+  }
+  .report-row .badge {
+    white-space: normal;
+  }
+  .tabs {
+    gap: 12px;
+  }
+  .connection-form > div {
+    flex-wrap: wrap;
+  }
+}

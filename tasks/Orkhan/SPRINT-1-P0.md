@@ -2,7 +2,9 @@
 
 **Fokus:** Peta, grafik, kandidat, laporan, ekspor, dan integrasi antarmuka.  
 **Reviewer utama:** Nathan  
-**Status:** belum dimulai.
+**Status:** sedang dikerjakan. Frontend dan kontrak draft tersedia; acceptance frontend mandiri sudah lulus. Integrasi backend nyata, geometri final, PR dan review Nathan masih terbuka.
+
+Rincian hasil, verifikasi, dan blocker: [catatan implementasi](../../docs/orkhan-sprint-1-progress.md). Handoff: [kontrak snapshot v1](../../docs/contracts/snapshot-v1.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
 
@@ -11,6 +13,9 @@
 MVP jujur dan dapat digunakan.
 
 Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
+
+
+**Acuan payload yang ditetapkan Orkhan atas mandat tim:** [API v1](../../docs/contracts/api-v1.md). Schema dan contoh siap dipakai; tidak perlu menunggu penetapan draft. Polygon final serta hasil validasi ilmiah tetap terpisah.
 
 ## Koordinasi dan dependensi
 
@@ -23,22 +28,24 @@ Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Bagas](../Bagas
 **Tujuan integrasi tim:** menyiapkan ingest FIRMS MODIS/VIIRS yang dapat ditelusuri untuk dua polygon MVP serta kontrak data yang dipakai ketiga jalur.
 
 - [ ] **P0-S1-O1 — Konfigurasi polygon dan pemilih wilayah.** Simpan ID stabil, nama, geometri, luas, sumber, dan versi batas untuk subset Kalimantan Tengah/Papua Selatan. **Selesai bila:** peta, pemilih, ekspor, dan data menggunakan daftar ID yang sama; cakupan wilayah dilabeli jelas.
-- [ ] **P0-S1-O2 — Kontrak snapshot frontend.** Definisikan type/payload untuk deteksi, provenance, timestamp, status live/stale/partial/unavailable/replay, dan nilai nullable. **Selesai bila:** payload contoh dan kontrak disetujui ketiga anggota.
+- [x] **P0-S1-O2 — Kontrak snapshot frontend.** Definisikan type/payload untuk deteksi, provenance, timestamp, status live/stale/partial/unavailable/replay, dan nilai nullable. **Selesai bila:** payload contoh dan kontrak disetujui ketiga anggota.
 
 ## Tahap 2 — Baseline, harmonisasi, snapshot, dan analitik dashboard
 
 **Tujuan integrasi tim:** menghasilkan snapshot dari FIRMS nyata dan membandingkan periode terbaru dengan konteks historis sebanding.
 
 - [ ] **P0-S2-O1 — Ganti fixture operasional.** Hubungkan peta, kandidat, grafik, dan ekspor ke snapshot API; pertahankan mode demo/replay terpisah. **Selesai bila:** mode operasional tidak membaca angka hard-coded dan ekspor membawa timestamp/provenance.
-- [ ] **P0-S2-O2 — Visualisasi konteks dan kualitas.** Tampilkan terbaru vs baseline musiman, sensor, umur data, komponen alasan, dan status kualitas. **Selesai bila:** satuan/periode jelas; copy tidak menyebut aktivitas deteksi sebagai luas terbakar atau konfirmasi api.
+- [x] **P0-S2-O2 — Visualisasi konteks dan kualitas.** Tampilkan terbaru vs baseline musiman, sensor, umur data, komponen alasan, dan status kualitas. **Selesai bila:** satuan/periode jelas; copy tidak menyebut aktivitas deteksi sebagai luas terbakar atau konfirmasi api.
 
 ## Tahap 3 — Laporan koordinator, keamanan, dan rilis demo
 
 **Tujuan integrasi tim:** tuntaskan alur kandidat→pemeriksaan→riwayat dan pastikan operasi aman saat feed/backend/peta gagal.
 
 - [ ] **P0-S3-O1 — UI formulir dan riwayat.** Hubungkan hasil “api/asap ditemukan”, “tidak ditemukan saat pemeriksaan”, “belum pasti”, serta koreksi. **Selesai bila:** waktu pemeriksaan/input terpisah dan status laporan tidak menyatakan api padam.
-- [ ] **P0-S3-O2 — Lengkapi EN/ID dan UI states.** Terjemahkan error/loading/empty, peta, metode, laporan, ekspor, waktu; cek keyboard/focus/mobile. **Selesai bila:** kedua bahasa setara dan fallback peta tetap menyisakan informasi analitik.
+- [x] **P0-S3-O2 — Lengkapi EN/ID dan UI states.** Terjemahkan error/loading/empty, peta, metode, laporan, ekspor, waktu; cek keyboard/focus/mobile. **Selesai bila:** kedua bahasa setara dan fallback peta tetap menyisakan informasi analitik.
 - [ ] **P0-S3-O3 — Integrasi UI acceptance.** Jalankan replay untuk dua wilayah, laporan setelah refresh, export, status gagal, keyboard, dan viewport mobile. **Selesai bila:** temuan dan blocker tercatat serta ditautkan ke PR/issue.
+
+Acceptance browser mandiri sudah selesai; lihat [hasil dan cara menjalankan](../../docs/frontend-acceptance.md). P0-S3-O3 tetap terbuka untuk pengujian data nyata dan penautan hasil pada PR/issue. Review desain oleh agent tidak menggantikan review Nathan.
 
 ## Checklist sebelum membuat PR
 
@@ -48,10 +55,10 @@ Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Bagas](../Bagas
 - [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
 - [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
 - [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [ ] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
+- [x] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
 - [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
 - [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
-- [ ] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
+- [x] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
 - [ ] Satu anggota lain melakukan review; risiko, batasan, dan cara verifikasi terdokumentasi.
 
 ## Syarat sprint selesai
