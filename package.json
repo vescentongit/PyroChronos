@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "dev:chrome": "node scripts/dev-open.mjs",
     "build": "prisma generate && next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit --incremental false",

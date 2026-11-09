@@ -15,7 +15,8 @@ Mulai dari **[API & payload v1](api-v1.md)**. Kontrak sudah ditetapkan Orkhan at
 | Contoh snapshot, laporan, koreksi, error | [api-v1.examples.json](api-v1.examples.json) |
 | Schema runtime snapshot | [snapshot.ts](../../src/lib/snapshot.ts) |
 | Schema runtime laporan/error | [api-contracts.ts](../../src/lib/api-contracts.ts) |
-| JSON Schema lintas bahasa | [snapshot](snapshot.schema.json), [create](report-create.schema.json), [correction](report-correction.schema.json), [report](report.schema.json), [error](error.schema.json) |
+| JSON Schema lintas bahasa | [snapshot](snapshot.schema.json), [create](report-create.schema.json), [correction](report-correction.schema.json), [report](report.schema.json), [error](error.schema.json), [hotspots](hotspots.schema.json), [hotspots-query](hotspots-query.schema.json) |
+| Heatmap global `hotspots-1` | [api-v1.md bagian 8](api-v1.md#8-heatmap-global-hotspots-1), schema runtime [hotspots.ts](../../src/lib/hotspots.ts) |
 
 `npm run check:contracts` memeriksa konsistensi schema dan contoh. Untuk perubahan schema yang disepakati, regenerasi dengan `node scripts/check-contracts.mjs --write`, lalu review diff JSON Schema dan jalankan pemeriksaan lagi. Aturan lintas-field dan semantik tetap wajib divalidasi backend; JSON Schema saja tidak cukup.
 

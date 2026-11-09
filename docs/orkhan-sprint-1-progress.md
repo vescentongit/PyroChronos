@@ -12,6 +12,7 @@ Frontend tersedia; sprint belum selesai karena persetujuan kontrak/geometri, int
 | P0-S2-O2 | Grafik nullable, konteks baseline, komponen/alasan kandidat, source freshness, waktu/periode/satuan. | Uji integrasi snapshot nyata ketika backend tersedia. |
 | P0-S3-O1 | Form tiga hasil, waktu pemeriksaan/input terpisah, GET/POST API existing, koreksi demo berhistori, deteksi pascapemeriksaan. | Backend masih membatasi candidate ID fixture; belum ada region laporan stabil, identitas individual, endpoint audit koreksi. Koreksi operasional disabled dengan penjelasan. |
 | P0-S3-O2 | Copy EN/ID, UTC eksplisit, bahasa dokumen, native dialog, keyboard/focus, CSS mobile, fallback koordinat. | Browser desktop/mobile dan keyboard sudah lulus; tidak ada blocker frontend mandiri. |
+| Heatmap global | Tampilan `global` (default) dengan MapLibre heatmap + fallback Canvas, pilihan sensor/jendela 24–96 jam, preset area, navigasi koordinat termasuk antimeridian, status stale/gagal, ekspor JSON, tabel 30 deteksi terbaru. Endpoint `/api/hotspots` dan kontrak `hotspots-1` (schema JSON tergenerasi). | Belum diuji dengan `FIRMS_MAP_KEY` nyata; tanpa key endpoint mengembalikan 503 dan UI menampilkan data tidak tersedia. Acceptance browser belum mencakup heatmap. Cache batch masih in-memory per instance server. |
 | P0-S3-O3 | Pemeriksaan kontrak dan HTTP/SSR sudah dijalankan. | Acceptance memakai respons sintetis sudah lulus; integrasi nyata, review Nathan dan PR/issue masih terbuka. |
 
 ## Verifikasi yang dijalankan
