@@ -22,8 +22,8 @@ Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Orkhan](../Orkh
 
 **Tujuan integrasi tim:** menyiapkan ingest FIRMS MODIS/VIIRS yang dapat ditelusuri untuk dua polygon MVP serta kontrak data yang dipakai ketiga jalur.
 
-- [ ] **P0-S1-B1 — Model batch mentah.** Tambahkan Prisma schema/migrasi untuk sumber, versi, waktu fetch, checksum, status, dan referensi isi batch. **Selesai bila:** migrasi non-produksi lulus dan ingest ulang tidak menimpa batch historis.
-- [ ] **P0-S1-B2 — Service ingest aman.** Baca key FIRMS dari server environment, batasi wilayah yang diizinkan, atur timeout, validasi respons, dan sanitasi log. **Selesai bila:** key tidak pernah dikirim ke browser/log dan kegagalan API menghasilkan status terstruktur.
+- [x] **P0-S1-B1 — Model batch mentah.** Tambahkan Prisma schema/migrasi untuk sumber, versi, waktu fetch, checksum, status, dan referensi isi batch. **Selesai bila:** migrasi non-produksi lulus dan ingest ulang tidak menimpa batch historis.
+- [x] **P0-S1-B2 — Service ingest aman.** Baca key FIRMS dari server environment, batasi wilayah yang diizinkan, atur timeout, validasi respons, dan sanitasi log. **Selesai bila:** key tidak pernah dikirim ke browser/log dan kegagalan API menghasilkan status terstruktur.
 
 ## Tahap 2 — Baseline, harmonisasi, snapshot, dan analitik dashboard
 

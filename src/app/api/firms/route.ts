@@ -1,45 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-const boxes: Record<string, string> = {
-  kalteng: "113,-3.6,115,-1.5",
-  papua: "139.5,-8.8,141,-7.5",
-};
-export async function GET(req: NextRequest) {
-  const region = req.nextUrl.searchParams.get("region") || "kalteng";
-  if (!boxes[region])
-    return NextResponse.json(
-      { error: "Wilayah tidak tersedia." },
-      { status: 400 },
-    );
-  const key = process.env.FIRMS_MAP_KEY;
-  if (!key)
-    return NextResponse.json(
-      {
-        error: "FIRMS_MAP_KEY belum diatur. Dashboard tetap menggunakan demo.",
-      },
-      { status: 503 },
-    );
-  try {
-    const source = "VIIRS_NOAA20_NRT";
-    const response = await fetch(
-      `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${source}/${boxes[region]}/2`,
-      { signal: AbortSignal.timeout(20000), next: { revalidate: 3600 } },
-    );
-    if (!response.ok) throw new Error("upstream");
-    const csv = await response.text();
-    if (!csv.startsWith("latitude,") && !csv.startsWith("country_id,"))
-      throw new Error("format");
-    return new NextResponse(csv, {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="firms-${region}.csv"`,
-        "X-Pyro-Source": source,
-        "X-Pyro-Calibration": "none",
-      },
-    });
-  } catch {
-    return NextResponse.json(
-      { error: "Data FIRMS belum dapat diunduh. Coba kembali nanti." },
-      { status: 502 },
-    );
-  }
-}
+import { createFirmsProxy } from "@/lib/firms-proxy";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// Download only. Persistence belongs exclusively to the private ingest job.
+export const GET = createFirmsProxy();
