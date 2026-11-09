@@ -15,3 +15,50 @@ model InspectionReport {
   createdAt DateTime @default(now())
   @@index([candidateId, createdAt])
 }
+
+enum RawBatchStatus {
+  PENDING
+  FETCHED
+  VALID
+  EMPTY
+  REJECTED
+  FAILED
+}
+
+enum FirmsProcessingLevel {
+  NRT
+  STANDARD
+}
+
+// One fetch attempt; repeated downloads append, even when checksums match.
+// SQL migration owns lifecycle checks and append-only history triggers.
+model RawBatch {
+  id                    String               @id @default(cuid())
+  sourceId              String
+  sourceManifestVersion String
+  processingLevel       FirmsProcessingLevel
+  productVersion        String?
+  regionId              String
+  boundaryVersion       String
+  regionConfigChecksum  String               @db.VarChar(64)
+  requestBbox           Json                 @db.JsonB
+  requestedStart        DateTime             @db.Timestamptz(3)
+  requestedEnd          DateTime             @db.Timestamptz(3)
+  fetchStartedAt        DateTime             @default(now()) @db.Timestamptz(3)
+  fetchedAt             DateTime?            @db.Timestamptz(3)
+  completedAt           DateTime?            @db.Timestamptz(3)
+  checksumSha256        String?              @db.VarChar(64)
+  payloadRef            String?              @unique
+  payloadBytes          BigInt?
+  payloadFormat         String               @default("csv")
+  status                RawBatchStatus       @default(PENDING)
+  httpStatus            Int?
+  errorCode             String?
+  retryable             Boolean?
+  validatorVersion      String?
+  rowCount              Int?
+  validationSummary     Json?                @db.JsonB
+
+  @@index([regionId, sourceId, fetchedAt])
+  @@index([status, fetchStartedAt])
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+  "files": {
+    "includes": ["src/lib/firms-proxy.ts", "src/app/api/firms/route.ts", "tests/firms-proxy.test.mjs", "tests/helpers/postgres-bridge.mjs", "scripts/smoke.mjs"]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {"preset": "recommended"}
+  }
+}
