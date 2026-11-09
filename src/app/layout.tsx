@@ -32,7 +32,7 @@ const plusJakartaSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "PyroChronos Â· Fire intelligence",
+  title: "PyroChronos · Fire intelligence",
   description: "Konteks historis untuk keputusan patroli hari ini.",
 };
 

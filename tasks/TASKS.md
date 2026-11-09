@@ -1,6 +1,8 @@
 # PyroChronos Task Tracker
 
-Living checklist for the agreed product scope in [`product.md`](product.md). Status is based on the repository implementation as of 9 November 2026. “Done” means present in the prototype, not independently validated in operational use.
+Rencana eksekusi 3 sprint per anggota, pembagian pemilik, spesifikasi task, dan checklist PR ada di [`SPRINT-PLAN.md`](SPRINT-PLAN.md).
+
+Living checklist for the agreed product scope in [`product.md`](../product.md). Status is based on the repository implementation as of 9 November 2026. “Done” means present in the prototype, not independently validated in operational use.
 
 ## Current state
 

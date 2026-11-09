@@ -30,7 +30,28 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
 
       map = new maplibregl.Map({
         container: container.current,
-        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        style: {
+          version: 8,
+          sources: {
+            'esri-satellite': {
+              type: 'raster',
+              tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              ],
+              tileSize: 256,
+              attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }
+          },
+          layers: [
+            {
+              id: 'esri-satellite-layer',
+              type: 'raster',
+              source: 'esri-satellite',
+              minzoom: 0,
+              maxzoom: 19
+            }
+          ]
+        },
         center: [points[0].lng, points[0].lat],
         zoom: 7,
         attributionControl: { compact: true },
@@ -132,10 +153,10 @@ export default function FireMap({ points, selected, onSelect }: FireMapProps) {
       )}
 
       <div className="map-tag">
-        <span className="status-dot" /> Kandidat verifikasi Â· data ilustratif
+        <span className="status-dot" /> Kandidat verifikasi · data ilustratif
       </div>
       <div className="map-key">
-        <i /> Deteksi â‰¤24 jam <i className="muted-dot" /> Perlu dicek kembali
+        <i /> Deteksi 24 jam <i className="muted-dot" /> Perlu dicek kembali
       </div>
     </div>
   );

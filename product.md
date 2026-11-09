@@ -369,9 +369,9 @@ Tim terdiri dari tiga software engineer dengan beban kerja yang dibagi rata. Pen
 
 | Anggota | Tanggung jawab utama | Keluaran |
 |---|---|---|
-| Engineer 1 | Pipeline FIRMS, agregasi, baseline, harmonisasi, dan pengujian analitik | Dataset, snapshot analitik, serta evaluasi metode yang dapat direproduksi |
-| Engineer 2 | Backend laporan, autentikasi, penyimpanan, job pembaruan, deployment, dan pengujian layanan | Layanan serta pembaruan data berjalan; laporan tersimpan dengan benar |
-| Pengusul produk | Frontend lengkap: pemilihan wilayah, peta, grafik/perbandingan historis, daftar kandidat, formulir laporan, integrasi API, dan pengujian UI | Aplikasi pengguna yang terhubung ke snapshot analitik dan backend laporan |
+| Nathan | Pipeline FIRMS, agregasi, baseline, harmonisasi, dan pengujian analitik | Dataset, snapshot analitik, serta evaluasi metode yang dapat direproduksi |
+| Bagas | Backend laporan, autentikasi, penyimpanan, job pembaruan, deployment, dan pengujian layanan | Layanan serta pembaruan data berjalan; laporan tersimpan dengan benar |
+| Orkhan | Frontend lengkap: pemilihan wilayah, peta, grafik/perbandingan historis, daftar kandidat, formulir laporan, integrasi API, dan pengujian UI | Aplikasi pengguna yang terhubung ke snapshot analitik dan backend laporan |
 
 Target alokasi waktu kerja adalah sepertiga per anggota, termasuk coding dan pekerjaan pendukung; pembagian modul tidak otomatis menjamin beban sama. Tinjau estimasi bersama dan pindahkan tugas pendukung atau potongan implementasi jika salah satu jalur menjadi bottleneck. Tetapkan kontrak snapshot dan laporan lebih awal agar ketiga anggota dapat bekerja paralel.
 
