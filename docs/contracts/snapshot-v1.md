@@ -1,5 +1,7 @@
 # Kontrak snapshot frontend v1 - acuan implementasi
 
+> **Legacy — kompatibilitas prototype.** Pekerjaan produk baru mengikuti [API riset v2](api-v2.md) dan [rencana migrasi](migration-v1-v2.md). Aturan wilayah tetap, sel-hari dan koordinator di dokumen ini hanya berlaku bagi consumer v1; bukan scope produk terbaru. Payload/endpoint v1 tidak diubah diam-diam.
+
 **Status:** ditetapkan Orkhan atas mandat tim. Kontrak normatif lengkap ada di [api-v1.md](api-v1.md). Endpoint analitik belum tersedia; dokumen ini tidak membuktikan ingest atau kalibrasi nyata.
 
 ## Endpoint yang diharapkan

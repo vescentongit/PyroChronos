@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "research-2"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "analysisId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "periodRole": {
+      "type": "string",
+      "enum": [
+        "primary",
+        "comparison"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "raw-hotspots-csv",
+        "harmonized-aggregates-csv"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "ready",
+        "failed"
+      ]
+    },
+    "downloadPath": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/api\\/v2\\/.*"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "research-2"
+            },
+            "error": {
+              "type": "string",
+              "minLength": 1
+            },
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_REQUEST",
+                "UNAUTHENTICATED",
+                "FORBIDDEN",
+                "NOT_FOUND",
+                "RESULT_NOT_READY",
+                "DEPENDENCY_UNAVAILABLE",
+                "RATE_LIMITED",
+                "IDEMPOTENCY_CONFLICT",
+                "REVISION_CONFLICT",
+                "CAPACITY_LIMIT",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "requestId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "error",
+            "code",
+            "retryable",
+            "requestId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "workspaceId",
+    "analysisId",
+    "periodRole",
+    "kind",
+    "status",
+    "downloadPath",
+    "error"
+  ],
+  "additionalProperties": false
+}

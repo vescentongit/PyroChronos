@@ -1,5 +1,7 @@
 # Orkhan — hasil implementasi Sprint 1 (P0)
 
+> **Bukti prototype v1.** Catatan ini dipertahankan sebagai riwayat pekerjaan. Kriteria aktif kini mengikuti [produk riset](../product.md), [sprint Orkhan v2](../tasks/Orkhan/SPRINT-1-P0.md) dan [API v2](contracts/api-v2.md); keberhasilan acceptance lama tidak menutup scope baru.
+
 Frontend tersedia; sprint belum selesai karena persetujuan kontrak/geometri, integrasi data nyata, PR/review Nathan, dan integrasi nyata masih diperlukan. Acceptance frontend mandiri sudah lulus; lihat [hasil terbaru](frontend-acceptance.md).
 
 ## Hasil per task

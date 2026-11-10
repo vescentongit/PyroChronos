@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { snapshotSchema, parseSnapshot } from "../src/lib/snapshot.ts";
 import { studyRegions } from "../src/lib/regions.ts";
 import { hotspotsSchema, querySchema } from "../src/lib/hotspots.ts";
+import { researchContracts } from "../src/lib/research-contracts.ts";
 import {
   createReportSchema,
   correctReportSchema,
@@ -75,4 +76,38 @@ assert.equal(
 );
 console.log(
   `Contract v1: ${Object.keys(contracts).length} schemas, ${examples.snapshots.length} snapshots, report create/correction/history, error and negative cases passed.`,
+);
+
+const researchExamples = JSON.parse(
+  readFileSync(
+    new URL("../docs/contracts/api-v2.examples.json", import.meta.url),
+  ),
+);
+assert(researchExamples.notice.startsWith("SYNTHETIC"));
+if (process.argv.includes("--write"))
+  mkdirSync(new URL("../docs/contracts/v2/", import.meta.url), {
+    recursive: true,
+  });
+for (const [name, schema] of Object.entries(researchContracts)) {
+  const file = new URL(
+    `../docs/contracts/v2/${name}.schema.json`,
+    import.meta.url,
+  );
+  const generated = z.toJSONSchema(schema, { io: "input" });
+  if (process.argv.includes("--write"))
+    writeFileSync(file, JSON.stringify(generated, null, 2) + "\n");
+  else
+    assert.deepEqual(
+      JSON.parse(readFileSync(file)),
+      generated,
+      `Research v2 ${name} schema drifted`,
+    );
+  assert(
+    Object.hasOwn(researchExamples.examples, name),
+    `Missing v2 ${name} example`,
+  );
+  schema.parse(researchExamples.examples[name]);
+}
+console.log(
+  `Research v2: ${Object.keys(researchContracts).length} target schemas and synthetic examples passed; no v2 endpoint is claimed implemented.`,
 );

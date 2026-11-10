@@ -1,64 +1,80 @@
 # Sprint 3 (P2) — Nathan
 
-**Fokus:** Pipeline FIRMS, agregasi, baseline, harmonisasi, dan evaluasi analitik.  
-**Reviewer utama:** Bagas  
-**Status:** belum dimulai.
+**Fokus:** Penguatan, evaluasi tambahan dan kesiapan rilis.\
+**Reviewer utama:** Bagas.\
+**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
 
-[Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
+[Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
-## Tujuan
+## Kapasitas dan cara kerja
 
-Riset opsional dan perluasan.
+Target kapasitas tentatif **20 poin per anggota per sprint**, dengan total kerja tim dibagi sepertiga per orang. Poin adalah estimasi planning, bukan jam/SLA atau bukti beban sudah identik. Re-estimasi setelah spike dan pindahkan potongan coding bila timpang; semua anggota tetap mengerjakan kode.
 
-Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
+Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai coding. Gunakan schema dan fixture v2 berlabel sintetis untuk bekerja mandiri. Jangan menunggu polygon final dua wilayah: AOI produk adalah polygon bebas global.
 
-## Koordinasi dan dependensi
+## Spesifikasi task
 
-Sepakati estimasi dan kontrak data/API bersama sebelum implementasi. Target beban kerja setiap anggota adalah sepertiga kapasitas tim, termasuk coding, review, integrasi, dan persiapan demo. Pindahkan potongan task coding jika estimasi timpang.
+### R2-P2-N1 — Sensitivitas NRT versus standard
 
-Mulai setelah Sprint 2 (P1) dan prasyarat task ini selesai. P2 tetap opsional; eksperimen dapat berakhir dengan keputusan no-go yang terdokumentasi.
+- [ ] **Selesai dan direview** — estimasi 5 poin.
 
-Rujukan pekerjaan rekan: [Bagas](../Bagas/SPRINT-3-P2.md) — [Orkhan](../Orkhan/SPRINT-3-P2.md).
+**Pekerjaan:** Bandingkan revisi arsip dan penilaian periode berjalan pada contoh nyata dengan identitas batch yang dapat dilacak.
 
-## Tahap 1 — Raster FireMask/QA (jika memang diperlukan)
+**Kriteria selesai:** Laporan mengukur perubahan count/anomali dan batas interpretasi; hasil final tidak diklaim sebagai performa NRT masa lalu.
 
-**Tujuan integrasi tim:** nilai apakah QA raster memberi denominator cakupan observasi yang tidak disediakan katalog hotspot FIRMS.
+**Dependensi integrasi:** R2-P1-N4
 
-- [ ] **P2-S1-N1 — Verifikasi definisi QA produk.** Catat koleksi/versi, kelas bitmask, waktu, resolusi, proyeksi, dan definisi observasi valid. **Selesai bila:** mapping cocok dokumentasi dan diuji pada contoh tile dua wilayah.
-- [ ] **P2-S1-N2 — Keputusan go/no-go.** Nilai kebutuhan coverage, kualitas, dan manfaat analitik. **Selesai bila:** alasan lanjut/henti direview sebelum ingest penuh.
+### R2-P2-N2 — Benchmark transfer lintas domain
 
-## Tahap 2 — Konteks lingkungan dan gerbang ML
+- [ ] **Selesai dan direview** — estimasi 6 poin.
 
-**Tujuan integrasi tim:** pilih eksperimen kontekstual yang layak; jangan memasukkan PyTorch/Hugging Face tanpa task, label, baseline, dan manfaat terukur.
+**Pekerjaan:** Bekukan model dan uji pada wilayah/musim lain, termasuk contoh di luar dua area unggulan. Pisahkan transfer dari pelatihan ulang.
 
-- [ ] **P2-S2-N1 — Audit CO/SMAP/angin/gambut/tutupan lahan.** Tinjau skala ruang-waktu, kualitas, lisensi, coverage, dan batas inferensi. **Selesai bila:** matriks sumber/risiko serta satu prioritas atau keputusan no-go ditulis.
-- [ ] **P2-S2-N2 — Definisikan gerbang ML.** Nyatakan task, label independen, baseline, split temporal/spasial, metrik, dan compute. **Selesai bila:** keputusan go/no-go disepakati; belum ada klaim model membantu sebelum lolos baseline.
+**Kriteria selesai:** Domain gagal tetap terlihat dan status dukungan dapat diperbarui tanpa mengarang generalisasi global.
 
-## Tahap 3 — Wilayah/periode baru dan riset workflow lanjutan
+**Dependensi integrasi:** R2-P1-N2
 
-**Tujuan integrasi tim:** perluas cakupan hanya setelah dua wilayah stabil; validasi kebutuhan sebelum membuat fitur lapangan opsional.
+### R2-P2-N3 — Eksperimen QA coverage terpisah
 
-- [ ] **P2-S3-N1 — Readiness calon wilayah/periode.** Audit feed, polygon, arsip, distribusi sensor, baseline, transfer, dan biaya. **Selesai bila:** daftar go/no-go didukung manifest dan kualitas data.
-- [ ] **P2-S3-N2 — Generalisasi pipeline berbasis konfigurasi.** Tambahkan satu area yang disetujui. **Selesai bila:** metrik/evaluasi terpisah dan replay area lama tidak berubah.
+- [ ] **Selesai dan direview** — estimasi 5 poin.
+
+**Pekerjaan:** Jika data pelengkap diperlukan, periksa FireMask/QA spesifik produk dan turunkan denominator valid tanpa mengganti unit kalender utama.
+
+**Kriteria selesai:** Coverage unknown tetap null bila QA tidak memadai. Ada keputusan go/no-go; CO/SMAP/ML tidak ditambahkan tanpa pertanyaan dan data uji yang jelas.
+
+**Dependensi integrasi:** R2-P1-N4
+
+### R2-P2-N4 — Paket reproduksibilitas ilmiah
+
+- [ ] **Selesai dan direview** — estimasi 4 poin.
+
+**Pekerjaan:** Bekukan manifest, checksum, konfigurasi, split, notebook/script evaluasi dan keterbatasan metode untuk materi penelitian.
+
+**Kriteria selesai:** Anggota lain dapat mereproduksi satu hasil; klaim presentasi ditautkan ke run, bukan angka target paper.
+
+**Dependensi integrasi:** R2-P2-N1, R2-P2-N2
 
 ## Checklist sebelum membuat PR
 
-- [ ] PR menautkan ID task sprint, menyebut satu tujuan, dan mencantumkan acceptance criteria yang dipenuhi.
-- [ ] Perubahan fokus pada scope task; tidak ada fixture/angka demo yang tersaji sebagai hasil operasional.
-- [ ] Untuk data: sumber, versi, waktu observasi/ingest/publish, satuan, konfigurasi, dan provenance dapat ditelusuri.
-- [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
-- [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
-- [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [ ] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
-- [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
-- [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
-- [ ] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
-- [ ] Satu anggota lain melakukan review; risiko, batasan, dan cara verifikasi terdokumentasi.
+- [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.
+- [ ] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
+- [ ] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
+- [ ] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
+- [ ] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
+- [ ] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
+- [ ] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR.
+- [ ] UI yang berubah diperiksa EN/ID, keyboard/fokus, mobile, warna/status, serta konteks AOI/periode yang tidak hilang.
+- [ ] Satu rekan melakukan review; PR mencatat risiko, keterbatasan dan cara memverifikasi.
+- [ ] Status task/trackernya diperbarui setelah bukti dan integrasi selesai; checklist lama tidak menjadi bukti PR baru.
 
-## Syarat sprint selesai
+## Syarat sprint pribadi selesai
 
-- [ ] Seluruh task pribadi selesai atau memiliki keputusan no-go yang diperbolehkan spesifikasi task.
-- [ ] Keluaran sudah terintegrasi dengan pekerjaan dua anggota lain dan direview.
-- [ ] Bukti verifikasi serta blocker dicatat di PR dan status diperbarui pada task tracker.
+- [ ] Task wajib sprint ini memenuhi acceptance; keputusan no-go hanya berlaku pada eksperimen opsional, bukan pengganti fitur inti.
+- [ ] Handoff schema-valid diintegrasikan dengan rekan dan hasil verifikasi ditautkan.
+- [ ] Blocker, status data/model dan hasil review tercatat pada PR/issue serta tracker.
 
-Setiap perluasan memiliki keputusan go/no-go, bukti kualitas/kebutuhan, dan estimasi biaya. Pekerjaan opsional tidak menunda P0.
+## Bukti pekerjaan sebelum rebaseline
+
+Status checklist v1 yang sudah dicentang disimpan pada [arsip keputusan/status lama](../archive/2026-11-10-completed-v1.md). ID v1 tidak diubah maknanya menjadi task baru.
+
+Katalog/parser, ingest, agregat global dan draft calendar-1 yang sudah ada tetap digunakan sebagai fondasi. Grid bulanan 0,25 derajat dan pembanding semua tahun belum memenuhi polygon/detail harian/referensi bergerak v2; lihat [catatan data](../../docs/data/firms-sources.md).

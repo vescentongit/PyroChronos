@@ -52,11 +52,16 @@ export async function GET(request: NextRequest) {
     const known =
       error instanceof FirmsError
         ? error
-        : new FirmsError("DEPENDENCY_UNAVAILABLE", 503);
+        : new FirmsError("UPSTREAM_UNAVAILABLE");
+    console.warn("[FIRMS] Hotspot request failed:", known.reason);
     return NextResponse.json(
       {
         error: "FIRMS data is not available. Retry or choose a shorter period.",
-        code: known.code === "NOT_CONFIGURED" ? "DEPENDENCY_UNAVAILABLE" : known.code,
+        code:
+          known.code === "NOT_CONFIGURED"
+            ? "DEPENDENCY_UNAVAILABLE"
+            : known.code,
+        reason: known.reason,
         retryable: known.code !== "NOT_CONFIGURED",
         requestId: null,
       },

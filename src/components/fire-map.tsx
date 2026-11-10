@@ -5,6 +5,7 @@ import * as maplibregl from "maplibre-gl";
 
 import type { Language, StudyRegion } from "@/lib/regions";
 import { candidateWindow, type SnapshotCandidate } from "@/lib/snapshot";
+import { satelliteStyle } from "@/lib/map-style";
 
 type FireMapProps = {
   points: SnapshotCandidate[];
@@ -45,29 +46,7 @@ export default function FireMap({
 
       map = new maplibregl.Map({
         container: container.current,
-        style: {
-          version: 8,
-          sources: {
-            "esri-satellite": {
-              type: "raster",
-              tiles: [
-                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-              ],
-              tileSize: 256,
-              attribution:
-                "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
-            },
-          },
-          layers: [
-            {
-              id: "esri-satellite-layer",
-              type: "raster",
-              source: "esri-satellite",
-              minzoom: 0,
-              maxzoom: 19,
-            },
-          ],
-        },
+        style: satelliteStyle(),
         bounds: [
           [region.bounds[0], region.bounds[1]],
           [region.bounds[2], region.bounds[3]],

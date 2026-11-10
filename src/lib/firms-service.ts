@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { parseFirmsCsv } from "./firms-csv";
+import { downloadFirmsCsv, FirmsError } from "./firms-download";
 import type { Detection, HotspotQuery } from "./hotspots";
+
+export { FirmsError } from "./firms-download";
 
 const TTL = 10 * 60000,
   MAX_STALE = 4 * 3600000;
@@ -8,62 +11,55 @@ type Batch = { rows: Detection[]; fetchedAt: string; checksum: string };
 const batches = new Map<string, Batch>();
 const pending = new Map<string, Promise<Batch>>();
 let budget = { minute: 0, count: 0 };
-export class FirmsError extends Error {
-  constructor(
-    public code: "RATE_LIMITED" | "DEPENDENCY_UNAVAILABLE" | "NOT_CONFIGURED",
-    public status: number,
-  ) {
-    super(code);
-  }
-}
 async function download(query: HotspotQuery, key: string): Promise<Batch> {
+  const [west, south, east, north] = query.bbox;
+  // FIRMS expects west < east; split viewports crossing the date line.
+  const areas =
+    west > east
+      ? [
+          [west, south, 180, north],
+          [-180, south, east, north],
+        ].filter(([w, , e]) => w < e)
+      : [query.bbox];
   const minute = Math.floor(Date.now() / 60000);
   if (budget.minute !== minute) budget = { minute, count: 0 };
-  if (++budget.count > 20) throw new FirmsError("RATE_LIMITED", 429);
+  if (budget.count + areas.length > 20) throw new FirmsError("RATE_LIMITED");
+  budget.count += areas.length;
   const days = query.hours / 24 + 1;
-  // One bounded global batch per feed/window is cached on the server; only viewport data reaches the browser.
-  const response = await fetch(
-    `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${query.source}/world/${days}`,
-    { cache: "no-store", signal: AbortSignal.timeout(25000) },
+  const buffers = await Promise.all(
+    areas.map((bounds) =>
+      downloadFirmsCsv(
+        new URL(
+          `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${query.source}/${bounds.join(",")}/${days}`,
+        ),
+      ),
+    ),
   );
-  if (!response.ok)
-    throw new FirmsError(
-      response.status === 429 ? "RATE_LIMITED" : "DEPENDENCY_UNAVAILABLE",
-      response.status === 429 ? 429 : 503,
-    );
-  const reader = response.body?.getReader();
-  if (!reader) throw new FirmsError("DEPENDENCY_UNAVAILABLE", 503);
-  const chunks: Uint8Array[] = [];
-  let length = 0;
+  const rows = new Map<string, Detection>();
   try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      length += value.length;
-      if (length > 12 * 1024 * 1024) throw new Error("Batch too large");
-      chunks.push(value);
+    for (const buffer of buffers) {
+      const csv = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+      if (/^\s*(?:invalid|expired)\s+(?:map[_ ]?key|key)/i.test(csv))
+        throw new FirmsError("UPSTREAM_DENIED");
+      for (const row of parseFirmsCsv(csv, query.source)) rows.set(row.id, row);
     }
   } catch (error) {
-    await reader.cancel().catch(() => {});
-    throw error;
-  } finally {
-    reader.releaseLock();
+    throw error instanceof FirmsError
+      ? error
+      : new FirmsError("INVALID_RESPONSE");
   }
-  const buffer = Buffer.concat(chunks);
-  const rows = parseFirmsCsv(
-    new TextDecoder("utf-8", { fatal: true }).decode(buffer),
-    query.source,
-  );
+  const hash = createHash("sha256");
+  for (const buffer of buffers) hash.update(buffer);
   return {
-    rows,
+    rows: [...rows.values()],
     fetchedAt: new Date().toISOString(),
-    checksum: `sha256:${createHash("sha256").update(buffer).digest("hex")}`,
+    checksum: `sha256:${hash.digest("hex")}`,
   };
 }
 export async function getFirmsBatch(query: HotspotQuery) {
   const key = process.env.FIRMS_MAP_KEY?.trim();
-  if (!key) throw new FirmsError("NOT_CONFIGURED", 503);
-  const id = `${query.source}:${query.hours}`;
+  if (!key) throw new FirmsError("NOT_CONFIGURED");
+  const id = `${query.source}:${query.hours}:${query.bbox.join(",")}`;
   const cached = batches.get(id);
   if (
     cached &&
@@ -101,7 +97,7 @@ export async function getFirmsBatch(query: HotspotQuery) {
       return { ...cached, status: "stale" as const };
     if (error instanceof FirmsError) throw error;
     // Do not expose upstream URLs: FIRMS embeds the private key in its URL path.
-    throw new FirmsError("DEPENDENCY_UNAVAILABLE", 503);
+    throw new FirmsError("UPSTREAM_UNAVAILABLE");
   }
 }
 export const firmsFreshUntil = (fetchedAt: string) =>

@@ -1,0 +1,968 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { FeatureCollection, Point } from "geojson";
+import type { Language } from "@/lib/regions";
+import {
+  polygonFromVertices,
+  requestIdentity,
+  type AreaPolygon,
+  type Vertex,
+} from "@/lib/research-geometry";
+import {
+  createResearchAnalysisSchema,
+  researchAnalysisResultSchema,
+  researchDailyPageSchema,
+  researchDetectionsPageSchema,
+  type ResearchAnalysisResult,
+  type ResearchJob,
+} from "@/lib/research-contracts";
+import {
+  listResearchWorkspaces,
+  createResearchArea,
+  submitResearch,
+  watchResearch,
+  researchDays,
+  researchDetections,
+  ResearchApiError,
+} from "@/lib/research-client";
+import demo from "@/lib/fixtures/research-demo.json";
+
+const labels: Record<string, [string, string]> = {
+  fixture_points: [
+    "Contoh titik sintetis; bukan cakupan lengkap area.",
+    "Synthetic point sample; not complete area coverage.",
+  ],
+  idle: [
+    "Pilih polygon dan periode, lalu analisis area.",
+    "Choose a polygon and period, then analyze the area.",
+  ],
+  submitting: ["Mengajukan analisis…", "Submitting analysis…"],
+  queued: ["Analisis dalam antrean", "Analysis queued"],
+  running: ["Analisis sedang diproses", "Analysis running"],
+  succeeded: ["Analisis selesai", "Analysis completed"],
+  failed: ["Analisis gagal", "Analysis failed"],
+  available: ["Tersedia", "Available"],
+  partial: ["Data parsial", "Partial data"],
+  no_data: [
+    "Data tidak tersedia; bukan nol kebakaran",
+    "No data; does not mean zero fires",
+  ],
+  method_unsupported: [
+    "Metode tidak mendukung area/periode ini",
+    "Method unsupported for this area/period",
+  ],
+  DEPENDENCY_UNAVAILABLE: [
+    "Layanan riset v2 belum tersedia. Eksplorasi FIRMS terbaru tetap dapat digunakan.",
+    "Research v2 service is unavailable. Recent FIRMS exploration remains available.",
+  ],
+  UNAUTHENTICATED: [
+    "Masuk dengan akun individual untuk mengakses workspace riset.",
+    "Sign in with an individual account to access research workspaces.",
+  ],
+  FORBIDDEN: [
+    "Akun ini tidak memiliki akses ke workspace.",
+    "Your account does not have access to this workspace.",
+  ],
+  RATE_LIMITED: [
+    "Batas permintaan tercapai. Tunggu sebelum mencoba lagi.",
+    "Request limit reached. Wait before retrying.",
+  ],
+  INVALID_RESPONSE: [
+    "Respons tidak cocok dengan kontrak atau pilihan analisis. Hasil tidak diterapkan.",
+    "Response does not match the contract or analysis selection. Result was not applied.",
+  ],
+  IDEMPOTENCY_CONFLICT: [
+    "Identitas permintaan bertentangan. Ubah pilihan untuk membuat permintaan baru.",
+    "Request identity conflict. Change the selection to create a new request.",
+  ],
+  REVISION_CONFLICT: [
+    "Revisi area sudah berubah. Muat ulang area sebelum menganalisis.",
+    "Area revision changed. Reload the area before analyzing.",
+  ],
+  CAPACITY_LIMIT: [
+    "Area atau periode melampaui kapasitas layanan. Perkecil pilihan.",
+    "Area or period exceeds service capacity. Reduce your selection.",
+  ],
+  INVALID_REQUEST: [
+    "Periksa polygon, tanggal dan kebijakan kualitas sebelum mencoba lagi.",
+    "Check the polygon, dates and quality policy before retrying.",
+  ],
+  NETWORK_ERROR: [
+    "Koneksi riset gagal atau melewati batas waktu. Coba lagi dengan pilihan yang sama.",
+    "Research connection failed or timed out. Retry with the same selection.",
+  ],
+  cancelled: [
+    "Pemantauan dihentikan; job server mungkin masih berjalan. Klik Analisis area untuk melanjutkan.",
+    "Monitoring stopped; the server job may still be running. Click Analyze area to resume.",
+  ],
+};
+const geometryLabels: Record<string, [string, string]> = {
+  vertex_count: ["Gunakan 3–500 titik.", "Use 3–500 vertices."],
+  coordinates: [
+    "Bujur harus −180…180 dan lintang −90…90.",
+    "Longitude must be −180…180 and latitude −90…90.",
+  ],
+  duplicate_vertices: [
+    "Hapus titik yang berulang; polygon ditutup otomatis.",
+    "Remove repeated vertices; the polygon closes automatically.",
+  ],
+  self_intersection: [
+    "Sisi polygon tidak boleh saling bersilangan atau bersentuhan.",
+    "Polygon edges must not intersect or touch.",
+  ],
+  zero_area: [
+    "Polygon harus memiliki luas; titik tidak boleh segaris.",
+    "Polygon must have area; vertices cannot be collinear.",
+  ],
+  hemisphere: [
+    "Polygon ini mencakup 180° bujur atau lebih. Bagi menjadi area yang lebih kecil.",
+    "This polygon spans 180° longitude or more. Split it into smaller areas.",
+  ],
+};
+export type ResearchOverlay = {
+  geometry: AreaPolygon | null;
+  features: FeatureCollection<Point>["features"];
+  label: string;
+};
+
+export default function ResearchPanel({
+  language,
+  vertices,
+  setVertices,
+  drawing,
+  setDrawing,
+  onDraft,
+  onOverlay,
+  resultsHost,
+  toolsHost,
+}: {
+  language: Language;
+  vertices: Vertex[];
+  setVertices: (vertices: Vertex[]) => void;
+  drawing: boolean;
+  setDrawing: (value: boolean) => void;
+  onDraft: (geometry: AreaPolygon | null) => void;
+  onOverlay: (overlay: ResearchOverlay) => void;
+  resultsHost: HTMLDivElement | null;
+  toolsHost: HTMLDivElement | null;
+}) {
+  const t = (id: string, en: string) => (language === "id" ? id : en);
+  const label = (key: string) =>
+    labels[key]?.[language === "id" ? 0 : 1] ??
+    t(
+      "Layanan gagal memproses permintaan. Coba lagi.",
+      "The service could not process the request. Retry.",
+    );
+  const [polygon, setPolygon] = useState<AreaPolygon | null>(null);
+  const [revision, setRevision] = useState(0);
+  const [geometryError, setGeometryError] = useState("");
+  const [name, setName] = useState("");
+  const [start, setStart] = useState("2026-08-01");
+  const [end, setEnd] = useState("2026-08-31");
+  const [compare, setCompare] = useState(false);
+  const [compareStart, setCompareStart] = useState("2025-08-01");
+  const [compareEnd, setCompareEnd] = useState("2025-08-31");
+  const [years, setYears] = useState(10);
+  const [policy, setPolicy] = useState(
+    process.env.NEXT_PUBLIC_RESEARCH_QUALITY_POLICY_VERSION ?? "",
+  );
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [workspace, setWorkspace] = useState("");
+  const [workspaceError, setWorkspaceError] = useState("");
+  const [workspaceRefresh, setWorkspaceRefresh] = useState(0);
+  const [status, setStatus] = useState("idle");
+  const [error, setError] = useState("");
+  const [job, setJob] = useState<ResearchJob | null>(null);
+  const [result, setResult] = useState<ResearchAnalysisResult | null>(null);
+  const [days, setDays] = useState<ReturnType<
+    typeof researchDailyPageSchema.parse
+  > | null>(null);
+  const [detailStatus, setDetailStatus] = useState("");
+  const [mapStatus, setMapStatus] = useState("");
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadingPoints, setLoadingPoints] = useState(false);
+  const [points, setPoints] = useState<ResearchOverlay["features"]>([]);
+  const request = useRef<ReturnType<typeof requestIdentity> | null>(null);
+  const areaRequest = useRef<ReturnType<typeof requestIdentity> | null>(null);
+  const abort = useRef<AbortController | null>(null);
+  const detailAbort = useRef<AbortController | null>(null);
+  const pointAbort = useRef<AbortController | null>(null);
+  const generation = useRef(0);
+  const busy = ["submitting", "queued", "running"].includes(status);
+  const selectionKey = JSON.stringify({
+    workspace,
+    polygon,
+    name,
+    start,
+    end,
+    compare,
+    compareStart,
+    compareEnd,
+    years,
+    policy,
+  });
+  const selectionRef = useRef(selectionKey);
+  selectionRef.current = selectionKey;
+  const resultKey = useRef("");
+  useEffect(() => {
+    const controller = new AbortController();
+    setWorkspaceError("");
+    listResearchWorkspaces(controller.signal)
+      .then((page) => {
+        if (controller.signal.aborted) return;
+        setWorkspaces(page.items);
+        setWorkspace((current) =>
+          page.items.some((item) => item.id === current)
+            ? current
+            : (page.items[0]?.id ?? ""),
+        );
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setWorkspaceError(
+            reason instanceof ResearchApiError ? reason.code : "NETWORK_ERROR",
+          );
+      });
+    return () => controller.abort();
+  }, [workspaceRefresh]);
+  useEffect(
+    () => () => {
+      abort.current?.abort();
+      detailAbort.current?.abort();
+      pointAbort.current?.abort();
+    },
+    [],
+  );
+  useEffect(() => {
+    abort.current?.abort();
+    generation.current++;
+    setStatus("idle");
+    setJob(null);
+    setError("");
+  }, [selectionKey]);
+
+  function applyPolygon() {
+    try {
+      const next = polygonFromVertices(vertices);
+      if (JSON.stringify(next) !== JSON.stringify(polygon))
+        setRevision((value) => value + 1);
+      setPolygon(next);
+      onDraft(next);
+      setDrawing(false);
+      setGeometryError("");
+    } catch (reason) {
+      setGeometryError(
+        reason instanceof Error ? reason.message : "coordinates",
+      );
+    }
+  }
+  function cancelEdit() {
+    setVertices(polygon?.coordinates[0].slice(0, -1) ?? []);
+    setDrawing(false);
+    setGeometryError("");
+  }
+  function publishResult(next: ResearchAnalysisResult, key: string) {
+    detailAbort.current?.abort();
+    pointAbort.current?.abort();
+    resultKey.current = key;
+    setResult(next);
+    setDays(null);
+    setDetailStatus("");
+    setCursor(null);
+    setPoints([]);
+    setLoadingPoints(false);
+    setMapStatus("idle");
+    onOverlay({
+      geometry: next.area.geometry,
+      features: [],
+      label: `${next.mode.toUpperCase()} · ${next.area.name} · ${next.primary.period.start} → ${next.primary.period.end} UTC`,
+    });
+  }
+  async function analyze() {
+    if (busy || !polygon || !workspace) return;
+    const key = selectionKey;
+    const run = ++generation.current;
+    abort.current?.abort();
+    const controller = new AbortController();
+    abort.current = controller;
+    const current = () =>
+      !controller.signal.aborted &&
+      generation.current === run &&
+      selectionRef.current === key;
+    try {
+      // Validate all dates/config before creating any server resource.
+      const template = createResearchAnalysisSchema.parse({
+        requestId: crypto.randomUUID(),
+        areaId: "pending",
+        areaRevision: 1,
+        period: { start, end },
+        comparisonPeriod: compare
+          ? { start: compareStart, end: compareEnd }
+          : null,
+        baseline: { kind: "rolling-same-calendar-period", windowYears: years },
+        referenceScale: "MODIS-equivalent",
+        qualityPolicyVersion: policy,
+        monitoringLocationId: null,
+      });
+      if (!name.trim()) throw new ResearchApiError("INVALID_REQUEST");
+      setError("");
+      setStatus("submitting");
+      areaRequest.current = requestIdentity(
+        areaRequest.current,
+        JSON.stringify({ workspace, name, polygon }),
+      );
+      const area = await createResearchArea(
+        workspace,
+        { requestId: areaRequest.current.id, name, geometry: polygon },
+        controller.signal,
+      );
+      if (!current()) return;
+      request.current = requestIdentity(request.current, key);
+      const body = {
+        ...template,
+        requestId: request.current.id,
+        areaId: area.id,
+        areaRevision: area.revision,
+      };
+      const initial = await submitResearch(workspace, body, controller.signal);
+      if (!current()) return;
+      const next = await watchResearch(
+        workspace,
+        initial,
+        body,
+        controller.signal,
+        (value) => {
+          if (current()) {
+            setJob(value);
+            setStatus(value.status === "succeeded" ? "running" : value.status);
+          }
+        },
+      );
+      if (current()) {
+        publishResult(next, key);
+        setStatus("succeeded");
+      }
+    } catch (reason) {
+      if (!current()) return;
+      setStatus("failed");
+      setError(
+        reason instanceof ResearchApiError
+          ? reason.code
+          : reason instanceof TypeError ||
+              (reason instanceof DOMException && reason.name === "TimeoutError")
+            ? "NETWORK_ERROR"
+            : "INVALID_REQUEST",
+      );
+    }
+  }
+  function preview() {
+    abort.current?.abort();
+    generation.current++;
+    const next = researchAnalysisResultSchema.parse(demo.result);
+    publishResult(next, "synthetic-fixture");
+    setStatus("idle");
+    setJob(null);
+    setError("");
+  }
+  async function loadDays(month: string) {
+    if (!result) return;
+    detailAbort.current?.abort();
+    const controller = new AbortController();
+    detailAbort.current = controller;
+    setDays(null);
+    setDetailStatus("loading");
+    try {
+      const page =
+        resultKey.current === "synthetic-fixture"
+          ? researchDailyPageSchema.parse(demo["daily-page"])
+          : await researchDays(
+              result.workspaceId,
+              result.id,
+              month,
+              controller.signal,
+            );
+      if (
+        page.analysisId !== result.id ||
+        page.month !== month ||
+        page.periodRole !== "primary"
+      )
+        throw new ResearchApiError("INVALID_RESPONSE");
+      if (!controller.signal.aborted) {
+        setDays(page);
+        setDetailStatus("");
+      }
+    } catch (reason) {
+      if (!controller.signal.aborted)
+        setDetailStatus(
+          reason instanceof ResearchApiError ? reason.code : "NETWORK_ERROR",
+        );
+    }
+  }
+  async function loadPoints() {
+    if (!result || loadingPoints) return;
+    pointAbort.current?.abort();
+    const controller = new AbortController();
+    pointAbort.current = controller;
+    setLoadingPoints(true);
+    try {
+      const page =
+        resultKey.current === "synthetic-fixture"
+          ? researchDetectionsPageSchema.parse(demo["detections-page"])
+          : await researchDetections(
+              result.workspaceId,
+              result.id,
+              controller.signal,
+              cursor ?? undefined,
+            );
+      if (page.analysisId !== result.id || page.periodRole !== "primary")
+        throw new ResearchApiError("INVALID_RESPONSE");
+      if (controller.signal.aborted) return;
+      const seen = new Set(points.map((point) => point.id));
+      const next = [
+        ...points,
+        ...page.observations
+          .filter((point) => !seen.has(point.id))
+          .map((point) => ({
+            type: "Feature" as const,
+            id: point.id,
+            geometry: {
+              type: "Point" as const,
+              coordinates: point.coordinates,
+            },
+            properties: {
+              count: 1,
+              observedAt: point.observedAt,
+              source: point.sourceId,
+            },
+          })),
+      ];
+      setPoints(next);
+      const fixture = resultKey.current === "synthetic-fixture";
+      setCursor(fixture ? null : page.nextCursor);
+      setMapStatus(
+        fixture ? "fixture_points" : page.nextCursor ? "partial" : "available",
+      );
+      onOverlay({
+        geometry: result.area.geometry,
+        features: next,
+        label: `${result.mode.toUpperCase()} · ${result.area.name} · ${result.primary.period.start} → ${result.primary.period.end} UTC`,
+      });
+    } catch (reason) {
+      if (!controller.signal.aborted)
+        setMapStatus(
+          reason instanceof ResearchApiError ? reason.code : "NETWORK_ERROR",
+        );
+    } finally {
+      if (!controller.signal.aborted) setLoadingPoints(false);
+    }
+  }
+  return (
+    <div className="research-panel">
+      {drawing &&
+        toolsHost &&
+        createPortal(
+          <>
+            <button className="outline" onClick={applyPolygon}>
+              {t("Terapkan polygon", "Apply polygon")}
+            </button>
+            <button className="outline" onClick={cancelEdit}>
+              {t("Batal edit", "Cancel edit")}
+            </button>
+            <span>
+              {vertices.length} {t("titik", "vertices")}
+            </span>
+          </>,
+          toolsHost,
+        )}
+      <p className="global-note">
+        {t("Gambar area penelitian", "Draw your research area")} ·{" "}
+        {t(
+          "Navigasi peta tidak mengubah area atau menjalankan analisis.",
+          "Map navigation does not change the area or run an analysis.",
+        )}
+      </p>
+      <div className="global-toolbar">
+        <button
+          className="outline"
+          aria-pressed={drawing}
+          onClick={() => {
+            setDrawing(!drawing);
+            if (!drawing)
+              document
+                .querySelector(".global-surface")
+                ?.scrollIntoView({ block: "center", behavior: "instant" });
+            setGeometryError("");
+          }}
+        >
+          {drawing
+            ? t("Jeda menggambar", "Pause drawing")
+            : t("Gambar / edit polygon", "Draw / edit polygon")}
+        </button>
+        <button
+          className="outline"
+          disabled={vertices.length === 0}
+          onClick={() => setVertices(vertices.slice(0, -1))}
+        >
+          {t("Hapus titik terakhir", "Undo vertex")}
+        </button>
+        <button className="outline" onClick={applyPolygon}>
+          {t("Terapkan polygon", "Apply polygon")}
+        </button>
+        <button className="outline" onClick={cancelEdit}>
+          {t("Batal edit", "Cancel edit")}
+        </button>
+        <span>
+          {vertices.length} {t("titik", "vertices")} ·{" "}
+          {t("Revisi draft", "Draft revision")} {revision}
+        </span>
+      </div>
+      {drawing && (
+        <p role="status">
+          {t(
+            "Klik peta untuk menambah titik. Gunakan editor koordinat untuk mengubah titik dengan keyboard.",
+            "Click the map to add vertices. Use the coordinate editor to edit vertices with a keyboard.",
+          )}
+        </p>
+      )}
+      {geometryError && (
+        <p className="global-error" role="alert">
+          {geometryLabels[geometryError]?.[language === "id" ? 0 : 1] ??
+            geometryLabels.coordinates[language === "id" ? 0 : 1]}
+        </p>
+      )}
+      <details className="region-metadata">
+        <summary>
+          {t("Editor koordinat polygon", "Polygon coordinate editor")}
+        </summary>
+        <p>
+          {t(
+            "Satu pasangan bujur, lintang per baris; tanpa mengulang titik awal. Mengedit koordinat tidak langsung menjalankan analisis.",
+            "One longitude, latitude pair per line; do not repeat the first vertex. Coordinate edits do not run an analysis.",
+          )}
+        </p>
+        <CoordinateEditor
+          vertices={vertices}
+          onChange={setVertices}
+          language={language}
+        />
+      </details>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void analyze();
+        }}
+      >
+        <div className="research-fields">
+          <label>
+            {t("Nama area", "Area name")}
+            <input
+              required
+              maxLength={200}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </label>
+          <label>
+            Workspace
+            <select
+              value={workspace}
+              onChange={(event) => setWorkspace(event.target.value)}
+            >
+              <option value="">
+                {t("Pilih workspace", "Select workspace")}
+              </option>
+              {workspaces.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("Mulai (UTC)", "Start (UTC)")}
+            <input
+              type="date"
+              min="2000-01-01"
+              required
+              value={start}
+              onChange={(event) => setStart(event.target.value)}
+            />
+          </label>
+          <label>
+            {t("Selesai (UTC, inklusif)", "End (UTC, inclusive)")}
+            <input
+              type="date"
+              min={start || "2000-01-01"}
+              required
+              value={end}
+              onChange={(event) => setEnd(event.target.value)}
+            />
+          </label>
+        </div>
+        <label className="research-checkbox">
+          <input
+            type="checkbox"
+            checked={compare}
+            onChange={(event) => setCompare(event.target.checked)}
+          />
+          {t("Bandingkan periode lain", "Compare another period")}
+        </label>
+        {compare && (
+          <div className="research-fields">
+            <label>
+              {t("Awal pembanding", "Comparison start")}
+              <input
+                type="date"
+                min="2000-01-01"
+                required
+                value={compareStart}
+                onChange={(event) => setCompareStart(event.target.value)}
+              />
+            </label>
+            <label>
+              {t("Akhir pembanding", "Comparison end")}
+              <input
+                type="date"
+                min={compareStart || "2000-01-01"}
+                required
+                value={compareEnd}
+                onChange={(event) => setCompareEnd(event.target.value)}
+              />
+            </label>
+          </div>
+        )}
+        <details className="region-metadata">
+          <summary>
+            {t(
+              "Referensi dan konfigurasi analisis",
+              "Reference and analysis configuration",
+            )}
+          </summary>
+          <div className="research-fields">
+            <label>
+              {t("Tahun referensi sebelumnya", "Previous reference years")}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={years}
+                onChange={(event) => setYears(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              {t(
+                "Versi kebijakan kualitas dari backend",
+                "Quality policy version from backend",
+              )}
+              <input
+                value={policy}
+                onChange={(event) => setPolicy(event.target.value)}
+              />
+            </label>
+          </div>
+          <p>
+            {t(
+              "Default: 10 tahun sebelumnya pada periode kalender yang sama. Estimasi setara MODIS hanya ditampilkan jika metode mendukungnya.",
+              "Default: 10 previous years for the same calendar period. MODIS-equivalent estimates are shown only when supported.",
+            )}
+          </p>
+        </details>
+        {workspaceError && (
+          <p className="global-error" role="status">
+            {label(workspaceError)}
+          </p>
+        )}
+        {!workspaceError && workspaces.length === 0 && (
+          <p role="status">
+            {t(
+              "Belum ada workspace yang dapat diakses.",
+              "No accessible workspace yet.",
+            )}
+          </p>
+        )}
+        {!policy && (
+          <p className="global-note">
+            {t(
+              "Versi kebijakan kualitas harus disediakan backend sebelum analisis nyata dapat diajukan.",
+              "The backend must supply a quality policy version before a real analysis can be submitted.",
+            )}
+          </p>
+        )}
+        <div className="global-toolbar">
+          <button
+            className="primary"
+            disabled={
+              busy ||
+              !polygon ||
+              !workspace ||
+              !policy ||
+              drawing ||
+              JSON.stringify(vertices) !==
+                JSON.stringify(polygon?.coordinates[0].slice(0, -1))
+            }
+          >
+            {t("Analisis area", "Analyze area")}
+          </button>
+          <button
+            type="button"
+            className="outline"
+            onClick={() => setWorkspaceRefresh((value) => value + 1)}
+          >
+            {t("Periksa koneksi riset", "Check research connection")}
+          </button>
+          {busy && (
+            <button
+              type="button"
+              className="outline"
+              onClick={() => {
+                abort.current?.abort();
+                generation.current++;
+                setStatus("cancelled");
+              }}
+            >
+              {t("Hentikan pemantauan", "Stop monitoring")}
+            </button>
+          )}
+          <button type="button" className="outline" onClick={preview}>
+            {t("Lihat contoh sintetis", "Preview synthetic example")}
+          </button>
+        </div>
+      </form>
+      <p role="status" aria-live="polite">
+        {label(status)}
+        {job?.progressPercent != null ? ` · ${job.progressPercent}%` : ""}
+      </p>
+      {error && (
+        <p className="global-error" role="alert">
+          {label(error)}
+        </p>
+      )}
+      {busy && !result && (
+        <div
+          className="research-skeleton"
+          aria-label={t(
+            "Menunggu kalender analisis",
+            "Waiting for analysis calendar",
+          )}
+        />
+      )}
+      {result &&
+        resultsHost &&
+        createPortal(
+          <section
+            className="research-results"
+            aria-label={t("Hasil analisis", "Analysis result")}
+          >
+            <h2>
+              {t("Kalender aktivitas", "Activity calendar")} ·{" "}
+              {result.mode.toUpperCase()}
+            </h2>
+            {result.mode !== "research" && (
+              <p className="global-error">
+                {t(
+                  "Contoh sintetis / replay — bukan hasil analisis nyata untuk pilihan saat ini.",
+                  "Synthetic example / replay — not a real analysis of the current selection.",
+                )}
+              </p>
+            )}
+            <p>
+              {result.area.name} · {result.primary.period.start} →{" "}
+              {result.primary.period.end} UTC ·{" "}
+              {t("Revisi area", "Area revision")} {result.area.revision}
+            </p>
+            {resultKey.current !== selectionKey &&
+              result.mode === "research" && (
+                <p role="status">
+                  {t(
+                    "Hasil pilihan sebelumnya tetap ditampilkan. Analisis area untuk menerapkan pilihan baru.",
+                    "Previous selection results remain visible. Analyze the area to apply the new selection.",
+                  )}
+                </p>
+              )}
+            <p>
+              {t(
+                "Outline putih: area hasil. Outline biru putus-putus: draft yang diterapkan. Titik dan garis biru: edit saat ini.",
+                "White outline: result area. Dashed blue outline: applied draft. Blue vertices and line: current edit.",
+              )}
+            </p>
+            <div className="table-scroll">
+              <table>
+                <caption>
+                  {t(
+                    "Ringkasan bulanan; jumlah deteksi, bukan jumlah kebakaran",
+                    "Monthly summary; detection counts, not fire counts",
+                  )}
+                </caption>
+                <thead>
+                  <tr>
+                    <th>{t("Bulan", "Month")}</th>
+                    <th>{t("Deteksi mentah", "Raw detections")}</th>
+                    <th>
+                      {t("Estimasi setara MODIS", "MODIS-equivalent estimate")}
+                    </th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.months.map((month) => (
+                    <tr key={month.month}>
+                      <td>
+                        <button
+                          className="outline"
+                          onClick={() => void loadDays(month.month)}
+                        >
+                          {month.month}
+                        </button>
+                      </td>
+                      <td>{month.metric.rawCount ?? "—"}</td>
+                      <td>{month.metric.harmonizedCount ?? "—"}</td>
+                      <td>
+                        {label(month.metric.status)}
+                        {month.isPartialPeriod
+                          ? ` · ${t("bulan tidak penuh", "partial month")}`
+                          : ""}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p>
+              {t("Metode", "Method")}: {result.method.name}{" "}
+              {result.method.version} · {result.method.validation} ·{" "}
+              {result.dataVersion}
+            </p>
+            <button
+              className="outline"
+              disabled={
+                loadingPoints ||
+                ((mapStatus === "available" ||
+                  mapStatus === "fixture_points") &&
+                  !cursor)
+              }
+              onClick={() => void loadPoints()}
+            >
+              {loadingPoints
+                ? t("Memuat titik…", "Loading points…")
+                : cursor
+                  ? t(
+                      "Muat halaman titik berikutnya",
+                      "Load next page of points",
+                    )
+                  : t("Muat titik mentah hasil", "Load result raw points")}
+            </button>
+            <p role="status">
+              {points.length} {t("titik dimuat", "points loaded")} ·{" "}
+              {mapStatus === "idle"
+                ? t(
+                    "Titik belum dimuat; peta bukan indikasi nol deteksi.",
+                    "Points not loaded; the map does not indicate zero detections.",
+                  )
+                : mapStatus
+                  ? label(mapStatus)
+                  : ""}
+            </p>
+            {detailStatus && (
+              <p role="status">
+                {detailStatus === "loading"
+                  ? t("Memuat detail harian…", "Loading daily detail…")
+                  : label(detailStatus)}
+              </p>
+            )}
+            {days && (
+              <details open>
+                <summary>
+                  {t("Detail harian", "Daily detail")} · {days.month}
+                </summary>
+                <ul>
+                  {days.days.map((day) => (
+                    <li key={day.date}>
+                      {day.date} · {t("mentah", "raw")}:{" "}
+                      {day.metric.rawCount ?? "—"} · {t("estimasi", "estimate")}
+                      : {day.metric.harmonizedCount ?? "—"} ·{" "}
+                      {label(day.metric.status)}
+                    </li>
+                  ))}
+                </ul>
+                {days.nextCursor && (
+                  <p>
+                    {t(
+                      "Halaman pertama saja; detail lanjutan belum dimuat.",
+                      "First page only; further daily detail has not been loaded.",
+                    )}
+                  </p>
+                )}
+              </details>
+            )}
+          </section>,
+          resultsHost,
+        )}
+    </div>
+  );
+}
+
+function CoordinateEditor({
+  vertices,
+  onChange,
+  language,
+}: {
+  vertices: Vertex[];
+  onChange: (value: Vertex[]) => void;
+  language: Language;
+}) {
+  const [text, setText] = useState("");
+  const [invalid, setInvalid] = useState(false);
+  useEffect(
+    () => setText(vertices.map((point) => point.join(", ")).join("\n")),
+    [vertices],
+  );
+  return (
+    <div className="research-coordinate-editor">
+      <label>
+        {language === "id" ? "Bujur, lintang" : "Longitude, latitude"}
+        <textarea
+          rows={5}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          spellCheck={false}
+        />
+      </label>
+      <button
+        className="outline"
+        onClick={() => {
+          const rows = text
+            .trim()
+            .split(/\n/)
+            .map((row) => row.split(",").map((value) => value.trim()));
+          if (
+            rows.some(
+              (row) =>
+                row.length !== 2 ||
+                row.some((value) => !value || !Number.isFinite(Number(value))),
+            )
+          ) {
+            setInvalid(true);
+            return;
+          }
+          onChange(rows.map((row) => [Number(row[0]), Number(row[1])]));
+          setInvalid(false);
+        }}
+      >
+        {language === "id"
+          ? "Gunakan koordinat sebagai draft"
+          : "Use coordinates as draft"}
+      </button>
+      {invalid && (
+        <p role="alert">
+          {language === "id"
+            ? "Format: satu pasangan angka bujur, lintang per baris."
+            : "Format: one numeric longitude, latitude pair per line."}
+        </p>
+      )}
+    </div>
+  );
+}

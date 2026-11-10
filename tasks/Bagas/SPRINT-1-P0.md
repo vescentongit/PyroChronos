@@ -1,66 +1,80 @@
 # Sprint 1 (P0) — Bagas
 
-**Fokus:** API, skema database, autentikasi, penyimpanan, job, dan deployment.  
-**Reviewer utama:** Orkhan  
-**Status:** belum dimulai.
+**Fokus:** Fondasi riset dan pengalaman peta.\
+**Reviewer utama:** Orkhan.\
+**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
 
-[Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
+[Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
-## Tujuan
+## Kapasitas dan cara kerja
 
-MVP jujur dan dapat digunakan.
+Target kapasitas tentatif **20 poin per anggota per sprint**, dengan total kerja tim dibagi sepertiga per orang. Poin adalah estimasi planning, bukan jam/SLA atau bukti beban sudah identik. Re-estimasi setelah spike dan pindahkan potongan coding bila timpang; semua anggota tetap mengerjakan kode.
 
-Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
+Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai coding. Gunakan schema dan fixture v2 berlabel sintetis untuk bekerja mandiri. Jangan menunggu polygon final dua wilayah: AOI produk adalah polygon bebas global.
 
+## Spesifikasi task
 
-**Acuan payload yang ditetapkan Orkhan atas mandat tim:** [API v1](../../docs/contracts/api-v1.md). Schema dan contoh siap dipakai; tidak perlu menunggu penetapan draft. Polygon final serta hasil validasi ilmiah tetap terpisah.
+### R2-P0-B1 — Skema workspace, akun individual, AOI dan revisi
 
-## Koordinasi dan dependensi
+- [ ] **Selesai dan direview** — estimasi 5 poin.
 
-Sepakati estimasi dan kontrak data/API bersama sebelum implementasi. Target beban kerja setiap anggota adalah sepertiga kapasitas tim, termasuk coding, review, integrasi, dan persiapan demo. Pindahkan potongan task coding jika estimasi timpang.
+**Pekerjaan:** Rancang Prisma untuk User/Membership, area polygon dan revisi, serta metadata job/result. Definisikan isolasi workspace dan rencana migrasi dari laporan/candidate legacy tanpa menghapus riwayat.
 
-Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Orkhan](../Orkhan/SPRINT-1-P0.md).
+**Kriteria selesai:** Migrasi direview dan diuji pada database uji; route baru memeriksa sesi dan membership server-side. Geometri/hash/luas berasal dari validasi server; token koordinator lama bukan identitas anggota.
 
-## Tahap 1 — Feed, wilayah, ingest, dan kontrak data
+**Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-**Tujuan integrasi tim:** menyiapkan ingest FIRMS MODIS/VIIRS yang dapat ditelusuri untuk dua polygon MVP serta kontrak data yang dipakai ketiga jalur.
+### R2-P0-B2 — Pengajuan analisis dan antrean persisten
 
-- [x] **P0-S1-B1 — Model batch mentah.** Tambahkan Prisma schema/migrasi untuk sumber, versi, waktu fetch, checksum, status, dan referensi isi batch. **Selesai bila:** migrasi non-produksi lulus dan ingest ulang tidak menimpa batch historis.
-- [x] **P0-S1-B2 — Service ingest aman.** Baca key FIRMS dari server environment, batasi wilayah yang diizinkan, atur timeout, validasi respons, dan sanitasi log. **Selesai bila:** key tidak pernah dikirim ke browser/log dan kegagalan API menghasilkan status terstruktur.
+- [ ] **Selesai dan direview** — estimasi 7 poin.
 
-## Tahap 2 — Baseline, harmonisasi, snapshot, dan analitik dashboard
+**Pekerjaan:** Implementasikan area-create, analysis-create dan job-read v2. Simpan requestId, analysisKey, input/versi, status antre/diproses/selesai/gagal; claim worker dan retry harus tahan restart.
 
-**Tujuan integrasi tim:** menghasilkan snapshot dari FIRMS nyata dan membandingkan periode terbaru dengan konteks historis sebanding.
+**Kriteria selesai:** Request identik idempotent; payload berbeda untuk requestId sama ditolak. POST selesai cepat dengan 202, tidak menunggu arsip; restart proses tidak menghilangkan job atau mempublikasikan setengah hasil.
 
-- [ ] **P0-S2-B1 — Penyimpanan run/snapshot.** Simpan run ID, konfigurasi, referensi baseline, manifest, dan status. **Selesai bila:** API memberi snapshot terakhir yang sukses dan run lama tetap dapat ditelusuri.
-- [ ] **P0-S2-B2 — Scheduler ingest dan publikasi atomik.** Tambahkan jadwal, retry/backoff, rate-limit handling, idempotensi, last-success/failure. **Selesai bila:** run gagal tidak mengganti snapshot valid dan status parsial/stale dapat dibaca UI.
+**Dependensi integrasi:** R2-P0-B1, R2-P0-N4
 
-## Tahap 3 — Laporan koordinator, keamanan, dan rilis demo
+### R2-P0-B3 — Pembacaan hasil dan data spasial reusable
 
-**Tujuan integrasi tim:** tuntaskan alur kandidat→pemeriksaan→riwayat dan pastikan operasi aman saat feed/backend/peta gagal.
+- [ ] **Selesai dan direview** — estimasi 5 poin.
 
-- [ ] **P0-S3-B1 — Autentikasi dan izin koordinator.** Ganti shared token dengan identitas individual (Auth.js atau pilihan yang disepakati), izin tulis server-side, dan sesi aman. **Selesai bila:** akses tanpa izin ditolak pada API, bukan hanya UI.
-- [ ] **P0-S3-B2 — Persistensi dan audit laporan.** Simpan candidate ID, waktu pemeriksaan, waktu input, pencatat, hasil/catatan, idempotency, serta koreksi. **Selesai bila:** laporan tahan refresh/ingest, retry tidak menggandakan, dan deteksi pascapemeriksaan tetap tampil.
-- [ ] **P0-S3-B3 — Staging dan health check.** Konfigurasi secret, migrasi staging, health endpoint, fallback snapshot. **Selesai bila:** staging dapat deploy dan gagal layanan tidak dipresentasikan sebagai sukses.
+**Pekerjaan:** Sediakan hasil, halaman deteksi, serta cache/tile yang identitasnya memakai dataset dan resolusi penyajian. Pisahkan pergeseran kamera dari pemanggilan upstream FIRMS dan perhitungan historis.
+
+**Kriteria selesai:** Area yang sudah tercakup tidak mengunduh ulang batch FIRMS setiap pan/zoom. Pagination terikat analysisId/periodRole; hasil lama tidak dilabeli sebagai area/kueri baru.
+
+**Dependensi integrasi:** R2-P0-B2, R2-P0-N2, R2-P0-N3
+
+### R2-P0-B4 — Hak akses dan error lintas resource
+
+- [ ] **Selesai dan direview** — estimasi 3 poin.
+
+**Pekerjaan:** Tegakkan akses job, area, hasil, serta API workspace dengan identitas individual. Tambahkan error v2 aman dan dokumentasikan policy membership untuk endpoint penandaan yang akan diintegrasikan.
+
+**Kriteria selesai:** Pengguna workspace lain ditolak walaupun mengetahui ID. Tidak ada key/URL berkredensial/stack trace pada respons atau log. Jalur unauthenticated, forbidden, conflict, dan quota diuji.
+
+**Dependensi integrasi:** R2-P0-B1
 
 ## Checklist sebelum membuat PR
 
-- [ ] PR menautkan ID task sprint, menyebut satu tujuan, dan mencantumkan acceptance criteria yang dipenuhi.
-- [ ] Perubahan fokus pada scope task; tidak ada fixture/angka demo yang tersaji sebagai hasil operasional.
-- [ ] Untuk data: sumber, versi, waktu observasi/ingest/publish, satuan, konfigurasi, dan provenance dapat ditelusuri.
-- [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
-- [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
-- [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [ ] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
-- [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
-- [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
-- [ ] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
-- [ ] Satu anggota lain melakukan review; risiko, batasan, dan cara verifikasi terdokumentasi.
+- [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.
+- [ ] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
+- [ ] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
+- [ ] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
+- [ ] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
+- [ ] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
+- [ ] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR.
+- [ ] UI yang berubah diperiksa EN/ID, keyboard/fokus, mobile, warna/status, serta konteks AOI/periode yang tidak hilang.
+- [ ] Satu rekan melakukan review; PR mencatat risiko, keterbatasan dan cara memverifikasi.
+- [ ] Status task/trackernya diperbarui setelah bukti dan integrasi selesai; checklist lama tidak menjadi bukti PR baru.
 
-## Syarat sprint selesai
+## Syarat sprint pribadi selesai
 
-- [ ] Seluruh task pribadi selesai atau memiliki keputusan no-go yang diperbolehkan spesifikasi task.
-- [ ] Keluaran sudah terintegrasi dengan pekerjaan dua anggota lain dan direview.
-- [ ] Bukti verifikasi serta blocker dicatat di PR dan status diperbarui pada task tracker.
+- [ ] Task wajib sprint ini memenuhi acceptance; keputusan no-go hanya berlaku pada eksperimen opsional, bukan pengganti fitur inti.
+- [ ] Handoff schema-valid diintegrasikan dengan rekan dan hasil verifikasi ditautkan.
+- [ ] Blocker, status data/model dan hasil review tercatat pada PR/issue serta tracker.
 
-P0 selesai ketika acceptance checklist pada [TASKS.md](../TASKS.md#acceptance-checklist) terpenuhi dan seluruh jalur terintegrasi.
+## Bukti pekerjaan sebelum rebaseline
+
+Status checklist v1 yang sudah dicentang disimpan pada [arsip keputusan/status lama](../archive/2026-11-10-completed-v1.md). ID v1 tidak diubah maknanya menjadi task baru.
+
+RawBatch dan service ingest aman yang sudah ada tetap dipertahankan. Auth workspace, queue v2, serta lokasi/assignment persisten tidak otomatis selesai karena dua task legacy tersebut sudah dicentang.

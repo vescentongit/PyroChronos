@@ -1,70 +1,92 @@
 # Sprint 1 (P0) — Orkhan
 
-**Fokus:** Peta, grafik, kandidat, laporan, ekspor, dan integrasi antarmuka.  
-**Reviewer utama:** Nathan  
-**Status:** sedang dikerjakan. Frontend dan kontrak draft tersedia; acceptance frontend mandiri sudah lulus. Integrasi backend nyata, geometri final, PR dan review Nathan masih terbuka.
+**Fokus:** Fondasi riset dan pengalaman peta.\
+**Reviewer utama:** Nathan.\
+**Status:** implementasi frontend O1–O4 tersedia dan lolos pengujian mandiri (10 November 2026). Integrasi backend/data nyata, QA imagery live dan review Nathan masih terbuka. [Bukti v2](../../docs/orkhan-sprint-1-v2-progress.md).
 
-Rincian hasil, verifikasi, dan blocker: [catatan implementasi](../../docs/orkhan-sprint-1-progress.md). Handoff: [kontrak snapshot v1](../../docs/contracts/snapshot-v1.md).
+[Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
-[Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
+## Kapasitas dan cara kerja
 
-## Tujuan
+Target kapasitas tentatif **20 poin per anggota per sprint**, dengan total kerja tim dibagi sepertiga per orang. Poin adalah estimasi planning, bukan jam/SLA atau bukti beban sudah identik. Re-estimasi setelah spike dan pindahkan potongan coding bila timpang; semua anggota tetap mengerjakan kode.
 
-MVP jujur dan dapat digunakan.
+Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai coding. Gunakan schema dan fixture v2 berlabel sintetis untuk bekerja mandiri. Jangan menunggu polygon final dua wilayah: AOI produk adalah polygon bebas global.
 
-Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
+## Spesifikasi task
 
+### R2-P0-O1 — Satu peta dan navigasi tanpa reload analisis
 
-**Acuan payload yang ditetapkan Orkhan atas mandat tim:** [API v1](../../docs/contracts/api-v1.md). Schema dan contoh siap dipakai; tidak perlu menunggu penetapan draft. Polygon final serta hasil validasi ilmiah tetap terpisah.
+- [ ] **Selesai dan direview** — estimasi 7 poin.
+- [x] Satu workspace, toggle heatmap/titik, kamera terpisah, cache dan hasil tetap saat navigasi; diuji di browser dengan NRT sintetis.
+- [x] Layer satelit dan label wilayah terpasang; kegagalan tile tidak menghapus overlay.
+- [ ] Verifikasi ketajaman citra/label live pada jaringan normal dan review Nathan.
 
-## Koordinasi dan dependensi
+**Pekerjaan:** Satukan Activity Map dan Global Heatmap menjadi satu workspace dengan toggle heatmap/titik. Pisahkan kamera, AOI draft, dan hasil aktif; gunakan instance map stabil dan cache/lapisan yang dapat digunakan ulang.
 
-Sepakati estimasi dan kontrak data/API bersama sebelum implementasi. Target beban kerja setiap anggota adalah sepertiga kapasitas tim, termasuk coding, review, integrasi, dan persiapan demo. Pindahkan potongan task coding jika estimasi timpang.
+**Kriteria selesai:** Pan/zoom tidak menghapus overlay atau memulai job/FIRMS batch ulang. Toggle mempertahankan AOI/periode/lokasi. Citra satelit tajam sesuai sumber, label wilayah terlihat tanpa hover, dan kegagalan tile tidak menghapus hasil.
 
-Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-1-P0.md) — [Bagas](../Bagas/SPRINT-1-P0.md).
+**Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-## Tahap 1 — Feed, wilayah, ingest, dan kontrak data
+### R2-P0-O2 — Editor polygon penelitian
 
-**Tujuan integrasi tim:** menyiapkan ingest FIRMS MODIS/VIIRS yang dapat ditelusuri untuk dua polygon MVP serta kontrak data yang dipakai ketiga jalur.
+- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [x] Draw, edit koordinat, undo, batal, validasi polygon, revisi draft dan outline area hasil.
+- [x] Polygon non-persegi, antimeridian, penolakan geometri invalid serta interaksi keyboard/pointer diuji. Preset nama dan navigasi koordinat tersedia.
+- [ ] Review Nathan; persistensi/revisi server diverifikasi saat endpoint area v2 tersedia.
 
-- [ ] **P0-S1-O1 — Konfigurasi polygon dan pemilih wilayah.** Simpan ID stabil, nama, geometri, luas, sumber, dan versi batas untuk subset Kalimantan Tengah/Papua Selatan. **Selesai bila:** peta, pemilih, ekspor, dan data menggunakan daftar ID yang sama; cakupan wilayah dilabeli jelas.
-- [x] **P0-S1-O2 — Kontrak snapshot frontend.** Definisikan type/payload untuk deteksi, provenance, timestamp, status live/stale/partial/unavailable/replay, dan nilai nullable. **Selesai bila:** payload contoh dan kontrak disetujui ketiga anggota.
+**Pekerjaan:** Tambahkan gambar/edit polygon bebas, outline AOI aktif, batal edit, serta navigasi bantuan nama/koordinat. Simpan draft terpisah dari area yang sudah dianalisis; tampilkan validasi geometri.
 
-## Tahap 2 — Baseline, harmonisasi, snapshot, dan analitik dashboard
+**Kriteria selesai:** Polygon non-persegi dapat dipilih dan diterapkan. Pergeseran kamera tidak memindahkan AOI. Geometri invalid tidak dikirim diam-diam atau dipotong tanpa pemberitahuan; perubahan menciptakan revisi.
 
-**Tujuan integrasi tim:** menghasilkan snapshot dari FIRMS nyata dan membandingkan periode terbaru dengan konteks historis sebanding.
+**Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-- [ ] **P0-S2-O1 — Ganti fixture operasional.** Hubungkan peta, kandidat, grafik, dan ekspor ke snapshot API; pertahankan mode demo/replay terpisah. **Selesai bila:** mode operasional tidak membaca angka hard-coded dan ekspor membawa timestamp/provenance.
-- [x] **P0-S2-O2 — Visualisasi konteks dan kualitas.** Tampilkan terbaru vs baseline musiman, sensor, umur data, komponen alasan, dan status kualitas. **Selesai bila:** satuan/periode jelas; copy tidak menyebut aktivitas deteksi sebagai luas terbakar atau konfirmasi api.
+### R2-P0-O3 — Rentang tanggal dan Analisis area
 
-## Tahap 3 — Laporan koordinator, keamanan, dan rilis demo
+- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [x] Tanggal bebas, pembanding, default referensi 10 tahun dan pengajuan eksplisit melalui Analisis area.
+- [x] Retry mempertahankan requestId; queued/running, cancellation dan respons usang diuji dengan backend sintetis.
+- [ ] Integrasi B2 memakai sesi/workspace nyata, kebijakan kualitas yang disepakati, serta review Nathan.
 
-**Tujuan integrasi tim:** tuntaskan alur kandidat→pemeriksaan→riwayat dan pastikan operasi aman saat feed/backend/peta gagal.
+**Pekerjaan:** Sediakan periode bebas, pembanding opsional, serta referensi default 10 tahun. Hanya tombol Analisis area mengajukan permintaan; tampilkan status job lokal tanpa mengunci peta.
 
-- [ ] **P0-S3-O1 — UI formulir dan riwayat.** Hubungkan hasil “api/asap ditemukan”, “tidak ditemukan saat pemeriksaan”, “belum pasti”, serta koreksi. **Selesai bila:** waktu pemeriksaan/input terpisah dan status laporan tidak menyatakan api padam.
-- [x] **P0-S3-O2 — Lengkapi EN/ID dan UI states.** Terjemahkan error/loading/empty, peta, metode, laporan, ekspor, waktu; cek keyboard/focus/mobile. **Selesai bila:** kedua bahasa setara dan fallback peta tetap menyisakan informasi analitik.
-- [ ] **P0-S3-O3 — Integrasi UI acceptance.** Jalankan replay untuk dua wilayah, laporan setelah refresh, export, status gagal, keyboard, dan viewport mobile. **Selesai bila:** temuan dan blocker tercatat serta ditautkan ke PR/issue.
+**Kriteria selesai:** Klik berulang/retry memakai requestId yang tepat, respons lama tidak menimpa pilihan baru, dan hasil lama tetap diberi label area/periode aslinya. Tanggal tidak terbatas 24/48/72/96 jam.
 
-Acceptance browser mandiri sudah selesai; lihat [hasil dan cara menjalankan](../../docs/frontend-acceptance.md). P0-S3-O3 tetap terbuka untuk pengujian data nyata dan penautan hasil pada PR/issue. Review desain oleh agent tidak menggantikan review Nathan.
+**Dependensi integrasi:** R2-P0-O2, R2-P0-B2
+
+### R2-P0-O4 — Consumer v2 dan UI state yang jujur
+
+- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [x] Consumer research-2 memvalidasi schema/konteks; contoh sintetis, ringkasan kalender/detail, pemisahan v1 dan label raw/estimasi tersedia.
+- [x] EN/ID, status job/data, missing data, desktop/mobile, fokus keyboard, font dan Dashboard diperiksa; 31 tes serta browser acceptance lulus.
+- [ ] Integrasi B3/N4 dengan hasil nyata dan review Nathan.
+
+**Pekerjaan:** Validasi respons research-2, buat adapter consumer, serta skeleton kalender/detail yang dapat dikerjakan dengan fixture sintetis. Pertahankan jalur v1 terpisah selama migrasi.
+
+**Kriteria selesai:** Queue/running/failed/partial/no_data/unsupported tampil dalam EN/ID. Fixture/replay tidak disebut analisis nyata; label satuan raw versus estimasi jelas. Keyboard, Plus Jakarta Sans, Dashboard dan mobile tetap bekerja.
+
+**Dependensi integrasi:** R2-P0-O3, R2-P0-B3, R2-P0-N4
 
 ## Checklist sebelum membuat PR
 
-- [ ] PR menautkan ID task sprint, menyebut satu tujuan, dan mencantumkan acceptance criteria yang dipenuhi.
-- [ ] Perubahan fokus pada scope task; tidak ada fixture/angka demo yang tersaji sebagai hasil operasional.
-- [ ] Untuk data: sumber, versi, waktu observasi/ingest/publish, satuan, konfigurasi, dan provenance dapat ditelusuri.
-- [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
-- [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
-- [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [x] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
-- [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
-- [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
-- [x] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
-- [ ] Satu anggota lain melakukan review; risiko, batasan, dan cara verifikasi terdokumentasi.
+- [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.
+- [x] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
+- [x] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
+- [x] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
+- [ ] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
+- [ ] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
+- [ ] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR.
+- [x] UI yang berubah diperiksa EN/ID, keyboard/fokus, mobile, warna/status, serta konteks AOI/periode yang tidak hilang.
+- [ ] Satu rekan melakukan review; PR mencatat risiko, keterbatasan dan cara memverifikasi.
+- [ ] Status task/trackernya diperbarui setelah bukti dan integrasi selesai; checklist lama tidak menjadi bukti PR baru.
 
-## Syarat sprint selesai
+## Syarat sprint pribadi selesai
 
-- [ ] Seluruh task pribadi selesai atau memiliki keputusan no-go yang diperbolehkan spesifikasi task.
-- [ ] Keluaran sudah terintegrasi dengan pekerjaan dua anggota lain dan direview.
-- [ ] Bukti verifikasi serta blocker dicatat di PR dan status diperbarui pada task tracker.
+- [ ] Task wajib sprint ini memenuhi acceptance; keputusan no-go hanya berlaku pada eksperimen opsional, bukan pengganti fitur inti.
+- [ ] Handoff schema-valid diintegrasikan dengan rekan dan hasil verifikasi ditautkan.
+- [ ] Blocker, status data/model dan hasil review tercatat pada PR/issue serta tracker.
 
-P0 selesai ketika acceptance checklist pada [TASKS.md](../TASKS.md#acceptance-checklist) terpenuhi dan seluruh jalur terintegrasi.
+## Bukti pekerjaan sebelum rebaseline
+
+Status checklist v1 yang sudah dicentang disimpan pada [arsip keputusan/status lama](../archive/2026-11-10-completed-v1.md). ID v1 tidak diubah maknanya menjadi task baru.
+
+Kontrak v1, i18n, frontend states dan acceptance mandiri sebelumnya tetap menjadi bukti prototype; lihat [catatan Orkhan](../../docs/orkhan-sprint-1-progress.md). Bukti itu tidak menutup kriteria satu workspace peta dan kalender v2.

@@ -5,6 +5,13 @@ import * as maplibregl from "maplibre-gl";
 import type { FeatureCollection, Polygon, MultiPolygon } from "geojson";
 import { RefreshCw, Download, Globe2 } from "lucide-react";
 import type { Language } from "@/lib/regions";
+import ResearchPanel, { type ResearchOverlay } from "./research-panel";
+import {
+  unwrapVertices,
+  type Vertex,
+  type AreaPolygon,
+} from "@/lib/research-geometry";
+import { satelliteStyle } from "@/lib/map-style";
 import {
   boundsSchema,
   hotspotSources,
@@ -25,9 +32,45 @@ const initial: HotspotQuery = {
 const presets: Record<string, Bounds> = {
   World: [-180, -85, 180, 85],
   Indonesia: [94, -12, 142, 7],
+  Kalimantan: [108, -5, 119, 8],
+  Papua: [130, -11, 142, 1],
   Africa: [-20, -36, 55, 38],
   Amazon: [-82, -22, -44, 12],
   Australia: [112, -45, 155, -10],
+};
+const firmsFailureMessages: Record<string, [string, string]> = {
+  NOT_CONFIGURED: [
+    "API key FIRMS belum terbaca oleh server. Isi FIRMS_MAP_KEY, lalu restart npm run dev.",
+    "The server has no FIRMS API key. Set FIRMS_MAP_KEY, then restart npm run dev.",
+  ],
+  NETWORK_ERROR: [
+    "Server tidak dapat terhubung ke FIRMS. Periksa koneksi internet server, VPN, proxy, atau firewall, lalu coba lagi.",
+    "The server cannot connect to FIRMS. Check its internet connection, VPN, proxy, or firewall, then retry.",
+  ],
+  TIMEOUT: [
+    "Permintaan FIRMS melewati batas waktu. Coba lagi, perkecil area peta, atau pilih periode lebih pendek.",
+    "The FIRMS request timed out. Retry, zoom into a smaller area, or select a shorter period.",
+  ],
+  UPSTREAM_DENIED: [
+    "FIRMS menolak akses data. Periksa validitas dan status MAP_KEY di NASA FIRMS.",
+    "FIRMS denied data access. Check your MAP_KEY validity and status at NASA FIRMS.",
+  ],
+  RATE_LIMITED: [
+    "Batas permintaan tercapai. Tunggu satu menit sebelum mencoba lagi.",
+    "Request limit reached. Wait one minute before retrying.",
+  ],
+  INVALID_RESPONSE: [
+    "Respons FIRMS tidak dapat dibaca sebagai data hotspot. Coba lagi nanti.",
+    "The FIRMS response could not be read as hotspot data. Try again later.",
+  ],
+  PAYLOAD_TOO_LARGE: [
+    "Data FIRMS terlalu besar untuk satu permintaan. Perkecil area peta atau pilih periode lebih pendek.",
+    "The FIRMS response is too large for one request. Zoom into a smaller area or select a shorter period.",
+  ],
+  UPSTREAM_UNAVAILABLE: [
+    "Layanan data FIRMS belum tersedia. Tunggu sebentar, lalu coba lagi.",
+    "The FIRMS data service is unavailable. Wait a moment, then retry.",
+  ],
 };
 type Controller = { fit: (bounds: Bounds) => void };
 
@@ -37,23 +80,42 @@ function HeatSurface({
   language,
   onViewport,
   controller,
+  layer,
+  vertices,
+  drawing,
+  draft,
+  research,
+  onAddVertex,
+  toolsHostRef,
 }: {
   query: HotspotQuery;
   data: Hotspots | null;
   language: Language;
   onViewport: (bbox: Bounds, zoom: number) => void;
   controller: React.RefObject<Controller | null>;
+  layer: "heatmap" | "points";
+  vertices: Vertex[];
+  drawing: boolean;
+  draft: AreaPolygon | null;
+  research: ResearchOverlay | null;
+  onAddVertex: (vertex: Vertex) => void;
+  toolsHostRef: (host: HTMLDivElement | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null),
     canvas = useRef<HTMLCanvasElement>(null),
     mapRef = useRef<maplibregl.Map | null>(null);
   const [fallback, setFallback] = useState(false),
     [ready, setReady] = useState(false);
+  const [satelliteError, setSatelliteError] = useState(false);
   const [land, setLand] = useState<FeatureCollection<
     Polygon | MultiPolygon
   > | null>(null);
   const t = (id: string, en: string) => (language === "id" ? id : en);
-  const languageRef=useRef(language);languageRef.current=language;
+  const languageRef = useRef(language);
+  languageRef.current = language;
+  const editRef = useRef({ drawing, onAddVertex });
+  editRef.current = { drawing, onAddVertex };
+  const features = research ? research.features : (data?.features ?? []);
   useEffect(() => {
     const abort = new AbortController();
     fetch("/geo/ne_110m_land.json", { signal: abort.signal })
@@ -67,6 +129,10 @@ function HeatSurface({
   useEffect(() => {
     if (!host.current) return;
     let map: maplibregl.Map | undefined;
+    const resize = new ResizeObserver(() => {
+      if (host.current?.clientWidth && host.current.clientHeight) map?.resize();
+    });
+    resize.observe(host.current);
     try {
       maplibregl.setWorkerUrl(
         new URL(
@@ -79,42 +145,9 @@ function HeatSurface({
         center: [115, -3],
         zoom: 2,
         minZoom: 0,
-        maxZoom: 14,
+        maxZoom: 19,
         attributionControl: { compact: true },
-        style: {
-          version: 8,
-          sources: {
-            land: {
-              type: "geojson",
-              data: "/geo/ne_110m_land.json",
-              attribution:
-                '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noreferrer">Natural Earth</a>',
-            },
-          },
-          layers: [
-            {
-              id: "ocean",
-              type: "background",
-              paint: { "background-color": "#0e0e0e" },
-            },
-            {
-              id: "land",
-              type: "fill",
-              source: "land",
-              paint: { "fill-color": "#192338", "fill-opacity": 0.8 },
-            },
-            {
-              id: "coast",
-              type: "line",
-              source: "land",
-              paint: {
-                "line-color": "#9cabbd",
-                "line-opacity": 0.4,
-                "line-width": 0.7,
-              },
-            },
-          ],
-        },
+        style: satelliteStyle(),
       });
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl(), "top-right");
@@ -172,15 +205,15 @@ function HeatSurface({
               ["linear"],
               ["heatmap-density"],
               0,
-              "rgba(10,60,145,0)",
+              "rgba(68,57,131,0)",
               0.25,
-              "#0a3c91",
+              "#443983",
               0.5,
-              "#ba1e68",
+              "#31688e",
               0.8,
-              "#fc3c23",
+              "#35b779",
               1,
-              "#ffffff",
+              "#fde725",
             ],
           },
         });
@@ -188,7 +221,7 @@ function HeatSurface({
           id: "points",
           type: "circle",
           source: "detections",
-          minzoom: 7,
+
           paint: {
             "circle-radius": 4,
             "circle-color": "#fc3c23",
@@ -196,24 +229,83 @@ function HeatSurface({
             "circle-stroke-width": 0.5,
           },
         });
+        map.addSource("area-outlines", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "area-active",
+          type: "line",
+          source: "area-outlines",
+          filter: ["==", ["get", "kind"], "active"],
+          paint: { "line-color": "#ffffff", "line-width": 3 },
+        });
+        map.addLayer({
+          id: "area-draft",
+          type: "line",
+          source: "area-outlines",
+          filter: ["==", ["get", "kind"], "draft"],
+          paint: {
+            "line-color": "#61c9ff",
+            "line-width": 3,
+            "line-dasharray": [3, 2],
+          },
+        });
+        map.addSource("area-edit", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "edit-line",
+          type: "line",
+          source: "area-edit",
+          filter: ["==", ["geometry-type"], "LineString"],
+          paint: { "line-color": "#61c9ff", "line-width": 2 },
+        });
+        map.addLayer({
+          id: "edit-vertices",
+          type: "circle",
+          source: "area-edit",
+          filter: ["==", ["geometry-type"], "Point"],
+          paint: {
+            "circle-radius": 5,
+            "circle-color": "#61c9ff",
+            "circle-stroke-color": "#111111",
+            "circle-stroke-width": 2,
+          },
+        });
+        if (map.getLayer("esri-labels-layer"))
+          map.moveLayer("esri-labels-layer");
+        map.on("click", (event) => {
+          if (editRef.current.drawing)
+            editRef.current.onAddVertex([
+              +event.lngLat.wrap().lng.toFixed(6),
+              +event.lngLat.lat.toFixed(6),
+            ]);
+        });
         map.on("click", "points", (event) => {
+          if (editRef.current.drawing) return;
           const feature = event.features?.[0];
           if (!map || !feature || feature.geometry.type !== "Point") return;
           new maplibregl.Popup()
             .setLngLat(feature.geometry.coordinates as [number, number])
             .setText(
-              `${feature.properties.count} ${languageRef.current==="id"?"deteksi FIRMS":"FIRMS detections"} · ${feature.properties.observedAt}`,
+              `${feature.properties.count} ${languageRef.current === "id" ? "deteksi mentah" : "raw detections"} · ${feature.properties.observedAt}`,
             )
             .addTo(map);
         });
         setReady(true);
         report();
       });
-      map.on("error", () => setFallback(true));
+      // A failed imagery tile must not replace the entire satellite map with a monochrome fallback.
+      map.on("error", () => setSatelliteError(true));
+      map.on("movestart", () => setSatelliteError(false));
+      map.on("webglcontextlost", () => setFallback(true));
     } catch {
       setFallback(true);
     }
     return () => {
+      resize.disconnect();
       controller.current = null;
       mapRef.current = null;
       map?.remove();
@@ -225,8 +317,65 @@ function HeatSurface({
         mapRef.current?.getSource("detections") as
           | maplibregl.GeoJSONSource
           | undefined
-      )?.setData({ type: "FeatureCollection", features: data?.features || [] });
-  }, [data, ready]);
+      )?.setData({ type: "FeatureCollection", features });
+  }, [data, research, ready]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    map.setLayoutProperty(
+      "density",
+      "visibility",
+      layer === "heatmap" ? "visible" : "none",
+    );
+    map.setLayoutProperty(
+      "points",
+      "visibility",
+      layer === "points" ? "visible" : "none",
+    );
+    const outlines: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+    if (draft)
+      outlines.features.push({
+        type: "Feature",
+        properties: { kind: "draft" },
+        geometry: {
+          ...draft,
+          coordinates: draft.coordinates.map(unwrapVertices),
+        },
+      });
+    if (research?.geometry)
+      outlines.features.push({
+        type: "Feature",
+        properties: { kind: "active" },
+        geometry: {
+          ...research.geometry,
+          coordinates: research.geometry.coordinates.map(unwrapVertices),
+        },
+      });
+    (map.getSource("area-outlines") as maplibregl.GeoJSONSource).setData(
+      outlines,
+    );
+    const edits: FeatureCollection = {
+      type: "FeatureCollection",
+      features: unwrapVertices(vertices).map((coordinates) => ({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "Point", coordinates },
+      })),
+    };
+    if (vertices.length > 1)
+      edits.features.push({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: unwrapVertices(vertices) },
+      });
+    (map.getSource("area-edit") as maplibregl.GeoJSONSource).setData(edits);
+    map.getCanvas().style.cursor = drawing ? "crosshair" : "";
+    if (drawing) map.doubleClickZoom.disable();
+    else map.doubleClickZoom.enable();
+  }, [ready, layer, draft, vertices, drawing, research]);
   useEffect(() => {
     if (!fallback || !canvas.current) return;
     const node = canvas.current;
@@ -282,26 +431,51 @@ function HeatSurface({
       }
       const max = Math.max(
         1,
-        ...(data?.features.map((point) => point.properties.count) || []),
+        ...features.map((point) => Number(point.properties?.count ?? 1)),
       );
-      for (const point of data?.features || []) {
+      for (const point of features) {
         const [x, y] = project(point.geometry.coordinates),
-          r = 8 + 14 * Math.sqrt(point.properties.count / max);
+          r = 8 + 14 * Math.sqrt(Number(point.properties?.count ?? 1) / max);
+        if (layer === "points") {
+          context.fillStyle = "#ffbc5c";
+          context.beginPath();
+          context.arc(x, y, 4, 0, Math.PI * 2);
+          context.fill();
+          continue;
+        }
         const gradient = context.createRadialGradient(x, y, 0, x, y, r);
-        gradient.addColorStop(0, "#fc3c23cc");
-        gradient.addColorStop(0.5, "#ba1e6870");
-        gradient.addColorStop(1, "#fc3c2300");
+        gradient.addColorStop(0, "#fde725cc");
+        gradient.addColorStop(0.5, "#35b77970");
+        gradient.addColorStop(1, "#44398300");
         context.fillStyle = gradient;
         context.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+      for (const [geometry, color] of [
+        [draft, "#61c9ff"],
+        [research?.geometry, "#ffffff"],
+      ] as const) {
+        if (!geometry) continue;
+        context.strokeStyle = color;
+        context.lineWidth = 2;
+        for (const ring of geometry.coordinates) {
+          context.beginPath();
+          ring.forEach((coordinate, index) => {
+            const [x, y] = project(coordinate);
+            if (index === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+          });
+          context.stroke();
+        }
       }
     }
     render();
     const observer = new ResizeObserver(render);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [fallback, data, land, query.bbox]);
+  }, [fallback, data, research, draft, layer, land, query.bbox]);
   return (
     <div className="global-surface">
+      <div ref={toolsHostRef} className="global-drawing-tools" />
       <div
         ref={host}
         className="global-map"
@@ -328,15 +502,30 @@ function HeatSurface({
           </p>
         </>
       )}
+      {satelliteError && !fallback && (
+        <p className="global-fallback" role="status">
+          {t(
+            "Sebagian citra satelit gagal dimuat. Periksa jaringan, lalu geser atau zoom untuk memuat tile kembali.",
+            "Some satellite imagery failed to load. Check your connection, then pan or zoom to reload tiles.",
+          )}
+        </p>
+      )}
       <div className="global-map-tag">
-        NASA FIRMS · {data?.source || query.source}
+        {research
+          ? research.label
+          : `NASA FIRMS · ${data?.source || query.source} · ${data?.hours ?? query.hours}h`}
       </div>
       <div className="global-map-legend">
         <span />
-        {t(
-          "Kepadatan relatif; bukan tingkat bahaya",
-          "Relative density; not a danger rating",
-        )}
+        {layer === "points"
+          ? t(
+              "Deteksi mentah; agregat ditunjukkan dengan jumlah",
+              "Raw detections; aggregates show counts",
+            )
+          : t(
+              "Kepadatan relatif; bukan tingkat bahaya",
+              "Relative density; not a danger rating",
+            )}
       </div>
     </div>
   );
@@ -344,6 +533,8 @@ function HeatSurface({
 
 export default function GlobalHeatmap({ language }: { language: Language }) {
   const [query, setQuery] = useState<HotspotQuery>(initial),
+    [draftQuery, setDraftQuery] = useState<HotspotQuery>(initial),
+    [requested, setRequested] = useState(false),
     [refresh, setRefresh] = useState(0),
     [now, setNow] = useState(Date.now()),
     [boundsError, setBoundsError] = useState(false);
@@ -353,7 +544,30 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     loading: boolean;
     failed: boolean;
     error: string;
-  }>({ key: "", data: null, loading: true, failed: false, error: "" });
+  }>({ key: "", data: null, loading: false, failed: false, error: "" });
+  const [resultsHost, setResultsHost] = useState<HTMLDivElement | null>(null);
+  const [toolsHost, setToolsHost] = useState<HTMLDivElement | null>(null);
+  const [mode, setMode] = useState<"nrt" | "research">("nrt");
+  const [layer, setLayer] = useState<"heatmap" | "points">("heatmap");
+  const [vertices, setVertices] = useState<Vertex[]>([]);
+  const [drawing, setDrawing] = useState(false);
+  const [draftPolygon, setDraftPolygon] = useState<AreaPolygon | null>(null);
+  const [researchOverlay, setResearchOverlay] = useState<ResearchOverlay>({
+    geometry: null,
+    features: [],
+    label: "Research · —",
+  });
+  const addVertex = useCallback(
+    (vertex: Vertex) =>
+      setVertices((previous) =>
+        JSON.stringify(previous.at(-1)) === JSON.stringify(vertex)
+          ? previous
+          : [...previous, vertex],
+      ),
+    [],
+  );
+  const previousData = useRef<Hotspots | null>(null);
+  previousData.current = state.data;
   const cache = useRef(new Map<string, Hotspots>()),
     controller = useRef<Controller | null>(null);
   const key = JSON.stringify(query);
@@ -362,8 +576,8 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     value
       ? `${new Date(value).toLocaleString(language === "id" ? "id-ID" : "en-GB", { timeZone: "UTC" })} UTC`
       : "—";
-  const data = state.key === key ? state.data : null,
-    loading = state.key !== key || state.loading;
+  const data = state.data,
+    loading = state.loading;
   const stale =
     !!data &&
     (state.failed ||
@@ -371,7 +585,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       now > Date.parse(data.freshUntil));
   const onViewport = useCallback(
     (bbox: Bounds, zoom: number) =>
-      setQuery((previous) =>
+      setDraftQuery((previous) =>
         JSON.stringify(previous.bbox) === JSON.stringify(bbox) &&
         previous.zoom === zoom
           ? previous
@@ -384,9 +598,15 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
+    if (!requested) return;
     const abort = new AbortController();
     let cancelled = false;
-    const old = cache.current.get(key) || null;
+    const cached = cache.current.get(key);
+    if (cached && Date.now() < Date.parse(cached.freshUntil)) {
+      setState({ key, data: cached, loading: false, failed: false, error: "" });
+      return;
+    }
+    const old = cached || previousData.current;
     setState({ key, data: old, loading: true, failed: false, error: "" });
     const debounce = setTimeout(() => {
       const timeout = setTimeout(() => abort.abort(), 35000);
@@ -401,17 +621,26 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
         cache: "no-store",
       })
         .then(async (response) => {
-          if (!response.ok)
+          if (!response.ok) {
+            const failure = await response.json().catch(() => null);
             throw new Error(
-              response.status === 429 ? "RATE_LIMITED" : "UNAVAILABLE",
+              typeof failure?.reason === "string" &&
+                Object.hasOwn(firmsFailureMessages, failure.reason)
+                ? failure.reason
+                : response.status === 429
+                  ? "RATE_LIMITED"
+                  : "UPSTREAM_UNAVAILABLE",
             );
-          const parsed = hotspotsSchema.parse(await response.json());
+          }
+          const result = hotspotsSchema.safeParse(await response.json());
+          if (!result.success) throw new Error("INVALID_RESPONSE");
+          const parsed = result.data;
           if (
             parsed.source !== query.source ||
             parsed.hours !== query.hours ||
             parsed.bbox.some((value, index) => value !== query.bbox[index])
           )
-            throw new Error("MISMATCH");
+            throw new Error("INVALID_RESPONSE");
           if (cancelled) return;
           cache.current.delete(key);
           cache.current.set(key, parsed);
@@ -433,9 +662,13 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
               loading: false,
               failed: true,
               error:
-                error.message === "RATE_LIMITED"
-                  ? "RATE_LIMITED"
-                  : "UNAVAILABLE",
+                error.name === "AbortError"
+                  ? "TIMEOUT"
+                  : error instanceof TypeError
+                    ? "NETWORK_ERROR"
+                    : Object.hasOwn(firmsFailureMessages, error.message)
+                      ? error.message
+                      : "UPSTREAM_UNAVAILABLE",
             });
         })
         .finally(() => clearTimeout(timeout));
@@ -445,7 +678,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       clearTimeout(debounce);
       abort.abort();
     };
-  }, [key, query, refresh]);
+  }, [key, query, refresh, requested]);
   function area(bbox: Bounds) {
     setBoundsError(false);
     if (controller.current) controller.current.fit(bbox);
@@ -471,7 +704,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = `firms-${query.source}-${query.hours}h.json`;
+    link.download = `firms-${data.source}-${data.hours}h.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -480,67 +713,111 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       <div className="heading">
         <div>
           <h1 id="global-heading">
-            {t("Heatmap hotspot global", "Global hotspot heatmap")}
+            {t("Peta aktivitas global", "Global activity map")}
           </h1>
           <p>
             {t(
-              "Deteksi FIRMS nyata. Jelajahi dunia; pilih satu sensor dan periode.",
-              "Real FIRMS detections. Explore the world; choose one sensor and period.",
+              "Jelajahi citra satelit, pilih area, lalu muat deteksi atau analisis riwayatnya.",
+              "Explore satellite imagery, select an area, then load detections or analyze its history.",
             )}
           </p>
         </div>
         <button
           className="outline"
-          disabled={!data || loading}
+          disabled={!data || loading || mode !== "nrt"}
           onClick={exportData}
         >
           <Download size={16} />
           JSON
         </button>
       </div>
-      <div className="global-toolbar">
-        <label>
-          {t("Sensor / satelit", "Sensor / satellite")}
-          <select
-            value={query.source}
-            onChange={(event) =>
-              setQuery((previous) => ({
-                ...previous,
-                source: event.target.value as HotspotQuery["source"],
-              }))
-            }
-          >
-            {hotspotSources.map((source) => (
-              <option key={source} value={source}>{hotspotSourceLabels[source]}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          {t("Periode bergerak", "Rolling window")}
-          <select
-            value={query.hours}
-            onChange={(event) =>
-              setQuery((previous) => ({
-                ...previous,
-                hours: Number(event.target.value) as HotspotQuery["hours"],
-              }))
-            }
-          >
-            {[24, 48, 72, 96].map((hours) => (
-              <option key={hours} value={hours}>
-                {hours} {t("jam", "hours")}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div
+        className="global-toolbar"
+        role="group"
+        aria-label={t("Mode data", "Data mode")}
+      >
         <button
           className="outline"
-          disabled={loading}
-          onClick={() => setRefresh((value) => value + 1)}
+          aria-pressed={mode === "nrt"}
+          onClick={() => {
+            setMode("nrt");
+            setDrawing(false);
+          }}
         >
-          <RefreshCw size={15} />
-          {t("Perbarui", "Refresh")}
+          {t("FIRMS terbaru · mentah", "Recent FIRMS · raw")}
         </button>
+        <button
+          className="outline"
+          aria-pressed={mode === "research"}
+          onClick={() => setMode("research")}
+        >
+          {t("Riset historis", "Historical research")}
+        </button>
+      </div>
+      <div hidden={mode !== "research"}>
+        <ResearchPanel
+          language={language}
+          vertices={vertices}
+          setVertices={setVertices}
+          drawing={drawing}
+          setDrawing={setDrawing}
+          onDraft={setDraftPolygon}
+          onOverlay={setResearchOverlay}
+          resultsHost={resultsHost}
+          toolsHost={toolsHost}
+        />
+      </div>
+      <div hidden={mode !== "nrt"}>
+        <div className="global-toolbar">
+          <label>
+            {t("Sensor / satelit", "Sensor / satellite")}
+            <select
+              value={draftQuery.source}
+              onChange={(event) =>
+                setDraftQuery((previous) => ({
+                  ...previous,
+                  source: event.target.value as HotspotQuery["source"],
+                }))
+              }
+            >
+              {hotspotSources.map((source) => (
+                <option key={source} value={source}>
+                  {hotspotSourceLabels[source]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("Periode bergerak", "Rolling window")}
+            <select
+              value={draftQuery.hours}
+              onChange={(event) =>
+                setDraftQuery((previous) => ({
+                  ...previous,
+                  hours: Number(event.target.value) as HotspotQuery["hours"],
+                }))
+              }
+            >
+              {[24, 48, 72, 96].map((hours) => (
+                <option key={hours} value={hours}>
+                  {hours} {t("jam", "hours")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="outline"
+            disabled={loading}
+            onClick={() => {
+              setQuery(draftQuery);
+              setRequested(true);
+              setRefresh((value) => value + 1);
+            }}
+          >
+            <RefreshCw size={15} />
+            {t("Muat area tampilan", "Load visible area")}
+          </button>
+        </div>
       </div>
       <div
         className="global-presets"
@@ -554,48 +831,85 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </button>
         ))}
       </div>
-      <div className="global-data-status" role="status">
-        <strong>
-          {loading
-            ? t("Memuat FIRMS…", "Loading FIRMS…")
-            : !data
-              ? t("Data tidak tersedia", "Data unavailable")
-              : stale
-                ? t(
-                    "Data lama — periksa waktu",
-                    "Stale data — check timestamps",
-                  )
-                : t("Data FIRMS tersedia", "FIRMS data available")}
-        </strong>
-        <span>
-          {data && !loading
-            ? `${data.total.toLocaleString(language === "id" ? "id-ID" : "en-GB")} ${t("deteksi dalam viewport", "detections in viewport")}`
-            : "—"}
-        </span>
-        <span>
-          {t("Diunduh", "Fetched")}: {date(data?.fetchedAt)}
-        </span>
+      <div hidden={mode !== "nrt"}>
+        <div className="global-data-status" role="status">
+          <strong>
+            {loading
+              ? t("Memuat FIRMS…", "Loading FIRMS…")
+              : !data
+                ? requested
+                  ? t("Data tidak tersedia", "Data unavailable")
+                  : t(
+                      "Klik Muat area tampilan untuk mengambil FIRMS.",
+                      "Click Load visible area to fetch FIRMS.",
+                    )
+                : stale
+                  ? t(
+                      "Data lama — periksa waktu",
+                      "Stale data — check timestamps",
+                    )
+                  : t("Data FIRMS tersedia", "FIRMS data available")}
+          </strong>
+          <span>
+            {data && !loading
+              ? `${data.total.toLocaleString(language === "id" ? "id-ID" : "en-GB")} ${t("deteksi dalam area yang dimuat", "detections in loaded area")}`
+              : "—"}
+          </span>
+          <span>
+            {t("Diunduh", "Fetched")}: {date(data?.fetchedAt)}
+          </span>
+        </div>
+        {state.failed && state.key === key && (
+          <p className="global-error" role="alert">
+            {t(
+              ...(firmsFailureMessages[state.error] ??
+                firmsFailureMessages.UPSTREAM_UNAVAILABLE),
+            )}
+          </p>
+        )}
+        {data && (
+          <p className="global-note">
+            {t("Konteks overlay tersimpan", "Retained overlay context")}:{" "}
+            {data.source} · {data.hours}h · {data.bbox.join(", ")} ·{" "}
+            {date(data.observedFrom)} → {date(data.observedTo)}
+          </p>
+        )}
       </div>
-      {state.failed && state.key === key && (
-        <p className="global-error" role="alert">
-          {state.error === "RATE_LIMITED"
-            ? t(
-                "Batas permintaan tercapai. Tunggu satu menit.",
-                "Request limit reached. Wait one minute.",
-              )
-            : t(
-                "FIRMS belum dapat dimuat. Data lama hanya dipertahankan untuk area, sensor dan periode yang sama; coba kembali atau pendekkan periode.",
-                "FIRMS could not load. Old data is retained only for the same area, sensor and window; retry or shorten the period.",
-              )}
-        </p>
-      )}
+      <div
+        className="global-toolbar"
+        role="group"
+        aria-label={t("Lapisan peta", "Map layers")}
+      >
+        <button
+          className="outline"
+          aria-pressed={layer === "heatmap"}
+          onClick={() => setLayer("heatmap")}
+        >
+          Heatmap
+        </button>
+        <button
+          className="outline"
+          aria-pressed={layer === "points"}
+          onClick={() => setLayer("points")}
+        >
+          {t("Titik / agregat mentah", "Raw points / aggregates")}
+        </button>
+      </div>
       <HeatSurface
-        query={query}
+        query={draftQuery}
         data={data}
         language={language}
         onViewport={onViewport}
         controller={controller}
+        layer={layer}
+        vertices={mode === "research" ? vertices : []}
+        drawing={drawing && mode === "research"}
+        draft={mode === "research" ? draftPolygon : null}
+        research={mode === "research" ? researchOverlay : null}
+        onAddVertex={addVertex}
+        toolsHostRef={setToolsHost}
       />
+      <div ref={setResultsHost} hidden={mode !== "research"} />
       <details className="region-metadata">
         <summary>
           {t(
@@ -604,7 +918,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           )}
         </summary>
         <form
-          key={query.bbox.join(",")}
+          key={draftQuery.bbox.join(",")}
           className="global-bounds"
           onSubmit={(event) => {
             event.preventDefault();
@@ -633,7 +947,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
                 step="any"
                 min={index % 2 ? -90 : -180}
                 max={index % 2 ? 90 : 180}
-                defaultValue={query.bbox[index]}
+                defaultValue={draftQuery.bbox[index]}
               />
             </label>
           ))}
@@ -650,70 +964,74 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </p>
         )}
       </details>
-      <p className="global-note">
-        {t(
-          "Warna menunjukkan kepadatan relatif pada sensor, zoom, dan periode pilihan; bukan jumlah kebakaran, luas terbakar, atau hasil harmonisasi. Tidak ada deteksi bukan berarti tidak ada api.",
-          "Color indicates relative detection density for the selected sensor, zoom and window; not fire count, burned area or harmonized output. No detections does not mean no fire.",
-        )}
-      </p>
-      {data && (
-        <details className="source-status">
-          <summary>{t("Waktu dan provenance", "Time and provenance")}</summary>
-          <p>
-            {data.source} · {data.hours}h · {t("Dinilai", "Assessed")}:{" "}
-            {date(data.evaluatedAt)}
-          </p>
-          <p>
-            {date(data.observedFrom)} → {date(data.observedTo)}
-          </p>
-          <p>
-            {t("Agregasi grid", "Grid aggregation")}:{" "}
-            {data.gridDegrees || t("titik asli", "original points")}{" "}
-            {data.gridDegrees ? "°" : ""} · {data.checksum}
-          </p>
-        </details>
-      )}
-      <h2 className="global-list-heading">
-        {t(
-          "Deteksi terbaru dalam viewport (maks. 30)",
-          "Latest detections in viewport (max. 30)",
-        )}
-      </h2>
-      <div className="table-scroll">
-        <table>
-          <caption className="visually-hidden">NASA FIRMS</caption>
-          <thead>
-            <tr>
-              <th>{t("Koordinat", "Coordinates")}</th>
-              <th>{t("Observasi UTC", "Observed UTC")}</th>
-              <th>{t("Satelit", "Satellite")}</th>
-              <th>FRP (MW)</th>
-              <th>{t("Confidence sumber", "Source confidence")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.sample.map((point) => (
-              <tr key={point.id}>
-                <td>
-                  {point.lat.toFixed(4)}, {point.lng.toFixed(4)}
-                </td>
-                <td>{date(point.observedAt)}</td>
-                <td>{point.satellite}</td>
-                <td>{point.frp ?? "—"}</td>
-                <td>{point.confidence}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {!loading && data?.total === 0 && (
-        <p role="status">
+      <div hidden={mode !== "nrt"}>
+        <p className="global-note">
           {t(
-            "Tidak ada deteksi yang dikembalikan sumber untuk area dan periode ini. Kondisi api belum terverifikasi.",
-            "The source returned no detections in this area and window. Fire conditions remain unverified.",
+            "Warna menunjukkan kepadatan relatif pada sensor, zoom, dan periode pilihan; bukan jumlah kebakaran, luas terbakar, atau hasil harmonisasi. Tidak ada deteksi bukan berarti tidak ada api.",
+            "Color indicates relative detection density for the selected sensor, zoom and window; not fire count, burned area or harmonized output. No detections does not mean no fire.",
           )}
         </p>
-      )}
+        {data && (
+          <details className="source-status">
+            <summary>
+              {t("Waktu dan provenance", "Time and provenance")}
+            </summary>
+            <p>
+              {data.source} · {data.hours}h · {t("Dinilai", "Assessed")}:{" "}
+              {date(data.evaluatedAt)}
+            </p>
+            <p>
+              {date(data.observedFrom)} → {date(data.observedTo)}
+            </p>
+            <p>
+              {t("Agregasi grid", "Grid aggregation")}:{" "}
+              {data.gridDegrees || t("titik asli", "original points")}{" "}
+              {data.gridDegrees ? "°" : ""} · {data.checksum}
+            </p>
+          </details>
+        )}
+        <h2 className="global-list-heading">
+          {t(
+            "Deteksi terbaru dalam viewport (maks. 30)",
+            "Latest detections in viewport (max. 30)",
+          )}
+        </h2>
+        <div className="table-scroll">
+          <table>
+            <caption className="visually-hidden">NASA FIRMS</caption>
+            <thead>
+              <tr>
+                <th>{t("Koordinat", "Coordinates")}</th>
+                <th>{t("Observasi UTC", "Observed UTC")}</th>
+                <th>{t("Satelit", "Satellite")}</th>
+                <th>FRP (MW)</th>
+                <th>{t("Confidence sumber", "Source confidence")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data?.sample.map((point) => (
+                <tr key={point.id}>
+                  <td>
+                    {point.lat.toFixed(4)}, {point.lng.toFixed(4)}
+                  </td>
+                  <td>{date(point.observedAt)}</td>
+                  <td>{point.satellite}</td>
+                  <td>{point.frp ?? "—"}</td>
+                  <td>{point.confidence}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!loading && data?.total === 0 && (
+          <p role="status">
+            {t(
+              "Tidak ada deteksi yang dikembalikan sumber untuk area dan periode ini. Kondisi api belum terverifikasi.",
+              "The source returned no detections in this area and window. Fire conditions remain unverified.",
+            )}
+          </p>
+        )}
+      </div>
     </section>
   );
 }

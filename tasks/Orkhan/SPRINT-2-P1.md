@@ -1,64 +1,80 @@
 # Sprint 2 (P1) — Orkhan
 
-**Fokus:** Peta, grafik, kandidat, laporan, ekspor, dan integrasi antarmuka.  
-**Reviewer utama:** Nathan  
-**Status:** belum dimulai.
+**Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
+**Reviewer utama:** Nathan.\
+**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
 
-[Indeks sprint](../SPRINT-PLAN.md) — [Task tracker](../TASKS.md) — [Spesifikasi produk](../../product.md)
+[Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
-## Tujuan
+## Kapasitas dan cara kerja
 
-Validasi nilai ilmiah dan operasional.
+Target kapasitas tentatif **20 poin per anggota per sprint**, dengan total kerja tim dibagi sepertiga per orang. Poin adalah estimasi planning, bukan jam/SLA atau bukti beban sudah identik. Re-estimasi setelah spike dan pindahkan potongan coding bila timpang; semua anggota tetap mengerjakan kode.
 
-Setiap tahap dikerjakan berurutan sesuai dependensinya. ID task dari rencana sebelumnya dipertahankan; `S1`, `S2`, dan `S3` di dalam ID kini menunjukkan tahap dalam prioritas ini.
+Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai coding. Gunakan schema dan fixture v2 berlabel sintetis untuk bekerja mandiri. Jangan menunggu polygon final dua wilayah: AOI produk adalah polygon bebas global.
 
-## Koordinasi dan dependensi
+## Spesifikasi task
 
-Sepakati estimasi dan kontrak data/API bersama sebelum implementasi. Target beban kerja setiap anggota adalah sepertiga kapasitas tim, termasuk coding, review, integrasi, dan persiapan demo. Pindahkan potongan task coding jika estimasi timpang.
+### R2-P1-O1 — Burning calendar tahun x bulan
 
-Mulai setelah Sprint 1 (P0) dan prasyarat task ini selesai. P2 tetap opsional; eksperimen dapat berakhir dengan keputusan no-go yang terdokumentasi.
+- [ ] **Selesai dan direview** — estimasi 6 poin.
 
-Rujukan pekerjaan rekan: [Nathan](../Nathan/SPRINT-2-P1.md) — [Bagas](../Bagas/SPRINT-2-P1.md).
+**Pekerjaan:** Hubungkan kalender Januari-Desember per tahun ke hasil v2; klik bulan membuka halaman detail harian dan deteksi yang sesuai. Batasi rendering pada data yang diperlukan.
 
-## Tahap 1 — Benchmark dan metodologi reproducible
+**Kriteria selesai:** Area/periode dan hasil konsisten pada peta/kalender/detail. Nol, no_data, partial dan insufficient_history berbeda; angka asli per sumber dan estimasi tidak tertukar.
 
-**Tujuan integrasi tim:** ukur manfaat harmonisasi vs baseline sederhana dengan split waktu dan arsip berversi.
+**Dependensi integrasi:** R2-P0-O4, R2-P1-N4
 
-- [ ] **P1-S1-O1 — Panel metodologi.** Tampilkan unit, definisi metrik, model/sumber, baseline, batas data, dan alasan score unavailable. **Selesai bila:** provenance mudah ditemukan dalam EN/ID.
-- [ ] **P1-S1-O2 — Tampilan raw/baseline/calibrated.** Sajikan pembanding hasil uji dengan satuan, periode, dan jumlah sampel. **Selesai bila:** hasil simulasi/yang belum diuji tidak ditampilkan sebagai peningkatan terverifikasi.
+### R2-P1-O2 — Perbandingan, anomali dan metodologi
 
-## Tahap 2 — Validasi kandidat dan review koordinator
+- [ ] **Selesai dan direview** — estimasi 5 poin.
 
-**Tujuan integrasi tim:** uji aturan clustering/persistensi dan kegunaan ranking dengan bukti independen serta feedback terdokumentasi.
+**Pekerjaan:** Tampilkan dua periode, durasi, perubahan aktivitas, referensi bergerak yang dapat diubah, serta model/validasi/provenance. Pisahkan skala warna count dan anomali.
 
-- [ ] **P1-S2-O1 — Fasilitasi review kegunaan.** Jalankan tugas review kandidat, alasan, batasan, dan ekspor; catat temuan dengan persetujuan. **Selesai bila:** temuan ditulis terpisah dari asumsi desain.
-- [ ] **P1-S2-O2 — Perbaiki penjelasan kandidat.** Tampilkan alasan, ketidakpastian, dan respons reviewer. **Selesai bila:** reviewer dapat menerangkan mengapa lokasi muncul dan apa yang tidak disimpulkan sistem.
+**Kriteria selesai:** Referensi aktual dan keterbatasan dapat dibaca dalam EN/ID. Periode parsial/tidak sama panjang tidak menyesatkan, dan metode yang belum didukung tidak diberi score palsu.
 
-## Tahap 3 — Transfer wilayah dan keputusan status metode
+**Dependensi integrasi:** R2-P1-O1, R2-P1-N3
 
-**Tujuan integrasi tim:** uji generalisasi antardaerah dan tetapkan di mana harmonisasi layak dipublikasikan.
+### R2-P1-O3 — Detail hotspot dan daftar lokasi tim
 
-- [ ] **P1-S3-O1 — Tampilan transfer lintas wilayah.** Tampilkan hasil per wilayah dan batas generalisasi. **Selesai bila:** hasil buruk di satu wilayah tidak tersembunyi dalam angka gabungan.
-- [ ] **P1-S3-O2 — Materi demo berbasis hasil.** Hubungkan klaim presentasi ke run benchmark. **Selesai bila:** klaim kuantitatif memiliki sumber/periode/limitasi dan klaim tanpa bukti diberi label belum diuji.
+- [ ] **Selesai dan direview** — estimasi 4 poin.
+
+**Pekerjaan:** Buka bukti dari titik asli, sediakan Tandai lokasi, daftar lokasi workspace dan buka ulang untuk analisis periode lain. Klik kelompok heatmap mengarah ke detail/zoom sebelum memilih anchor.
+
+**Kriteria selesai:** Lokasi yang disimpan dapat dibuka kembali tanpa bergantung pada baris feed aktif. Posisi/nama/analisis asal jelas; keadaan menunggu/gagal simpan tidak disebut sukses.
+
+**Dependensi integrasi:** R2-P0-O4, R2-P1-B2
+
+### R2-P1-O4 — UI pemeriksaan dan ekspor penelitian
+
+- [ ] **Selesai dan direview** — estimasi 5 poin.
+
+**Pekerjaan:** Integrasikan assignee, status pekerjaan, beberapa laporan, koreksi beralasan dan revision conflict. Sediakan unduhan CSV serta PNG kalender/grafik dari hasil yang sama dengan metadata visual.
+
+**Kriteria selesai:** Anggota tim dapat menugaskan dan mencatat hasil; refresh tidak menghapus laporan. Nama pemeriksa/pencatat dan waktu terpisah. PNG/CSV mencantumkan periode, AOI, satuan, model, baseline dan sumber; file demo berlabel.
+
+**Dependensi integrasi:** R2-P1-O3, R2-P1-B3, R2-P1-B4
 
 ## Checklist sebelum membuat PR
 
-- [ ] PR menautkan ID task sprint, menyebut satu tujuan, dan mencantumkan acceptance criteria yang dipenuhi.
-- [ ] Perubahan fokus pada scope task; tidak ada fixture/angka demo yang tersaji sebagai hasil operasional.
-- [ ] Untuk data: sumber, versi, waktu observasi/ingest/publish, satuan, konfigurasi, dan provenance dapat ditelusuri.
-- [ ] Nilai yang tidak diketahui/tidak cukup bukti menjadi `null` atau status eksplisit; tidak diubah menjadi nol atau “tidak ada api”.
-- [ ] Jalur gagal relevan (kosong, parsial, stale, duplikat, timeout, akses ditolak) ditangani dan diuji.
-- [ ] Tes unit/integrasi/UI terkait diperbarui dan dijalankan; hasil aktual dicantumkan pada PR.
-- [ ] `npm run typecheck` dan `npm run build` lulus untuk perubahan aplikasi; tes pipeline Python lulus untuk perubahan analitik.
-- [ ] Migrasi Prisma konsisten bila ada perubahan schema; jangan menerapkan migrasi produksi langsung dari PR.
-- [ ] Endpoint memeriksa izin di server dan tidak membocorkan token, rahasia, atau stack trace.
-- [ ] UI diuji pada desktop/mobile dan keyboard; EN/ID serta loading/error/empty state tetap konsisten.
-- [ ] Satu anggota lain melakukan review; risiko, batasan, dan cara verifikasi terdokumentasi.
+- [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.
+- [ ] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
+- [ ] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
+- [ ] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
+- [ ] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
+- [ ] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
+- [ ] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR.
+- [ ] UI yang berubah diperiksa EN/ID, keyboard/fokus, mobile, warna/status, serta konteks AOI/periode yang tidak hilang.
+- [ ] Satu rekan melakukan review; PR mencatat risiko, keterbatasan dan cara memverifikasi.
+- [ ] Status task/trackernya diperbarui setelah bukti dan integrasi selesai; checklist lama tidak menjadi bukti PR baru.
 
-## Syarat sprint selesai
+## Syarat sprint pribadi selesai
 
-- [ ] Seluruh task pribadi selesai atau memiliki keputusan no-go yang diperbolehkan spesifikasi task.
-- [ ] Keluaran sudah terintegrasi dengan pekerjaan dua anggota lain dan direview.
-- [ ] Bukti verifikasi serta blocker dicatat di PR dan status diperbarui pada task tracker.
+- [ ] Task wajib sprint ini memenuhi acceptance; keputusan no-go hanya berlaku pada eksperimen opsional, bukan pengganti fitur inti.
+- [ ] Handoff schema-valid diintegrasikan dengan rekan dan hasil verifikasi ditautkan.
+- [ ] Blocker, status data/model dan hasil review tercatat pada PR/issue serta tracker.
 
-Metode aktif hanya untuk kombinasi wilayah/periode yang lolos evaluasi; lainnya memakai hasil mentah dan status keterbatasan.
+## Bukti pekerjaan sebelum rebaseline
+
+Status checklist v1 yang sudah dicentang disimpan pada [arsip keputusan/status lama](../archive/2026-11-10-completed-v1.md). ID v1 tidak diubah maknanya menjadi task baru.
+
+Kontrak v1, i18n, frontend states dan acceptance mandiri sebelumnya tetap menjadi bukti prototype; lihat [catatan Orkhan](../../docs/orkhan-sprint-1-progress.md). Bukti itu tidak menutup kriteria satu workspace peta dan kalender v2.

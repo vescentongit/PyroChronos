@@ -40,7 +40,6 @@ import {
 import { useSnapshot } from "./use-snapshot";
 import { InspectionReports } from "./inspection-reports";
 
-const FireMap = dynamic(() => import("./fire-map"), { ssr: false });
 const GlobalHeatmap = dynamic(() => import("./global-heatmap"), { ssr: false });
 const emptyCandidates: SnapshotCandidate[] = [];
 type View = "overview" | "map" | "analysis" | "reports" | "global";
@@ -100,11 +99,6 @@ export default function DashboardWorkspace() {
   const navigation = [
     { id: "overview" as const, name: "Dashboard", icon: LayoutDashboard },
     {
-      id: "map" as const,
-      name: t("Peta aktivitas", "Activity map"),
-      icon: Map,
-    },
-    {
       id: "analysis" as const,
       name: t("Analisis historis", "Historical analysis"),
       icon: ChartNoAxesCombined,
@@ -116,7 +110,7 @@ export default function DashboardWorkspace() {
     },
     {
       id: "global" as const,
-      name: t("Heatmap global", "Global heatmap"),
+      name: t("Peta aktivitas", "Activity map"),
       icon: Globe2,
     },
   ];
@@ -288,7 +282,7 @@ export default function DashboardWorkspace() {
             </label>
             <span className="demo-label">
               {view === "global"
-                ? "FIRMS NRT"
+                ? t("PETA GLOBAL", "GLOBAL MAP")
                 : mode === "demo"
                   ? "DEMO"
                   : t("OPERASIONAL", "OPERATIONAL")}
@@ -296,9 +290,10 @@ export default function DashboardWorkspace() {
           </div>
         </header>
         <div className="content" id="workspace-content" tabIndex={-1}>
-          {view === "global" ? (
+          <div hidden={view !== "global"}>
             <GlobalHeatmap language={language} />
-          ) : (
+          </div>
+          {view !== "global" && (
             <>
               <div className="heading">
                 <div>
@@ -567,19 +562,20 @@ export default function DashboardWorkspace() {
                         <span className="sensor-label">MODIS + VIIRS</span>
                       </div>
                       <div className="map-layout">
-                        <FireMap
-                          region={region}
-                          language={language}
-                          points={points}
-                          selected={active?.id || ""}
-                          assessedAt={assessedAt}
-                          label={
-                            mode === "demo"
-                              ? t("Data ilustratif", "Illustrative data")
-                              : statusLabel
-                          }
-                          onSelect={choose}
-                        />
+                        <div className="research-map-link">
+                          <p>
+                            {t(
+                              "Peta aktivitas dan heatmap tersedia dalam satu workspace global.",
+                              "Activity map and heatmap share one global workspace.",
+                            )}
+                          </p>
+                          <button
+                            className="outline"
+                            onClick={() => setView("global")}
+                          >
+                            {t("Buka peta aktivitas", "Open activity map")}
+                          </button>
+                        </div>
                         <aside className="location-detail">
                           {active ? (
                             <>

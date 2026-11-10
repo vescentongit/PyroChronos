@@ -1,90 +1,100 @@
-# PyroChronos Task Tracker
+# PyroChronos — Task Tracker Riset v2
 
-Rencana eksekusi 3 sprint per anggota, pembagian pemilik, spesifikasi task, dan checklist PR ada di [`SPRINT-PLAN.md`](SPRINT-PLAN.md).
+Acuan keputusan: [product.md](../product.md), 10 November 2026. Rincian per orang, task, dependensi, dan checklist PR: [3 sprint](SPRINT-PLAN.md). Kontrak target: [API v2](../docs/contracts/api-v2.md).
 
-Living checklist for the agreed product scope in [`product.md`](../product.md). Status is based on the repository implementation as of 9 November 2026. “Done” means present in the prototype, not independently validated in operational use.
+## Status yang sudah tersedia
 
-## Current state
+- [x] Fondasi Next.js/TypeScript/Tailwind/Prisma/Neon, EN/ID dan Plus Jakarta Sans tersedia.
+- [x] Peta satelit, endpoint hotspot NRT berbasis bbox, CSV regional, serta laporan prototype tersedia; ini belum kalender historis terharmonisasi.
+- [x] Katalog/parser, raw batch, ingest, grid global bulanan dan draft calendar-1 tersedia; polygon tepat, detail harian dan baseline bergerak v2 masih perlu integrasi.
+- [x] Kontrak target v2, schema runtime/JSON, contoh sintetis dan pemeriksaan kontrak tersedia. Endpoint v2 belum dianggap diimplementasikan oleh keberadaan dokumen/schema.
+- [x] Checklist v1 yang sebelumnya selesai dipertahankan dalam [arsip](archive/2026-11-10-completed-v1.md), bukan dicentang ulang sebagai pekerjaan v2.
+- [ ] Seluruh fitur target v2 masih harus memenuhi acceptance dan integrasi; shared coordinator token, fixture dan prototype tidak memenuhi akun individual/workspace produksi.
 
-- [x] Next.js, TypeScript, Tailwind, Prisma, and initial Neon schema/migration are in place.
-- [x] Dashboard prototype supports Indonesia and English, preset Central Kalimantan/South Papua regions, candidate map/list, 24-hour and 7-day views, illustrative historical chart, and CSV export.
-- [x] Demo inspection reports persist in browser local storage; coordinator-code session and Neon report API are scaffolded.
-- [x] FIRMS API proxy can return a regional NOAA-20 NRT CSV when a server-side key is configured.
-- [x] Experimental Python EQM helper and focused tests exist.
-- [ ] Dashboard still uses illustrative candidates, chart values, anomaly percentiles, and priority labels. It is not live FIRMS analysis.
-- [ ] Neon credentials, production coordinator identity, and deployment environment have not been configured or verified.
+## P0 — Fondasi riset dan perbaikan peta
 
-## P0 — Deliver a truthful working MVP
+### Nathan
 
-### Data and ingestion
+- [ ] **R2-P0-N1** — Arsip global yang mempertahankan tanggal dan posisi asli (5 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [ ] **R2-P0-N2** — Kueri polygon bebas dan irisan waktu (8 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [ ] **R2-P0-N3** — Count per sumber dan manifest analisis (4 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [ ] **R2-P0-N4** — Adapter producer ke research-2 (3 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
 
-- [ ] Configure a private FIRMS key on the server; verify API access for both preset study regions.
-- [ ] Fetch the agreed MODIS and VIIRS FIRMS feeds, including the required satellite products and archive period; document exact source names, versions, timestamps, and refresh semantics.
-- [ ] Store immutable raw batches with fetch time, source, version, and checksums so later archive revisions can be traced.
-- [ ] Validate CSV schema, coordinates, timestamps, confidence, FRP, duplicate records, empty responses, late records, API failures, and rate-limit responses.
-- [ ] Replace fixture candidates on the dashboard with processed FIRMS detections. Keep the data freshness timestamp and source status visible per feed.
-- [ ] Remove hard-coded demo values from operational views; retain a clearly labelled demo/replay mode.
+### Bagas
 
-### Harmonization and current-activity analysis
+- [ ] **R2-P0-B1** — Skema workspace, akun individual, AOI dan revisi (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B2** — Pengajuan analisis dan antrean persisten (7 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B3** — Pembacaan hasil dan data spasial reusable (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B4** — Hak akses dan error lintas resource (3 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
 
-- [ ] Decide and document the stable analysis unit and location clustering rule for point detections.
-- [ ] Define comparable MODIS/VIIRS activity metrics without treating raw hotspot counts as equivalent observations.
-- [ ] Select the satellite reference/combination rule for overlapping periods; do not inflate activity merely because more satellites are available.
-- [ ] Build seasonal historical baselines for each preset region from archive FIRMS data; record the reference years, periods, missing-data treatment, and archive revision.
-- [ ] Implement current-period versus same-season baseline comparison with partial-window handling.
-- [ ] Fit and evaluate calibration per region using training and held-out time periods. Compare raw, simple baseline, and EQM; publish calibrated values only where validation supports them.
-- [ ] Compute anomaly, recency, and persistence components with transparent explanations and nullable values when evidence is insufficient.
-- [ ] Define the priority ordering and thresholds with coordinators; replay past periods without future-data leakage before describing rankings as validated.
-- [ ] Distinguish observation time, ingest time, and publish time. Mark stale, partial, unavailable, and replay data explicitly.
-- [ ] Keep “no FIRMS detection” distinct from “no fire”; do not infer cloud-free observation coverage from the hotspot point catalogue.
+### Orkhan
 
-### User workflow and field reports
+Implementasi frontend P0 tersedia; 31 tes, typecheck, build dan browser acceptance mandiri lulus. Checklist akhir tetap terbuka untuk integrasi data/backend nyata, imagery live dan review. [Bukti dan batas pengujian](../docs/orkhan-sprint-1-v2-progress.md).
 
-- [ ] Confirm preset study polygons/administrative areas for Central Kalimantan and South Papua; store stable IDs, geometry, area, source, and boundary version.
-- [ ] Confirm 24-hour primary candidate window and 7-day persistence context; show older detections for recheck without implying extinguished/visited.
-- [ ] Configure Neon and apply Prisma migrations in a non-production environment, then production.
-- [ ] Replace shared coordinator token with individual Auth.js identity and server-enforced coordinator write permissions.
-- [ ] Connect report form to Neon API; persist field inspection time separately from report entry time.
-- [ ] Add stable candidate references, report history, duplicate request protection, correction audit trail, and refreshed-detection-after-inspection handling.
-- [ ] Finalize inspection outcomes with coordinators; keep “not found during inspection” distinct from “extinguished”.
-- [ ] Add validation for report fields, authorization, origin/CSRF protections, and safe error handling.
+- [ ] **R2-P0-O1** — Satu peta dan navigasi tanpa reload analisis (7 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O2** — Editor polygon penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O3** — Rentang tanggal dan Analisis area (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O4** — Consumer v2 dan UI state yang jujur (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
 
-### Dashboard and release
 
-- [ ] Orkhan: implement global heatmap browsing with viewport/zoom loading and sensor/time filters, independently of fixed analysis-region selection.
-- [ ] Bagas: serve bounded global viewport data/tiles with caching, volume limits, safe FIRMS access, cancellation handling, and antimeridian support.
-- [ ] Nathan: supply normalized global detection/aggregation semantics with provenance; keep unvalidated cross-sensor counts separate and expose regional analysis availability explicitly.
+## P1 — Fitur inti versi pertama
 
-- [ ] Complete English and Indonesian coverage for navigation, map details, empty/loading/error states, reports, export headers, and date/time formatting.
-- [ ] Verify responsive map fallback, keyboard access, focus handling, and readable status labels.
-- [ ] Add scheduled ingestion with retry/backoff, atomic publication of completed analysis runs, and visible last-success/failure status.
-- [ ] Keep analytics usable from the last valid snapshot if ingestion, Neon, map tiles, or network services fail.
-- [ ] Deploy the Next.js app, configure environment secrets, and verify migrations and health checks against the deployed environment.
-- [ ] Run end-to-end replay for live/stale/partial data, both regions, report persistence, and failed-service cases before presenting as operational.
+### Nathan
 
-## P1 — Validate scientific and operational value
+- [ ] **R2-P1-N1** — Pairing dan acuan setara MODIS (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N2** — Evaluasi count mentah, baseline, dan EQM (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N3** — Referensi bergerak 10 tahun dan periode parsial (5 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N4** — Kalender, detail dan perbandingan konsisten (3 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
 
-- [ ] Build a time-based held-out benchmark for each study region and report sample counts, coverage limits, MAE/bias, and baseline comparisons.
-- [ ] Compare Near Real-Time FIRMS records to later standard-science archive versions and quantify changes in anomaly/priority outputs.
-- [ ] Validate candidate clustering and persistence rules against independent detections or documented field reports.
-- [ ] Conduct coordinator review of whether the ranked candidates help choose patrol/verification locations; tune the factors and thresholds from documented feedback.
-- [ ] Add a clear methodology panel with metric definitions, model version, baseline window, source versions, and reasons a score is unavailable.
-- [ ] Assess transferability between the two regions without training on the evaluation period.
+### Bagas
 
-## P2 — Optional research and expansion
+- [ ] **R2-P1-B1** — Worker nyata dan publikasi atomik (5 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B2** — Lokasi pemantauan persisten (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B3** — Penugasan, pemeriksaan, revision dan audit (7 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B4** — Ekspor CSV dan manifest yang terlindungi (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
 
-- [ ] Add raster FireMask/QA only if observation-coverage analysis is needed; verify product-specific QA definitions and spatial/temporal alignment.
-- [ ] Evaluate TROPOMI CO, SMAP moisture, wind, peat, or land-cover context as supplemental evidence with suitable scale and quality controls.
-- [ ] Consider any PyTorch/Hugging Face model only after specifying a labelled task, defensible baseline, evaluation data, and measurable benefit.
-- [ ] Expand preset regions and historical periods after the two-region MVP pipeline and performance are stable.
-- [ ] Consider geometry drawing, field-team accounts/mobile forms, offline sync, attachments, routes, or notifications only after user research supports them.
+### Orkhan
 
-## Acceptance checklist
+- [ ] **R2-P1-O1** — Burning calendar tahun x bulan (6 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O2** — Perbandingan, anomali dan metodologi (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O3** — Detail hotspot dan daftar lokasi tim (4 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O4** — UI pemeriksaan dan ekspor penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
 
-- [ ] Current detections and their observation/ingest/publish times are real and traceable to FIRMS inputs.
-- [ ] The current period is compared with a like-for-like seasonal historical baseline; incomplete or insufficient data yields “cannot assess”.
-- [ ] Harmonized output is labelled by method and is published only after held-out evaluation.
-- [ ] Candidate priority explains anomaly, recency, and persistence; it does not claim fire confirmation, danger probability, or extinguishment.
-- [ ] A coordinator can save, review, and correct a field report without losing its inspection time or history.
-- [ ] English and Indonesian screens communicate the same status and evidence.
-- [ ] Failure of a feed or backend cannot silently turn missing information into zero activity or a false “all clear”.
+
+## P2 — Penguatan dan evaluasi tambahan
+
+### Nathan
+
+- [ ] **R2-P2-N1** — Sensitivitas NRT versus standard (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N2** — Benchmark transfer lintas domain (6 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N3** — Eksperimen QA coverage terpisah (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N4** — Paket reproduksibilitas ilmiah (4 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+
+### Bagas
+
+- [ ] **R2-P2-B1** — Benchmark kapasitas dan biaya job (6 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B2** — Ketahanan antrean dan pemulihan (4 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B3** — Review isolasi dan retensi workspace (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B4** — Deployment dan observabilitas (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+
+### Orkhan
+
+- [ ] **R2-P2-O1** — Benchmark interaksi peta dan kalender (6 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O2** — Uji tugas bersama peneliti (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O3** — Audit aksesibilitas dan edge case (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O4** — Acceptance riset dan demo terukur (4 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+
+## Acceptance lintas tim
+
+- [ ] Navigasi/toggle peta tidak menjalankan ulang analisis, menghapus hasil, atau mengunduh ulang batch FIRMS identik; label wilayah dan koordinat terbaca.
+- [ ] Polygon bebas, periode primer/pembanding dan Analisis area menghasilkan job/handoff nyata yang dapat dibuka ulang sesuai izin workspace.
+- [ ] Kalender tahun x bulan, detail harian dan rentang tanggal bebas tersedia untuk pengajuan area global; periode belum siap memiliki status yang jujur.
+- [ ] Count estimasi setara MODIS merupakan hipotesis yang diuji, bukan ground truth. Raw per sumber dan metadata validasi dapat diaudit; unit sel-hari tidak diberi nama count hotspot.
+- [ ] Referensi default memakai bulan yang sama pada sepuluh tahun sebelumnya, tanpa target/tahun masa depan; no_data dan insufficient_history tidak menjadi nol/normal.
+- [ ] Lokasi persisten, beberapa penugasan/pemeriksaan, hasil, revision/audit dan deteksi setelah pemeriksaan tidak hilang saat data/analisis berubah.
+- [ ] Data privat tidak bocor antarworkspace melalui endpoint, ID, job, cache atau unduhan; request retry tidak menggandakan pekerjaan/laporan.
+- [ ] CSV observasi asli, agregat terharmonisasi dan PNG visualisasi mengacu pada versi, geometri, periode, metode dan baseline yang sama; tidak ada titik buatan.
+- [ ] EN/ID, Plus Jakarta Sans, Dashboard, keyboard/mobile, ramp aksesibel serta state antre/gagal/parsial/unsupported diuji.
+- [ ] Klaim global, live, validated dan sukses simpan sesuai bukti. Tidak ada janji 48 jam, 60 FPS atau akurasi paper tanpa pengukuran.
+
+P0 dan P1 sama-sama bagian target versi pertama. Jangan menutup scope global hanya karena demo dua wilayah berjalan. Tandai task selesai setelah PR/bukti dicantumkan dan integrasi direview; status rencana ini bukan bukti deployment atau migrasi database sudah dijalankan.

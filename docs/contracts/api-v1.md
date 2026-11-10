@@ -1,5 +1,7 @@
 # PyroChronos API & payload contract v1.0
 
+> **Legacy — kompatibilitas prototype.** Pekerjaan produk baru mengikuti [API riset v2](api-v2.md) dan [rencana migrasi](migration-v1-v2.md). Aturan wilayah tetap, sel-hari dan koordinator di dokumen ini hanya berlaku bagi consumer v1; bukan scope produk terbaru. Payload/endpoint v1 tidak diubah diam-diam.
+
 **Status: acuan implementasi.** Orkhan menetapkan kontrak atas mandat Nathan dan Bagas sebagaimana disampaikan dalam sesi kerja. Ini menggantikan status draft kontrak snapshot. Mandat penetapan payload tidak sama dengan hasil review kode Nathan, persetujuan polygon final, atau validasi ilmiah.
 
 Kontrak mempertahankan shape snapshot yang sudah dikonsumsi frontend. Endpoint dan migrasi yang belum tersedia tetap merupakan pekerjaan backend, bukan kemampuan yang diklaim sudah aktif.
@@ -139,7 +141,7 @@ Field wajib/enum/satuan/semantik yang berubah memerlukan versi baru dan migrasi 
 
 `GET /api/hotspots?bbox=west,south,east,north&source=<sumber>&hours=<24|48|72|96>&zoom=<0-16>`
 
-Endpoint mengambil satu batch FIRMS NRT global per sumber/jendela di server (key `FIRMS_MAP_KEY` tidak pernah dikirim ke browser), lalu hanya mengirim deteksi di dalam viewport. Schema runtime: [hotspots.ts](../../src/lib/hotspots.ts). JSON Schema: [hotspots](hotspots.schema.json), [hotspots-query](hotspots-query.schema.json).
+Endpoint mengambil FIRMS NRT sesuai bounding box viewport dan menyimpan cache per sumber/jendela/area di server (key `FIRMS_MAP_KEY` tidak pernah dikirim ke browser). Viewport yang melintasi antimeridian dibagi menjadi dua unduhan, lalu deteksi dideduplikasi. Viewport seluruh dunia tetap didukung. Schema runtime: [hotspots.ts](../../src/lib/hotspots.ts). JSON Schema: [hotspots](hotspots.schema.json), [hotspots-query](hotspots-query.schema.json).
 
 | Field | Makna |
 |---|---|
@@ -154,3 +156,5 @@ Endpoint mengambil satu batch FIRMS NRT global per sumber/jendela di server (key
 | `sample` | Maks. 30 deteksi terbaru di viewport, dengan satelit, confidence sumber, dan FRP (MW, nullable). |
 
 Kegagalan mengikuti bagian 6: 400 `INVALID_REQUEST` untuk bbox/sumber/periode tidak valid, 429 `RATE_LIMITED`, 503 `DEPENDENCY_UNAVAILABLE` (termasuk key belum dikonfigurasi). Kepadatan heatmap adalah kepadatan deteksi relatif, bukan jumlah kebakaran, luas terbakar, atau tingkat bahaya; tidak ada deteksi bukan berarti tidak ada api.
+
+Respons kegagalan hotspot juga menyertakan `reason` opsional: `NOT_CONFIGURED`, `NETWORK_ERROR`, `TIMEOUT`, `UPSTREAM_DENIED`, `RATE_LIMITED`, `INVALID_RESPONSE`, `PAYLOAD_TOO_LARGE`, atau `UPSTREAM_UNAVAILABLE`. Frontend menampilkan petunjuk pemulihan EN/ID dari kategori tersebut. Log server hanya mencatat kategori aman, tanpa URL upstream, API key, atau pesan exception mentah.

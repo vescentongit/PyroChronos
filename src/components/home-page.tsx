@@ -90,7 +90,7 @@ export default function HomePage() {
             <p className="landing-description">
               {t(
                 "Dari satu titik di bumi, lihat cerita yang lebih besar. Jelajahi aktivitas kebakaran di Kalimantan dan Papua dengan perspektif dua sensor satelit.",
-                "One point on Earth opens a bigger story. Explore fire activity in Kalimantan and Papua through the perspective of two satellite sensors.",
+                "One point on Earth opens a bigger story.",
               )}
             </p>
             <div className="landing-sensors">

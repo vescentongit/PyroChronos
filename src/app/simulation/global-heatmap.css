@@ -1,4 +1,119 @@
 .simulation-root {
+  [hidden] {
+    display: none !important;
+  }
+  .global-toolbar button[aria-pressed="true"] {
+    border-color: #61c9ff;
+    background: #102b3a;
+    color: #d9f3ff;
+  }
+  .research-panel {
+    border-top: 1px solid #383838;
+    margin-top: 20px;
+  }
+  .research-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: 16px;
+    margin-block: 20px;
+  }
+  .research-fields label,
+  .research-coordinate-editor label {
+    display: grid;
+    gap: 8px;
+    color: #c7c7c7;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .research-fields input,
+  .research-fields select,
+  .research-coordinate-editor textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #484848;
+    border-radius: 6px;
+    background: #171717;
+    color: #f4f4f4;
+    font: inherit;
+    font-size: 16px;
+    color-scheme: dark;
+  }
+  .research-coordinate-editor textarea {
+    resize: vertical;
+  }
+  .research-coordinate-editor button {
+    margin-top: 12px;
+  }
+  .research-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 10px;
+  }
+  .research-panel p,
+  .research-results p {
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .research-panel .global-toolbar {
+    margin-top: 18px;
+  }
+  .research-skeleton {
+    height: 80px;
+    border: 1px dashed #616161;
+    border-radius: 8px;
+  }
+  .research-results {
+    margin-top: 28px;
+    border-top: 1px solid #383838;
+    padding-top: 24px;
+  }
+  .research-results h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .research-results p {
+    margin-block: 12px;
+  }
+  .research-panel > p[role="status"] {
+    margin-bottom: 20px;
+  }
+  .global-drawing-tools:not(:empty) {
+    position: absolute;
+    z-index: 2;
+    top: 65px;
+    left: 14px;
+    right: 54px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    background: #171717;
+    border: 1px solid #484848;
+    border-radius: 6px;
+  }
+  .research-results caption {
+    text-align: left;
+    padding: 16px;
+    color: #d1d1d1;
+  }
+  .research-map-link {
+    padding: 28px;
+    line-height: 1.7;
+  }
+  .research-map-link button {
+    margin-top: 18px;
+  }
+  .global-heatmap :is(button, input, select, textarea, summary):focus-visible {
+    outline: 2px solid #61c9ff;
+    outline-offset: 3px;
+  }
+  .global-heatmap button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
   .sidebar {
     overflow-y: auto;
   }
@@ -96,10 +211,17 @@
     display: block;
     width: 75px;
     height: 8px;
-    background: linear-gradient(90deg, #0a3c91, #ba1e68, #fc3c23, #fff);
+    background: linear-gradient(90deg, #443983, #31688e, #35b779, #fde725);
   }
   .global-fallback {
-    bottom: 60px;
+    top: 65px;
+    bottom: auto;
+  }
+  .global-surface:has(.global-drawing-tools:not(:empty)) .global-fallback {
+    top: 180px;
+  }
+  .global-map-legend {
+    bottom: 52px;
   }
   .global-note {
     color: #bdbdbd;
@@ -143,6 +265,9 @@
     border-top-color: #171717;
   }
   @media (max-width: 620px) {
+    .global-map-legend {
+      bottom: 100px;
+    }
     .global-toolbar {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;

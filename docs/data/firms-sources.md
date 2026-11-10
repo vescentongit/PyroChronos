@@ -1,5 +1,7 @@
 # Data FIRMS dan kalender global (Nathan, Sprint 1)
 
+> **Fondasi producer, belum consumer riset v2.** Draft calendar-1 di bawah masih memakai pusat grid 0,25 derajat dan pembanding semua tahun; itu belum memenuhi polygon tepat, detail harian, atau referensi bergerak 10 tahun. Target baru adalah [API v2](../contracts/api-v2.md), dengan hipotesis skala setara MODIS yang harus divalidasi. Pekerjaan adaptasi: R2-P0-N1 sampai N4 dan R2-P1-N1 sampai N4 pada [sprint Nathan](../../tasks/Nathan/SPRINT-1-P0.md).
+
 Versi katalog: `firms-catalog-2`. Grid: `grid-0.25deg-monthly-1`. Kalender: `calendar-1` (draft, belum kontrak tim).
 
 Keputusan tim (10 Nov 2026): **titik api dan kalender bersifat global**. Pengguna dapat memilih area mana pun; Kalimantan Tengah (`kalteng`) dan Papua Selatan (`papua`) tetap menjadi area unggulan (*featured*) yang di-highlight, bukan batas cakupan.
@@ -18,7 +20,7 @@ Keputusan tim (10 Nov 2026): **titik api dan kalender bersifat global**. Penggun
 |---|---|---|---|---|---|---|
 | `MODIS_SP` | MODIS | Terra/Aqua | 1 km | standard | `modis_{tahun}` (mulai Nov 2000, terverifikasi) | Riwayat panjang kalender |
 | `MODIS_NRT` | MODIS | Terra/Aqua | 1 km | NRT | — | Kondisi terbaru |
-| `VIIRS_SNPP_SP` | VIIRS | Suomi NPP | 375 m | standard | `viirs-snpp_{tahun}` (2012 ada, terverifikasi) | Referensi harmonisasi |
+| `VIIRS_SNPP_SP` | VIIRS | Suomi NPP | 375 m | standard | `viirs-snpp_{tahun}` (2012 ada, terverifikasi) | Seri overlap untuk evaluasi harmonisasi; target acuan produk setara MODIS |
 | `VIIRS_SNPP_NRT` | VIIRS | Suomi NPP | 375 m | NRT | — | Kondisi terbaru |
 | `VIIRS_NOAA20_SP` | VIIRS | NOAA-20 | 375 m | standard | `viirs-jpss1_{tahun}` (2023 ada, terverifikasi) | Pembanding tambahan |
 | `VIIRS_NOAA20_NRT` | VIIRS | NOAA-20 | 375 m | NRT | — | Kondisi terbaru |

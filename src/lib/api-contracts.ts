@@ -20,7 +20,7 @@ const actor = z.object({
   displayName: z.string().nullable(),
 });
 
-// Final target contract for Bagas's API; current legacy backend is not yet compliant.
+// Legacy v1 report contract; the research v2 target lives in research-contracts.ts.
 export const createReportSchema = z
   .object({
     requestId: z.string().uuid(),

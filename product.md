@@ -1,465 +1,394 @@
 # PyroChronos — Product Specification
 
-**Challenge:** Harmonization of MODIS and VIIRS Hot Spots — NASA Space Apps Challenge 2026  
-**Status:** Visi produk dan rancangan MVP yang sedang dipertajam melalui wawancara; belum merupakan hasil eksperimen  
-**Sumber utama:** NASA FIRMS — arsip MODIS/VIIRS dan feed near-real-time  
-**Pengalaman utama:** Menilai kondisi terbaru terhadap pola historis musiman  
-**Pengguna utama:** Analis lingkungan atau koordinator pemantauan yang menyiapkan prioritas verifikasi lapangan/patroli  
-**Tindakan utama:** Memilih lokasi untuk diperiksa lebih dahulu berdasarkan bukti aktivitas terbaru dan konteks historis  
-**Cakupan peta/heatmap:** Global; pengguna dapat menjelajah hotspot seluruh dunia sesuai ketersediaan sumber
-**Cakupan analitik:** Global (keputusan tim 10 Nov 2026); kalender, baseline, dan harmonisasi dapat dihitung untuk area mana pun dari grid global
-**Area unggulan (highlight):** Subset Kalimantan Tengah dan Papua Selatan; ditonjolkan di UI dan cerita, bukan batas cakupan
-**Dasar:** *PyroChronos Technical Research & Feasibility Paper.pdf*, 8 halaman  
-**Tanggal:** 9 November 2026
+**Challenge:** Harmonization of MODIS and VIIRS Hot Spots — NASA Space Apps Challenge 2026\
+**Status:** Spesifikasi produk berdasarkan keputusan wawancara; kemampuan yang belum selesai tetap merupakan target implementasi\
+**Sumber utama:** NASA FIRMS — arsip MODIS/VIIRS dan feed near-real-time\
+**Pengguna utama:** Peneliti yang menganalisis perubahan aktivitas api dan anomali historis\
+**Pengalaman utama:** Memilih area dan rentang tanggal, lalu membaca burning activity calendar berbasis data terharmonisasi\
+**Cakupan:** Global sejak versi pertama, dengan target historis awal 2000-an hingga sekarang sesuai ketersediaan sumber\
+**Area unggulan:** Kalimantan Tengah dan Papua Selatan untuk studi, demonstrasi, serta evaluasi; bukan batas cakupan produk\
+**Dasar:** Objective challenge yang dibagikan pengguna, keputusan wawancara tim, dan *PyroChronos Technical Research & Feasibility Paper.pdf*\
+**Diperbarui:** 10 November 2026
 
-### Status implementasi awal
+## 0. Keputusan produk dan status implementasi
 
-Repository kini menyediakan Next.js/Tailwind, dashboard demonstrasi, peta MapLibre, grafik Recharts, pilihan dua wilayah, kandidat 24 jam/7 hari, ekspor, formulir laporan lokal, skema/migrasi Prisma untuk Neon, endpoint laporan, dan modul EQM eksperimental dengan unit test. UI dapat beralih ke penyimpanan Neon menggunakan kode akses koordinator setelah konfigurasi dan migrasi. Endpoint FIRMS menyediakan unduhan mentah saat key tersedia; dashboard belum menggunakan feed tersebut untuk analitik otomatis.
+Keputusan berikut menjadi acuan ketika berbeda dengan rancangan lama tentang daftar patroli, wilayah tetap, dan kalender berbasis sel-hari.
 
-Seluruh angka dashboard masih fixture demo. Harmonisasi dengan arsip nyata, baseline musiman, pemeringkatan tervalidasi, pembaruan terjadwal, akun individual Auth.js, serta jejak koreksi laporan belum selesai. Kode akses bersama adalah mekanisme pengembangan sementara. Bagian spesifikasi di bawah tetap menjadi target implementasi, bukan klaim semua fitur telah berjalan.
+| Bagian | Keputusan yang disepakati |
+|---|---|
+| Tujuan analisis | Perubahan aktivitas antarperiode dan anomali terhadap pola historis musiman |
+| Pengguna utama | Peneliti; pengelola lahan, petugas respons, dan pemadam menjadi pengguna pendukung |
+| Cakupan historis | Global sejak versi pertama; permintaan area/periode baru boleh diproses asinkron dan hasilnya disimpan |
+| Area penelitian | Polygon bebas yang digambar pengguna; geometri yang sama dipakai sepanjang perbandingan |
+| Pemicu analisis | Tombol **Analisis area** setelah area dan periode dipilih |
+| Navigasi peta | Zoom/geser tidak mengganti area analisis atau menjalankan ulang pengolahan historis |
+| Activity Map dan Global Heatmap | Satu workspace peta dengan toggle heatmap/titik dan konteks area/periode yang sama |
+| Kalender utama | Baris tahun, kolom Januari–Desember; klik bulan untuk detail harian |
+| Angka utama kalender | Estimasi jumlah deteksi hotspot yang diharmonisasi; jumlah deteksi asli tetap tersedia |
+| Acuan harmonisasi | Setara MODIS sebagai hipotesis awal; penerimaan metode bergantung pada validasi |
+| Anomali | Pembanding bergerak pada bulan yang sama dalam 10 tahun sebelumnya secara default; dapat diubah |
+| Tandai | Lokasi pemantauan persisten dengan bukti awal, konteks analisis, dan beberapa pemeriksaan terpisah |
+| Kepemilikan | Lokasi, penugasan, status, dan hasil pemeriksaan dibagikan dalam workspace tim |
+| Ekspor | CSV deteksi asli, hasil agregat harmonisasi, serta analisis dan visualisasi dengan provenance |
+
+### Status repository saat pembaruan dokumen
+
+Repository menyediakan Next.js/Tailwind, Prisma/Neon, pilihan bahasa Indonesia/English, font Plus Jakarta Sans, peta MapLibre dengan basemap satelit, endpoint FIRMS mentah untuk dua area contoh, endpoint hotspot global berdasarkan bounding box, endpoint laporan, serta pipeline dan modul EQM eksperimental. Respons hotspot terbaru bukan hasil harmonisasi historis. Data dashboard regional dan beberapa alur UI masih memakai fixture demonstrasi.
+
+Pengambilan data terbaru sudah dibatasi menurut bounding box, tetapi perubahan viewport/zoom masih dapat memicu request baru. Activity Map dan Global Heatmap masih memiliki alur data terpisah. Keduanya merupakan masalah implementasi yang harus diperbaiki, bukan perilaku target produk.
+
+Kalender historis global, analisis polygon bebas, harmonisasi tervalidasi, baseline bergerak 10 tahun, job analisis pengguna, penandaan persisten berbasis workspace, penugasan, dan akun individual belum dianggap selesai. Kode akses koordinator bersama yang ada merupakan mekanisme pengembangan sementara, bukan autentikasi workspace tim. Dokumen ini tidak menyatakan seluruh fitur target sudah tersedia.
 
 ## 1. Ringkasan produk
 
-PyroChronos adalah webapp untuk menyelaraskan catatan deteksi MODIS dan VIIRS dari NASA FIRMS, lalu membantu analis menjawab: **apakah aktivitas kebakaran terbaru pada wilayah ini tidak biasa dibandingkan pola historis pada musim yang sebanding?** Riwayat data menjadi pembanding untuk menilai kondisi sekarang, sehingga pengguna dapat menentukan kebutuhan tindak lanjut berdasarkan bukti.
+PyroChronos adalah webapp riset untuk membangun dan mengeksplorasi burning activity calendar dari data active fire hotspots MODIS dan VIIRS. Produk menghubungkan panjangnya seri historis MODIS dengan kelanjutan dan detail VIIRS melalui harmonisasi yang dapat diuji dan ditelusuri.
 
-Produk menggabungkan peta, kalender observasi, grafik perbandingan sensor, dan hasil kalibrasi yang dapat ditelusuri. Nilai mentah tetap tersedia. Tidak adanya deteksi tidak otomatis ditampilkan sebagai tidak adanya kebakaran.
+Dua pertanyaan utama yang dijawab:
 
-Nilai inovasi yang dituju adalah konteks historis lintas sensor untuk membantu menilai aktivitas terbaru. Feed terbaru sendiri bukan prediksi: deteksi satelit menunjukkan aktivitas yang sudah teramati. FIRMS mendistribusikan data global near-real-time sekitar tiga jam setelah observasi, bukan tiga jam sejak api mulai, dan pemantauan tidak berlangsung kontinu. UI harus memperlihatkan usia data aktual. [S11]
+1. **Apakah aktivitas api pada suatu area berubah dibanding periode lain setelah memperhitungkan perbedaan sensor?**
+2. **Apakah aktivitas suatu periode tidak biasa dibanding pola musiman pada tahun-tahun sebelumnya?**
 
-Visi jangka panjang adalah analisis riwayat karhutla lintas sensor di Kalimantan dan Papua bagian Indonesia, dengan konteks gambut dan tutupan lahan jika datanya tersedia. MVP membuktikan alur tersebut pada dua subset: Kalimantan Tengah dan Papua Selatan. Seluruh hotspot tidak diasumsikan sebagai kebakaran gambut. Analisis CO dan kelembapan tanah merupakan riset lanjutan, bukan kemampuan verifikasi kebakaran bawah tanah.
+Alur inti: pilih polygon → pilih rentang tanggal dan pembanding → tekan **Analisis area** → baca kalender, peta, perubahan, dan anomali → unduh hasil → simpan lokasi untuk analisis ulang atau pemeriksaan tim.
 
-## 2. Masalah dan alasan memilih challenge
+Produk memiliki dua bagian yang saling mendukung: pipeline harmonisasi dan aplikasi visual yang membaca hasil terharmonisasi. Konsistensi seri analitik menjadi tujuan ilmiah; sumber sensor tetap disimpan untuk audit, pemeriksaan metode, dan reproduksibilitas.
 
-MODIS dan VIIRS mempunyai karakteristik deteksi yang berbeda. FIRMS menyajikan hotspot MODIS beresolusi nominal 1 km dan VIIRS 375 m; jumlah titik dari keduanya tidak dapat langsung dianggap sebagai ukuran aktivitas yang setara. Resolusi grid produk turunan juga perlu dibedakan dari resolusi pengamatan instrumen. [S2][S3]
+Feed terbaru tersedia sebagai bagian dari riwayat hingga sekarang. Deteksi satelit menunjukkan aktivitas yang sudah teramati, bukan prediksi. UI memperlihatkan waktu akuisisi, pembaruan, serta status sementara bila periode belum lengkap. Tidak ada deteksi tercatat tidak otomatis berarti tidak ada kebakaran. [S2][S11]
 
-Challenge ini dipilih karena:
+## 2. Masalah, alasan memilih challenge, dan cakupan
 
-- **Masalah ilmiahnya konkret:** menggabungkan deret waktu tanpa harmonisasi dapat mencampurkan perubahan lingkungan dengan perubahan kemampuan deteksi.
-- **Relevan untuk Indonesia:** Kalimantan dan Papua menjadi fokus analisis karhutla serta keterbatasan observasi akibat awan. NASA pada 22 Oktober 2026 menyoroti aktivitas kebakaran di kedua wilayah; laporan BNPB 24 Oktober 2026 juga mencatat penanganan di Kalimantan Tengah dan Papua Selatan. Ini menjadi konteks pemilihan wilayah, bukan bukti kinerja produk. [S8][S9]
-- **Memberikan nilai di luar peta hotspot:** pengguna dapat menilai keterbandingan sensor dan kelengkapan observasi, bukan hanya melihat titik.
-- **Dapat didemonstrasikan:** dua subset wilayah dengan pipeline yang sama memungkinkan perbandingan hasil harmonisasi tanpa memproses seluruh arsip global.
-- **Menguji keterterapan metode:** hasil per wilayah memperlihatkan apakah kalibrasi tetap berguna ketika distribusi deteksi dan kondisi observasi berubah.
-- **Memiliki ruang pengembangan:** metode dan alur provenance dapat diperluas ke wilayah serta sensor tambahan setelah divalidasi.
+MODIS dan VIIRS berbeda dalam resolusi spasial, sensitivitas, serta kesempatan pengamatan. FIRMS menyajikan produk hotspot MODIS dengan resolusi nominal 1 km dan VIIRS 375 m; jumlah titik mentah keduanya tidak langsung setara. Pergantian atau penambahan sensor dapat tampak sebagai perubahan aktivitas bila seri disambungkan tanpa pengujian. [S2][S3]
 
-Judul challenge memiliki halaman resmi [S1]. Isi lengkap halaman tersebut belum berhasil diakses saat penyusunan; persyaratan submission dan penilaian harus dicocokkan kembali sebelum pengumpulan.
+Challenge dipilih karena memberi masalah ilmiah dan pengalaman pengguna yang konkret: menyelaraskan seri panjang, memperlihatkan pola musiman serta anomali, dan menyediakan analisis yang dapat diulang melalui area, periode, metode, serta data sumber yang tercatat. Peta menjadi pintu masuk penelitian dan tindak lanjut, sedangkan kalender dan perbandingan menjadi keluaran utama.
 
-### Strategi wilayah
+### Cakupan geografis dan waktu
 
-| Tingkat | Cakupan | Peran |
-|---|---|---|
-| Visi produk | Kalimantan dan Papua bagian Indonesia | Perbandingan riwayat karhutla lintas sensor dan wilayah |
-| MVP Kalimantan | Subset Kalimantan Tengah | Studi kasus pertama dan pengujian pipeline |
-| MVP Papua | Subset Papua Selatan | Studi kasus kedua dengan evaluasi mandiri dan uji transfer model bila sampel cukup |
+- Penjelajahan peta dan pengajuan analisis historis berlaku global sejak versi pertama. Produk tidak membatasi analitik ke daftar dua wilayah studi.
+- Target kalender dimulai pada awal 2000-an hingga sekarang, mengikuti ketersediaan masing-masing produk. Tahun awal tidak dipaksakan memiliki data VIIRS yang belum tersedia.
+- Area/periode yang belum dihitung dapat masuk antrean job. Ketersediaan global tidak berarti seluruh arsip sudah dihitung atau setiap permintaan selesai seketika.
+- Kalimantan Tengah dan Papua Selatan tetap menjadi area unggulan serta contoh validasi. Hasil model satu wilayah tidak otomatis dianggap berlaku global.
+- Area di luar dukungan data/model tetap dapat diajukan; sistem menampilkan status data atau validasi yang sebenarnya. Observasi mentah dapat tersedia ketika harmonisasi atau anomali belum dapat dinilai.
 
-“Kalimantan” mengacu pada wilayah Indonesia, dan “Papua” mengacu pada kawasan Papua bagian Indonesia, bukan hanya Provinsi Papua dan bukan Papua Nugini. Kedua subset MVP ditetapkan sebagai polygon tetap sebelum evaluasi. Batas dan luas subset harus terlihat di UI agar hasilnya tidak disalahartikan sebagai cakupan seluruh pulau atau provinsi.
+Istilah Kalimantan dan Papua pada studi Indonesia mengikuti geometri yang dicantumkan. Jangan menyamakan polygon contoh dengan keseluruhan pulau/provinsi, atau memasukkan Papua Nugini sebagai bagian wilayah Indonesia. Referensi konteks wilayah pada [S8][S9] tidak menjadi bukti kualitas model atau status kebakaran terkini.
 
-Gunakan batas geografis yang konsisten sepanjang deret waktu, dengan versi batas administrasi tercatat. Perubahan administrasi tidak boleh tampak sebagai perubahan aktivitas kebakaran. Konteks karhutla terkini dapat ditampilkan dengan tanggal pembaruan, tetapi evaluasi historis tetap menggunakan periode uji yang dibekukan.
-
-### Peta dan heatmap global
-
-Pengguna dapat menggeser, memperbesar, dan menelusuri peta/heatmap seluruh dunia tanpa dibatasi polygon studi Kalimantan Tengah atau Papua Selatan. Dua subset Indonesia tetap menjadi studi awal untuk harmonisasi dan baseline historis yang dievaluasi. Heatmap global belum diimplementasikan pada prototype saat keputusan ini dicatat; peta saat ini masih menampilkan kandidat demo dua subset.
-
-Heatmap menunjukkan kepadatan deteksi teramati menurut jendela waktu dan sensor pilihan. Label tidak menyebutnya luas terbakar, jumlah kejadian, atau tingkat bahaya. Sediakan filter sensor/satelit; jumlah titik MODIS dan VIIRS tidak dicampur sebagai intensitas setara tanpa metode yang sudah diuji. Tampilkan waktu observasi/pembaruan, sumber, dan keterbatasan. Data tidak tersedia tidak berarti bebas api.
-
-Muat data mengikuti viewport/zoom: tile atau agregat untuk tampilan luas, detail saat diperbesar. Jangan mengunduh seluruh dunia dalam satu respons browser. Backend menjaga key FIRMS, batas volume dan cache. Perpindahan viewport membatalkan request lama; area melintasi antimeridian ditangani konsisten.
-
-Polygon analisis tetap diperlukan untuk membandingkan periode historis pada wilayah yang sama, tetapi tidak membatasi penjelajahan global. Di luar area analitik siap pakai, hotspot tetap dapat ditampilkan sesuai ketersediaan sumber; baseline/anomali/harmonisasi diberi status belum tersedia dan tidak meminjam hasil wilayah lain.
-
-### Pemilihan wilayah analitik dalam MVP
-
-Untuk analitik historis dan harmonisasi, pengguna memilih wilayah dari daftar yang sudah disediakan; menggambar polygon sendiri dan mengunggah batas wilayah berada di luar MVP. Daftar awal mencakup area studi di Kalimantan Tengah dan Papua Selatan. Kabupaten dapat digunakan sebagai unit pilihan, tetapi nama dan jumlah area final ditetapkan setelah pemeriksaan ketersediaan data historis dan biaya pengolahan. Jangan menampilkan area sebagai tersedia jika datasetnya belum disiapkan.
-
-Setiap pilihan memiliki ID stabil, nama, polygon, versi batas, luas, dan periode data tersedia. Gunakan polygon yang sama untuk deteksi terbaru, baseline historis, serta ekspor. Siapkan agregat historis per wilayah agar interaksi cepat; pemilihan wilayah tidak memicu pengunduhan seluruh arsip. Daftar kandidat lokasi patroli tetap menunjukkan posisi di dalam wilayah pilihan, bukan hanya satu skor untuk seluruh wilayah.
-
-## 3. Tujuan, pengguna, dan manfaat
-
-### Tujuan utama
-
-1. Membandingkan aktivitas terbaru dengan pola historis musiman pada wilayah yang sama.
-2. Menyelaraskan MODIS dan VIIRS serta memperlihatkan kebaruan, kelengkapan sumber, dan keterbatasan observasi.
-3. Mengukur apakah kalibrasi mengurangi perbedaan antarsensor pada data uji.
-4. Menyediakan sumber, versi, metode, dan keterbatasan untuk setiap hasil.
+## 3. Pengguna dan alur penggunaan
 
 ### Pengguna utama
 
-Analis lingkungan atau koordinator pemantauan yang menyiapkan daftar lokasi untuk verifikasi lapangan/patroli. Tim lapangan menerima ringkasan lokasi dan menyampaikan hasil melalui saluran kerja yang biasa digunakan. **Koordinator di kantor memasukkan hasil pemeriksaan ke aplikasi.** Petugas tidak perlu memiliki akun atau mengisi formulir langsung di lapangan pada MVP. Peneliti menjadi pengguna sekunder. Pemilihan ini merupakan sasaran desain, bukan bukti kebutuhan yang sudah divalidasi bersama instansi. MVP mendukung penentuan lokasi pemeriksaan, bukan dispatch pemadaman, penentu pelanggaran, atau sertifikasi kepatuhan.
+Peneliti yang membutuhkan eksplorasi aktivitas api lintas waktu, perbandingan yang memperhitungkan sensor, dan anomali historis dengan metode yang transparan. Pengelola lahan, petugas respons darurat, dan pemadam dapat memakai hasil sebagai informasi pendukung. Pemilihan persona ini merupakan keputusan desain tim, bukan klaim validasi kebutuhan bersama instansi.
 
-### Alur penggunaan
+Penandaan dan pemeriksaan merupakan tindak lanjut analisis. Produk tidak mengklaim sebagai sistem dispatch pemadaman, penentu rute aman, prediktor penyebaran api, atau penentu kepatuhan hukum.
 
-1. Pengguna dapat menjelajah hotspot melalui peta/heatmap global. Untuk analitik historis dan harmonisasi, pengguna memilih area studi yang sudah disiapkan di Kalimantan Tengah atau Papua Selatan.
-2. Peta menampilkan deteksi terbaru, waktu akuisisi, serta waktu pembaruan aplikasi.
-3. Panel perbandingan menunjukkan aktivitas teramati versus distribusi historis pada musim dan durasi yang sebanding, beserta status keterbandingan datanya.
-4. Pengguna membuka kalender dan grafik untuk memeriksa riwayat, sensor penyumbang, serta pengaruh harmonisasi.
-5. Pengguna menelaah daftar kandidat lokasi verifikasi/patroli, memeriksa alasan pencalonan, posisi, waktu deteksi, konteks historis, dan keterbatasan data, lalu memilih lokasi untuk ditindaklanjuti.
-6. Pengguna mengekspor ringkasan CSV/JSON beserta provenance dan timestamp. Angka ilustratif tidak disajikan sebagai hasil nyata.
+### Alur utama peneliti
 
-Manfaat yang diharapkan adalah interpretasi data yang lebih hati-hati dan analisis yang dapat diulang. Besaran penghematan ekonomi, penurunan emisi, atau percepatan penanganan belum dapat diklaim.
+1. Jelajahi satu workspace peta global dengan citra satelit dan label wilayah.
+2. Gambar polygon bebas sebagai area of interest (AOI). Nama dan koordinat lokasi dapat membantu navigasi; memasukkan satu koordinat tidak menggantikan kebutuhan geometri area analisis yang jelas.
+3. Pilih rentang tanggal penelitian, periode pembanding jika diperlukan, dan konfigurasi referensi anomali. Pilihan tanggal tidak dibatasi pada 24/48/72/96 jam terakhir.
+4. Tekan **Analisis area**. Sistem memakai hasil identik yang masih sesuai atau membuat job untuk permintaan baru.
+5. Selama job berjalan, pengguna tetap dapat menggerakkan peta. Status antrean/pemrosesan/gagal terlihat; hasil analisis sebelumnya tetap teridentifikasi dengan area dan periodenya sendiri.
+6. Buka kalender tahun × bulan, detail harian, peta heatmap/titik, grafik perbandingan, dan anomali. Seluruh panel mengikuti hasil analisis aktif yang sama.
+7. Unduh CSV, ringkasan, dan visualisasi yang menyertakan area, periode, versi data, serta metode.
+8. Klik deteksi untuk melihat bukti dan menandai lokasi pemantauan dalam workspace tim. Buka kembali lokasi tersebut untuk periode lain, penugasan, status, serta hasil pemeriksaan.
 
-### Keluaran untuk verifikasi lapangan
+## 4. Lingkup produk dan pengalaman peta
 
-Setiap kandidat lokasi menyertakan koordinat/area pemeriksaan, waktu dan satelit pengamat, ringkasan deteksi terbaru, pembanding historis jika tersedia, alasan masuk daftar, serta status kualitas/kebaruan. Pengguna dapat memeriksa bukti pada peta dan mengekspor ringkasan. Label keluaran adalah “kandidat verifikasi”, bukan kebakaran terkonfirmasi atau rute patroli yang telah dinilai aman.
+### Satu workspace peta
 
-Prioritas verifikasi menggabungkan **anomali historis, kebaruan, dan persistensi deteksi**, dengan kontribusi tiap komponen dijelaskan kepada pengguna. Aktivitas yang rutin secara historis tetap dapat memerlukan pemeriksaan; data historis yang tidak cukup juga tidak otomatis menghapus deteksi terbaru dari daftar kandidat.
+Activity Map dan Global Heatmap disatukan menjadi satu workspace pengguna. Toggle **heatmap / titik hotspot** mempertahankan AOI, periode aktif, pilihan lokasi, serta referensi hasil analisis. Perbedaan satuan tampilan harus terlihat: kepadatan/estimasi agregat tidak disamakan dengan titik pengamatan asli.
 
-| Komponen | Makna untuk prioritas | Batas interpretasi |
-|---|---|---|
-| Anomali historis | Seberapa tidak biasa aktivitas teramati dibandingkan musim dan durasi yang sebanding setelah harmonisasi | Bukan tingkat bahaya; baseline yang tidak memadai menghasilkan nilai tidak tersedia |
-| Kebaruan | Seberapa baru waktu akuisisi deteksi terakhir pada lokasi | Gunakan waktu pengamatan, bukan waktu unduh; data lama yang baru masuk tidak dianggap deteksi baru |
-| Persistensi | Deteksi berulang pada lokasi yang sama dalam beberapa kesempatan pengamatan berbeda | Bukan jumlah baris CSV atau bukti api menyala terus-menerus; beberapa satelit pada waktu berdekatan tidak otomatis menjadi pengulangan independen |
+Basemap menggunakan citra satelit berwarna dan lapisan nama wilayah/tempat yang terbaca sesuai tingkat zoom. Label tidak bergantung pada hover hotspot. Panel detail menampilkan koordinat dan nama wilayah bila tersedia; nama yang tidak dapat dipastikan tidak dikarang. Perpindahan bahasa tidak menghapus konteks peta atau hasil.
 
-Kualitas dan ketersediaan data menjadi penanda kelayakan penilaian, bukan tambahan skor bahaya. Komponen yang tidak tersedia tidak diisi nol atau disembunyikan melalui pembobotan ulang tanpa penjelasan. Bukti terbaru tetap dapat ditampilkan sebagai kandidat dengan penilaian parsial. Jeda deteksi tidak otomatis berarti api padam karena awan dan celah pengamatan masih mungkin terjadi.
+Pada zoom luas, heatmap atau cluster mewakili kelompok deteksi. Pengguna dapat membuka detail atau memperbesar kelompok sebelum memilih titik pengamatan; pusat cluster tidak disimpan seolah-olah merupakan koordinat observasi sensor.
 
-Bobot, ambang, dan aturan kesetaraan lokasi/pengamatan belum dibekukan; semuanya perlu dievaluasi melalui replay sebelum disebut pemeringkatan tervalidasi. Pilihan gabungan ini merupakan keputusan desain, bukan bukti bahwa skor sudah memprediksi kebutuhan patroli di lapangan.
+### Navigasi dan performa
 
-### Jendela daftar patroli
+- Kamera peta, polygon yang sedang diedit, dan permintaan analisis aktif merupakan state terpisah.
+- Zoom/geser tidak mengganti AOI aktif, membersihkan hotspot yang sudah dimuat, menghapus hasil kalender, atau menjalankan ulang job historis. Pengeditan polygon/periode baru diterapkan setelah **Analisis area** ditekan.
+- Pengambilan tile basemap atau tile data yang belum tersedia tetap boleh terjadi ketika menjelajah. Ini berbeda dari mengunduh ulang batch FIRMS atau menghitung ulang analisis untuk setiap gerakan kamera.
+- Gunakan cache dan data spasial berpartisi/tile pada resolusi yang sesuai. Cache tidak hanya bergantung pada bbox kamera yang harus persis sama; area yang sudah tercakup dipakai kembali. Zoom terutama mengubah penyajian/agregasi data yang tersedia.
+- Hindari membuat ulang instance peta, sumber, serta seluruh marker pada setiap perubahan UI. Batasi fitur yang dirender melalui tile, agregasi, clustering, dan detail sesuai kebutuhan.
+- Loading bersifat lokal dan tidak memblokir navigasi. Data area baru tidak menggantikan hasil area lama tanpa konteks yang jelas; respons usang tidak menimpa pilihan terbaru.
+- Kualitas citra dan ketajaman dievaluasi pada desktop/mobile dengan memperhatikan resolusi layar, jaringan, serta ketersediaan imagery. Tidak mengklaim detail melebihi sumber atau target 60 FPS tanpa pengukuran.
+- Kegagalan tile tidak menghilangkan analisis atau seluruh overlay. Kegagalan jaringan/data menampilkan kategori dan tindakan pemulihan tanpa membocorkan kredensial.
 
-- **Daftar utama:** kandidat dengan deteksi yang waktu akuisisinya berada dalam 24 jam terakhir pada waktu penilaian. Ini jendela bergerak, bukan pergantian tanggal kalender.
-- **Konteks pengulangan:** tampilkan pengamatan selama 7 hari terakhir untuk membantu menilai persistensi kandidat.
-- **Perlu dicek kembali:** lokasi dengan deteksi terakhir lebih dari 24 jam hingga 7 hari lalu ditampilkan terpisah dengan label “tidak ada deteksi terbaru; kondisi belum terverifikasi”. Label ini tidak berarti pernah diperiksa petugas.
-- Deteksi yang lebih lama tetap dapat diakses melalui riwayat. Keluar dari daftar utama tidak berarti api padam atau lokasi aman. Jika sumber gagal diperbarui, tampilkan kegagalan tersebut alih-alih menyatakan tidak ada deteksi terbaru.
-- Gunakan waktu akuisisi, bukan waktu unduh. Simpan waktu penilaian serta batas jendela pada snapshot; snapshot yang sudah lama tidak ditampilkan sebagai daftar 24 jam terkini. Untuk replay, waktu penilaian mengikuti waktu simulasi dan diberi label jelas.
+### Polygon penelitian
 
-Daftar ini membantu koordinator memilih lokasi pemeriksaan. **Pencatatan hasil pemeriksaan termasuk MVP.**
+Polygon bebas merupakan cara utama memilih area analisis. Simpan geometri WGS84, ID stabil, versi/hash, luas, dan nama yang diberikan pengguna. Tampilkan batasnya pada peta. Validasi koordinat, geometri tidak valid, serta penanganan antimeridian; jangan memperbaiki atau memotong bentuk secara diam-diam sehingga area penelitian berubah.
 
-### Pencatatan hasil pemeriksaan
+Gunakan polygon yang sama untuk kedua periode pembanding, kalender, baseline, dan ekspor. Jika geometri diubah, buat revisi/konteks analisis baru. Preset wilayah dapat membantu memulai, tetapi tidak membatasi area yang dapat diajukan. Unggah GeoJSON belum menjadi keputusan MVP; menggambar polygon bebas sudah termasuk lingkup.
 
-Koordinator yang memiliki akses tulis dapat membuka kandidat, mencatat waktu pemeriksaan yang dilaporkan tim, memilih hasil, dan menambahkan catatan singkat. Simpan identitas koordinator pencatat, waktu laporan disimpan, serta lokasi/kandidat yang diperiksa. Identitas pencatat tidak dianggap sebagai identitas orang yang melakukan pemeriksaan. Waktu pemeriksaan berbeda dari waktu input, sehingga laporan yang terlambat dimasukkan tidak tampak sebagai pemeriksaan baru.
+### Kalender, perbandingan, dan aksesibilitas
 
-Formulir MVP menyediakan hasil “api/asap ditemukan”, “tidak ditemukan tanda api saat pemeriksaan”, atau “belum dapat dipastikan”. Status “sudah diperiksa” menerangkan adanya pemeriksaan, bukan menyatakan kebakaran padam. Koordinator mencatat informasi dari tim tanpa mengubah laporan yang belum pasti menjadi konfirmasi kebakaran.
+Kalender utama menggunakan baris tahun dan kolom Januari–Desember. Warna merepresentasikan estimasi jumlah deteksi terharmonisasi untuk AOI aktif. Setiap bulan dapat dibuka menjadi detail harian dan deteksi terkait. Rentang tanggal bebas tetap tersedia untuk analisis dan ekspor, termasuk periode yang tidak mencakup satu bulan penuh.
 
-Laporan tetap tersimpan ketika feed FIRMS diperbarui atau kandidat melewati batas 24 jam. Pisahkan bukti satelit dan laporan manusia pada UI maupun penyimpanan. Deteksi baru setelah waktu pemeriksaan ditandai “ada deteksi setelah pemeriksaan” dan dapat kembali masuk daftar utama sesuai jendela waktunya; jangan menekan deteksi baru hanya karena lokasi pernah diperiksa. Pengaitan lokasi dengan laporan harus memakai identitas stabil dan referensi posisi, bukan urutan baris snapshot.
+Sediakan tampilan anomali dengan skala berbeda yang dijelaskan secara eksplisit; warna jumlah deteksi dan warna anomali tidak memakai arti yang tertukar. Gunakan color ramp yang dapat diakses, legenda, angka/tooltip, dan status tekstual. Nilai nol, data hilang, serta referensi belum cukup memiliki tampilan berbeda; warna tidak menjadi satu-satunya pembawa informasi.
 
-Batasi MVP pada formulir online ringkas untuk koordinator dan riwayat laporan. Foto, rute patroli, penugasan tim, akun petugas lapangan, serta sinkronisasi offline berada di luar MVP. Pencatatan memerlukan penyimpanan persisten dan akses tulis terautentikasi untuk koordinator. Saluran pelaporan tim yang sudah ada tidak perlu diintegrasikan otomatis. Laporan demo diberi label dan dipisahkan dari laporan lapangan nyata.
+Perbandingan antarperiode memakai AOI dan konfigurasi metode yang sama. Jumlah total tetap disertai durasi; periode berbeda panjang tidak dianggap setara hanya dari totalnya. Bulan berjalan dan rentang parsial diberi label sementara serta dibandingkan dengan bagian musim/durasi yang sesuai.
 
-## 4. Lingkup produk
+UI mempertahankan bahasa Indonesia/English, font Plus Jakarta Sans, dan istilah **Dashboard** pada kedua bahasa. Akses keyboard, fokus, formulir, serta informasi peta yang dapat dibaca melalui daftar/panel menjadi bagian kriteria penerimaan.
 
-| Tahap | Kemampuan | Batasan |
-|---|---|---|
-| MVP 48 jam | Peta/heatmap global berbasis viewport dan sensor; feed FIRMS analitik untuk dua subset, pembanding historis musiman, peta, kalender, grafik sensor, kandidat patroli, formulir hasil pemeriksaan dan riwayat laporan, baseline dan kandidat kalibrasi, ekspor | Arsip pembanding disiapkan sebelum acara; laporan berupa form ringkas, bukan sistem manajemen operasi lengkap |
-| Pengembangan berikutnya | Perluasan periode/wilayah, API kueri, ketidakpastian, laporan wilayah | Membutuhkan pengujian generalisasi dan anggaran komputasi |
-| Riset lanjutan | Konteks CO, kelembapan tanah, angin, dan gambut | Indikasi pendukung, bukan deteksi terverifikasi kebakaran bawah tanah |
+### Batas lingkup
 
-MVP membutuhkan autentikasi untuk pencatatan pemeriksaan dan penyimpanan persisten laporan. Notifikasi otomatis, database analitik operasional besar, laporan legal, serta model deep learning tidak diperlukan. Lapisan H3 bersifat opsional jika diperlukan untuk penyajian; grid analisis utama tetap grid sinusoidal bersama.
+| Termasuk target versi pertama | Di luar lingkup awal |
+|---|---|
+| Analisis historis global, polygon bebas, kalender, perbandingan, anomali, job dan hasil tersimpan | Jaminan seluruh analisis global instan atau semua model sudah tervalidasi di setiap wilayah |
+| Satu peta satelit dengan label, heatmap/titik, detail, dan penandaan | Rekonstruksi koordinat hotspot yang tidak pernah diamati |
+| Workspace tim, penugasan pemeriksaan, status, hasil, riwayat perubahan | Sistem dispatch, rute patroli, aplikasi lapangan offline, atau notifikasi otomatis |
+| CSV dan visualisasi analitis dengan provenance | Sertifikasi legal, estimasi dampak ekonomi, atau prediksi kebakaran tanpa model tervalidasi |
+| FIRMS dan metode statistik CPU | PyTorch/Hugging Face atau LLM sebagai syarat produk |
 
 ## 5. Data yang digunakan
 
-| Data | Fungsi | Karakteristik dan akses | Batasan |
-|---|---|---|---|
-| FIRMS MODIS dan VIIRS — sumber utama | Riwayat deteksi untuk harmonisasi dan baseline musiman; feed NRT untuk kondisi terbaru | Archive Download untuk historis dan API area untuk data terbaru; posisi, waktu, satelit, confidence, FRP, dan versi | Katalog titik tidak menyediakan seluruh observasi non-api; jumlah titik bukan jumlah kejadian kebakaran |
-| MOD14A1 Collection 6.1; MYD14A1 sebagai perluasan — pelengkap | FireMask dan kualitas MODIS untuk eksperimen observabilitas | Produk harian grid sinusoidal 1 km melalui Earthdata/LP DAAC | Tidak wajib untuk ingest FIRMS; jangan menganggap QA historis mewakili kondisi awan hari ini |
-| VNP14A1 Version 2 — pelengkap | FireMask dan kualitas VIIRS untuk eksperimen observabilitas | Produk harian Level 3 grid sinusoidal **1 km** melalui Earthdata/LP DAAC | Berbeda dari FIRMS VIIRS 375 m; kecocokan ruang, waktu, dan makna produk harus diperiksa |
-| Batas administrasi dan polygon studi Kalimantan Tengah/Papua Selatan | Pemilihan wilayah dan agregasi | GeoJSON dari sumber resmi atau terbuka dengan lisensi yang dicatat | Gunakan geometri tetap untuk perbandingan historis; catat sumber dan versi batas |
-| Peta gambut | Konteks ekologis pada tahap lanjut | Sumber pemerintah atau penelitian dengan cakupan/lisensi terverifikasi | Bukan pengukuran langsung kedalaman atau kondisi gambut saat kebakaran |
-| Sentinel-5P TROPOMI CO | Konteks anomali atmosfer pada tahap riset | Produk Level 2 CO; jika diagregasi ke Level 3, proses gridding dan QA didokumentasikan | Sensitivitas dipengaruhi awan; CO dapat berasal dari sumber lain dan terbawa angin |
-| SMAP | Konteks kelembapan pada tahap riset | Kandidat L3 enhanced daily pada grid 9 km; versi dibekukan saat eksperimen | Kelembapan permukaan tidak sama dengan kelembapan gambut dalam; grid bukan jaminan resolusi efektif |
-
-Identitas MOD14A1 dan VNP14A1 dikonfirmasi melalui katalog NASA [S3]. Pedoman VIIRS menjadi acuan pembacaan produk [S4]. Karakteristik CO dan SMAP harus mengikuti dokumentasi produsennya [S5][S6].
-
-### Kebijakan pemilihan periode dan akses
-
-- Pilih subset bulan musim kebakaran dan pembanding non-puncak untuk masing-masing wilayah; gunakan periode tumpang tindih kedua produk. Perbandingan antardaerah memakai jendela waktu yang sama, dengan konteks musim masing-masing, bukan asumsi bahwa puncak kebakaran selalu serentak.
-- Paper mengusulkan pelatihan 2013–2018 dan pengujian 2019–2020. Jadikan ini desain evaluasi penuh, bukan syarat memproses semua arsip selama hackathon.
-- Jika subset MVP belum cukup untuk kalibrasi yang dapat dipercaya, tampilkan perbandingan observasi dan label eksperimen; jangan menyajikan model sebagai tervalidasi.
-- Verifikasi tile yang benar-benar beririsan dengan setiap polygon studi dari metadata. Jangan menyalin tile Riau dalam paper untuk Kalimantan atau Papua.
-- Feed terbaru menjadi input utama pengalaman pengguna; arsip menjadi pembanding historis. Benchmark pengembangan tetap dipisahkan dari data yang sedang dinilai. Catat tanggal akuisisi, waktu ingest, dan status NRT/arsip; jangan mencampur hotspot, luas terbakar, serta estimasi emisi sebagai ukuran yang sama.
-- Arsip FIRMS mengganti NRT dengan data standard science-quality ketika tersedia. Bekukan snapshot baseline dan catat revisinya; uji perbedaan NRT versus standard sebelum menafsirkan selisih sebagai anomali. [S10]
-- Catat product ID, collection/version, granule ID, periode, URL/DOI, waktu unduh, lisensi/atribusi, serta checksum berkas.
-- Simpan kredensial Earthdata dan FIRMS di lingkungan pengolahan, bukan di frontend atau ekspor publik.
-
-## 6. Tools dan bahasa pemrograman
-
-| Bagian | Pilihan | Alasan |
+| Data | Fungsi | Kebijakan dan batasan |
 |---|---|---|
-| Pengolahan dan eksperimen | Python, NumPy, SciPy, scikit-learn | CPU cukup untuk baseline statistik, kandidat EQM, dan evaluasi; tidak membutuhkan layanan model |
-| Numerik dan kalibrasi | NumPy, SciPy, scikit-learn | Statistik, EQM, baseline regresi, dan evaluasi |
-| Tabel dan agregasi | Polars, DuckDB, Parquet | Pemrosesan kolumnar dan kueri lokal tanpa server database wajib |
-| Raster dan koordinat | GDAL/Rasterio, PyProj | Membaca raster, memeriksa CRS, dan penyelarasan grid |
-| Webapp | Next.js App Router, React, TypeScript | UI dan backend aplikasi dalam satu proyek; Server Components untuk akses data dan Client Components untuk interaksi peta/grafik |
-| Styling | Tailwind CSS | Styling responsif yang konsisten; tidak menambahkan framework UI kedua sebagai syarat MVP |
-| Peta | MapLibre GL JS, deck.gl | Basemap dan lapisan spasial interaktif |
-| Grafik | Recharts | Perbandingan deret waktu dan indikator cakupan |
-| Database aplikasi | Neon PostgreSQL | Menyimpan wilayah, hasil analitik terbitan, kandidat, pengguna, dan laporan persisten |
-| ORM dan migrasi aplikasi | Prisma | Akses database bertipe pada server Next.js dan satu sumber migrasi skema |
-| Backend aplikasi | Next.js Route Handlers, Zod | Endpoint analitik dan laporan dengan validasi serta otorisasi; tidak memerlukan FastAPI terpisah |
-| Autentikasi | Auth.js dengan akun koordinator yang diizinkan | Memakai penyedia identitas, tanpa membangun penyimpanan password sendiri; penyedia OAuth ditetapkan berdasarkan akun tim sebelum implementasi |
-| Arsip pengolahan | Parquet; JSON/CSV untuk ekspor dan fallback | Berkas mentah historis tidak seluruhnya dimasukkan ke database aplikasi atau repository; arsip besar disimpan di object storage |
-| Hosting aplikasi | Vercel | Menjalankan Next.js dengan server runtime; bukan static export karena aplikasi memiliki autentikasi dan endpoint tulis |
-| Pembaruan data MVP | Job Python pada GitHub Actions terjadwal/manual, secret FIRMS, psycopg untuk Neon | Ingest dan komputasi berada di luar request web; jadwal bersifat best-effort dan UI menampilkan waktu berhasil terakhir |
-| Verifikasi | pytest; pemeriksaan browser | Menguji invariant ilmiah dan alur demo yang penting |
-| Kolaborasi | Git dan lockfile dependensi | Menjaga versi kode, konfigurasi, dan reproduksibilitas |
+| FIRMS MODIS/VIIRS Archive | Fondasi seri historis, pelatihan/evaluasi, kalender, dan pembanding musiman | Catat produk, satelit, versi, periode tersedia, checksum, serta revisi standard science-quality |
+| FIRMS NRT / Area API | Melengkapi seri sampai kondisi terbaru dan mendukung eksplorasi | Jendela terbaru tidak menggantikan kebutuhan arsip panjang; key server-only, quota dan kegagalan ditangani |
+| Polygon pengguna dan batas administrasi | Area penelitian, agregasi, label, dan konteks wilayah | Geometri analisis tetap sepanjang perbandingan; sumber/versi/lisensi batas administrasi dicatat |
+| Citra satelit dan label tempat | Basemap dan orientasi lokasi | Atribusi dipertahankan; umur imagery tidak dianggap sama dengan waktu deteksi hotspot |
+| MOD14A1/MYD14A1 Collection 6.1 dan VNP14A1 Version 2 | Pelengkap FireMask/QA untuk eksperimen observabilitas | Periksa metadata, waktu, serta pemetaan QA. VNP14A1 grid 1 km berbeda dari titik FIRMS VIIRS 375 m [S3][S4] |
+| Laporan pemeriksaan tim | Bukti manusia dan tindak lanjut lokasi | Terpisah dari observasi satelit dan estimasi harmonisasi; hasil tidak otomatis menjadi ground truth untuk seluruh area |
+| Gambut, TROPOMI CO, SMAP | Konteks dan riset lanjutan | Tidak wajib; tidak digunakan untuk mengklaim kebakaran bawah tanah terverifikasi [S5][S6] |
 
-Versi dependensi dipilih yang saling kompatibel saat implementasi lalu dikunci. Target sub-second processing jutaan rekaman atau 60 FPS tidak dianggap terbukti sebelum benchmark. Pengolahan granule dilakukan di luar browser; frontend hanya memuat agregat wilayah/periode yang diperlukan.
+### Akses, arsip, dan revisi
 
-### Arsitektur implementasi
+FIRMS menjadi sumber utama yang direkomendasikan untuk challenge, bukan satu-satunya sumber yang boleh dipakai. Arsip historis dan feed terbaru disimpan sebagai lapisan yang dapat ditelusuri. NRT dapat diganti data standard ketika tersedia; perubahan tersebut dicatat sebagai revisi, bukan langsung ditafsirkan sebagai perubahan fenomena. [S7][S10][S12]
 
-```text
-FIRMS Archive + NRT
-    -> job Python: ingest, validasi, agregasi, kalibrasi, skor, evaluasi
-    -> Neon: hasil per wilayah/periode + metadata run yang berhasil
+Simpan satelit, sensor, product/version, waktu akuisisi UTC, lokasi asli, confidence sumber, FRP beserta unit, status NRT/standard, waktu ingest, manifest, checksum, serta referensi arsip. Pertahankan kategori confidence masing-masing produk; nilainya tidak dianggap probabilitas yang identik. FRP bukan luas terbakar atau energi kumulatif dari penjumlahan lintasan.
 
-Browser -> Next.js -> Prisma -> Neon
-             |                    |
-             |                    +-- laporan pemeriksaan dan riwayat koreksi
-             +-- Auth.js: sesi koordinator dan pemeriksaan akses
+Arsip besar ditempatkan pada object storage/Parquet yang dapat dipartisi untuk kueri spasial dan waktu. Dataset mentah global tidak seluruhnya dimasukkan ke repository, browser, atau tabel aplikasi Neon. Kredensial NASA/Earthdata dan database tidak dikirim ke frontend, ekspor, maupun log URL.
 
-Arsip besar -> Parquet/object storage
-Fallback demo -> snapshot JSON berlabel timestamp/replay
-```
+## 6. Tools, bahasa, dan arsitektur
 
-- Next.js menangani pemilihan wilayah, pembacaan hasil, formulir laporan, ekspor, dan sesi pengguna. Peta/grafik interaktif menjadi Client Components; Prisma, secret FIRMS, dan kredensial database hanya berada di server. [S13]
-- Python menangani pengolahan ilmiah dan refresh data. Training, pembacaan arsip besar, serta kalkulasi baseline tidak dijalankan saat pengguna membuka dashboard. Tidak diperlukan server Python yang selalu aktif.
-- Seluruh migrasi dimiliki Prisma. Job Python memakai SQL/psycopg untuk menulis tabel analitik yang sama sesuai kontrak skema; tidak membuat atau mengubah tabel sendiri. Role job dibatasi pada data pipeline, terpisah dari hak akses laporan pengguna.
-- Gunakan koneksi Neon pooled untuk request aplikasi yang singkat dan berulang, sesuai panduan integrasi Prisma/Neon. Konfigurasi CLI migrasi mengikuti versi Prisma yang dikunci; jalankan migrasi sebagai tahap deployment, bukan pada setiap request. [S14]
-- Publikasikan hasil job dengan ID run dan status selesai. Validasi hasil sebelum mengganti referensi run aktif dalam transaksi, sehingga dashboard tidak membaca setengah batch. Jangan menimpa laporan saat hasil analitik diganti.
-- Next.js membaca hasil terbitan di Neon sebagai sumber utama; JSON menjadi format respons/ekspor dan fallback, bukan mekanisme deployment ulang tiap jam. Jika job gagal, pertahankan hasil terakhir dengan status kebaruan yang jujur.
-
-### Pembagian data dan endpoint minimum
-
-| Kelompok data | Isi | Pemilik penulisan |
+| Bagian | Pilihan | Peran |
 |---|---|---|
-| Region | ID, nama, batas GeoJSON, versi dan luas | Proses persiapan wilayah |
-| AnalysisRun dan ActivitySummary | Waktu ingest, satelit, versi metode, metrik, baseline, skor, kualitas | Job Python |
-| Candidate dan bukti deteksi | ID lokasi stabil, posisi, deteksi terakhir, alasan prioritas, referensi run | Job Python; identitas tidak diganti hanya karena snapshot baru |
-| InspectionReport dan revision | Kandidat/posisi, hasil, waktu pemeriksaan, pencatat, catatan, koreksi | Next.js setelah validasi hak koordinator |
-| User dan data sesi | Identitas, akses koordinator, sesi sesuai konfigurasi autentikasi | Layanan autentikasi dan administrasi akses |
+| Webapp | Next.js App Router, React, TypeScript | Workspace riset, Route Handlers, ekspor, dan integrasi hasil |
+| Styling | Tailwind CSS, Plus Jakarta Sans | UI responsif dan konsistensi Indonesia/English |
+| Peta | MapLibre GL JS | Citra satelit, label, polygon, heatmap/titik; rendering tambahan hanya bila benchmark membutuhkannya |
+| Grafik/kalender | Recharts dan komponen kalender | Deret waktu, tahun × bulan, detail harian, serta anomali |
+| Database aplikasi | Neon PostgreSQL dan Prisma | Workspace, keanggotaan, AOI, job, metadata hasil, lokasi, penugasan, dan laporan |
+| Autentikasi | Auth.js dengan akun individual | Identitas pengguna dan sesi; penyedia identitas mengikuti konfigurasi tim |
+| Validasi/otorisasi | Zod dan pemeriksaan akses server | Batas payload, status, geometri, serta isolasi workspace |
+| Pengolahan ilmiah | Python, NumPy, SciPy, scikit-learn | Agregasi count, baseline statistik, kandidat EQM, dan evaluasi |
+| Arsip/kueri | Polars, DuckDB, Parquet, object storage | Kueri spasial/waktu dan agregasi tanpa memuat seluruh arsip di web request |
+| Koordinat/raster opsional | PyProj, GDAL/Rasterio | CRS, grid, serta QA pelengkap |
+| Job analisis | Worker Python di luar request Next.js, antrean persisten | Pengolahan asinkron, deduplikasi permintaan, retry, dan penerbitan hasil |
+| Hosting | Vercel untuk aplikasi; runtime worker ditetapkan melalui uji kapasitas | Pekerjaan ilmiah panjang tidak bergantung pada umur request aplikasi |
+| Pengujian | Node, pengujian Python, dan browser | Kebenaran data/metode, hak akses, serta pengalaman pengguna |
 
-Endpoint baca: `GET /api/regions`, `GET /api/regions/:id/activity`, `GET /api/regions/:id/candidates`, dan `GET /api/candidates/:id/reports`. Endpoint tulis: `POST /api/candidates/:id/reports` serta `PATCH /api/reports/:id` untuk koreksi berjejak. Endpoint laporan memerlukan sesi koordinator dan pemeriksaan hak akses pada server. Pembacaan dari Server Components dapat langsung memakai fungsi server/Prisma tanpa HTTP ke endpoint sendiri. [S13]
+Stack Next.js, Tailwind, Prisma, dan Neon dipertahankan. PyTorch, Hugging Face, serta LLM tidak diperlukan untuk harmonisasi statistik dan kalender ini. Kandidat EQM tetap membutuhkan pengujian; transformasi kuantil generik saja bukan bukti harmonisasi tervalidasi. [S15]
 
-Untuk wilayah tetap MVP, lakukan penempatan titik ke wilayah/grid di pipeline dan simpan hasilnya. PostGIS belum wajib; tambahkan hanya jika kueri geometri dinamis menjadi kebutuhan nyata. Data besar tidak dikirim seluruhnya ke browser; gunakan filter wilayah, periode, dan pagination kandidat.
+### Alur arsitektur target
 
-### Apakah membutuhkan PyTorch atau Hugging Face?
+    FIRMS Archive + NRT
+      -> ingest tervalidasi -> arsip berpartisi + manifest
+      -> agregasi count -> kalibrasi/evaluasi -> hasil terbitan berversi
 
-**Tidak untuk MVP ini.** Harmonisasi statistik, baseline musiman, persentil anomali, kebaruan, dan pengulangan deteksi dapat dihitung dengan Python serta pustaka numerik pada CPU. Kandidat EQM memetakan distribusi sumber ke distribusi referensi; `QuantileTransformer` saja tidak otomatis menjadi algoritma harmonisasi dua sensor yang tervalidasi. Tetap perlu penanganan nol, dukungan distribusi, dan evaluasi temporal terpisah. [S15]
+    Browser: polygon + periode + konfigurasi
+      -> Next.js: validasi, autentikasi bila diperlukan, lookup hasil/job
+      -> antrean persisten -> worker Python -> hasil + provenance
+      -> kalender, peta, perbandingan, anomali, dan ekspor
 
-PyTorch/Hugging Face baru dievaluasi jika ada tugas model terlatih yang jelas, seperti klasifikasi citra atau prediksi yang memiliki data label, baseline, dan metrik uji. Itu bukan kebutuhan yang sudah disepakati. LLM tidak diperlukan untuk menghasilkan skor prioritas atau mengubah hotspot menjadi klaim kebakaran terkonfirmasi. Alasan prioritas dapat ditulis dari template berdasarkan nilai dan kualitas data.
+    Next.js -> Prisma -> Neon
+      -> workspace/anggota, AOI, job, metadata hasil
+      -> lokasi pemantauan, penugasan, pemeriksaan, riwayat koreksi
 
-### Urutan implementasi stack
+Pengolahan ilmiah dan arsip besar tidak dijalankan dalam browser atau request render halaman. Publikasikan hasil secara atomik setelah validasi; hasil setengah jadi tidak menggantikan run aktif. Job gagal tidak menghapus hasil atau laporan sebelumnya. Semua migrasi skema aplikasi tetap dimiliki Prisma; role worker dibatasi sesuai kontrak.
 
-1. Siapkan Next.js, TypeScript, Tailwind, Prisma, koneksi Neon, serta migrasi awal. Gunakan environment pengembangan terpisah dari data produksi.
-2. Bangun satu alur vertikal: region contoh, kandidat berlabel fixture, login koordinator, simpan laporan, muat ulang, dan lihat riwayat. Fixture tidak disajikan sebagai data live.
-3. Ganti fixture analitik dengan hasil pipeline FIRMS nyata; pertahankan kontrak data dan laporan yang sama.
-4. Tambahkan baseline/kalibrasi yang dievaluasi, alasan prioritas, refresh terjadwal, status stale, dan ekspor.
-5. Uji migrasi, akses koordinator, idempotensi laporan, kegagalan job, pergantian run atomik, serta alur UI. Deploy setelah konfigurasi secret dan koneksi diverifikasi.
+Scheduler/manual workflow seperti GitHub Actions dapat membantu ingest terjadwal atau persiapan data. Penyedia worker/antrean interaktif, biaya, concurrency, batas area/volume, dan waktu tunggu baru dibekukan setelah benchmark; dokumen ini tidak menjanjikan SLA pemrosesan historis global.
 
-## 7. Pendekatan ilmiah dan alur data
+### Identitas job dan cache
 
-```text
-FIRMS Archive MODIS/VIIRS + FIRMS NRT
-  -> validasi skema, waktu, satelit, confidence, versi, dan status unduhan
-  -> grid analisis bersama dan dua subset Kalimantan Tengah/Papua Selatan
-  -> agregasi deteksi per satelit dan cell-day
-  -> baseline dan kandidat kalibrasi
-  -> evaluasi historis terpisah dan pembandingan kondisi terbaru
-  -> Parquet + snapshot JSON/CSV + manifest
-  -> peta, status anomali/keterbandingan, kalender, grafik, dan ekspor
+Permintaan analisis ditentukan oleh polygon/revisinya, periode, konfigurasi sensor, kebijakan kualitas, versi arsip, metode/model, serta konfigurasi baseline. Cache hasil identik tidak memakai zoom kamera sebagai identitas analisis. Perubahan sumber atau metode tidak mengembalikan hasil lama seolah-olah masih sesuai.
 
-FireMask/QA pelengkap -> metrik observabilitas hanya jika ruang/waktunya cocok
-```
+Status minimum job: antre, diproses, selesai, atau gagal. Tampilkan progres bila dapat diukur dan alasan kegagalan yang aman; jangan mengarang persentase atau ETA. Permintaan identik yang berjalan dapat memakai job yang sama sesuai hak akses. Tindakan berulang tidak menggandakan pekerjaan atau laporan. Retry dan batas volume harus jelas tanpa mengubah polygon pengguna diam-diam.
 
-### 7.1 Harmonisasi ruang dan waktu
+Data satelit/hasil umum dapat memakai cache bersama jika aman. Metadata workspace, penandaan, penugasan, dan pemeriksaan tidak ikut terbuka melalui cache atau ekspor publik.
 
-Petakan koordinat titik FIRMS ke grid sinusoidal bersama 1 km untuk agregasi; grid ini adalah unit analisis, bukan peningkatan resolusi pengukuran MODIS. Pertahankan titik asli untuk peta dan audit. Untuk raster pelengkap, periksa transform, extent, dan ukuran piksel sebelum menyelaraskan array; gunakan nearest-neighbor untuk kelas kategoris jika reproyeksi diperlukan.
+## 7. Pendekatan ilmiah
 
-Normalisasi waktu ke UTC dan pertahankan identitas sensor/satelit. Agregasikan indikator ada-tidaknya deteksi pada setiap sel-hari per satelit, tanpa menganggap sel tanpa titik sebagai observasi valid. Hapus duplikasi rekaman unduhan; jangan menganggap pengamatan berbeda sebagai rekaman duplikat. Penambahan satelit tidak boleh langsung menambah nilai indeks aktivitas: jangan menjumlahkan semua feed sebagai satu seri. Pemilihan seri referensi serta aturan penyambungan pada periode tumpang tindih perlu dibekukan sebelum implementasi model.
+### 7.1 Angka utama dan unit analisis
 
-Untuk FRP, tentukan unit dan makna statistik terlebih dahulu. FRP dalam MW bukan energi kumulatif atau luas terbakar; penjumlahan lintas lintasan berulang tidak otomatis menjadi total energi kebakaran. MVP memprioritaskan frekuensi deteksi; harmonisasi FRP menjadi eksperimen terpisah.
+Angka utama kalender adalah **estimasi jumlah deteksi hotspot yang diharmonisasi**, dengan label metode dan acuan. Nilai koreksi dapat pecahan; jangan membulatkannya menjadi seolah-olah sejumlah pengamatan nyata baru. Jumlah deteksi asli tetap tersedia terpisah menurut produk/satelit. Jumlah kejadian kebakaran yang dilaporkan merupakan metrik berbeda yang bersumber dari laporan, bukan hasil menghitung titik satelit.
 
-### 7.2 Status observasi
+Grid bersama, dengan kandidat awal sinusoidal 1 km, dapat digunakan untuk penyelarasan ruang, partisi, dan penghitungan. Grid tidak meningkatkan resolusi MODIS dan tidak mengubah unit utama menjadi sel-hari. Sel-hari aktif serta rate berbasis QA boleh menjadi metrik pendamping yang diberi nama dan satuan berbeda.
 
-Pada jalur FIRMS, tampilkan deteksi yang diterima, tidak ada deteksi tercatat, atau sumber tidak tersedia. “Tidak ada deteksi tercatat” bukan status bebas awan atau bukti tidak ada api. Status berikut hanya dapat ditetapkan jika data observabilitas pelengkap yang sesuai tersedia:
+Normalisasi waktu ke UTC. Deduplikasi rekaman unduhan yang sama tanpa menghapus pengamatan berbeda secara sembarang. Penambahan satelit atau jumlah lintasan tidak boleh langsung menaikkan seri utama tanpa aturan konfigurasi, pairing, serta penyambungan yang terdokumentasi. Agregasi dan penerapan model pada grid/hari/bulan harus dibekukan; hasil transformasi nonlinier tidak diasumsikan dapat dijumlahkan antarresolusi tanpa pengujian.
 
-| Status | Makna |
+### 7.2 Acuan harmonisasi dan validasi
+
+**Setara MODIS menjadi hipotesis awal**: seri MODIS merupakan jangkar skala jumlah deteksi, sedangkan VIIRS dikalibrasi agar dapat dibandingkan. Deteksi asli VIIRS yang lebih detail tetap tersedia pada peta. Pilihan ini tidak berarti MODIS merupakan ground truth atau seluruh tambahan sensitivitas VIIRS harus disembunyikan.
+
+Latih dan uji metode pada periode tumpang tindih yang layak dibandingkan, memperhatikan wilayah, musim, kesempatan observasi, konfigurasi satelit, serta status NRT/standard. Data uji tidak digunakan untuk melatih atau memilih parameter. Kandidat dari paper adalah Empirical Quantile Mapping (EQM), dibandingkan dengan count yang diselaraskan tanpa kalibrasi dan baseline sederhana seperti regresi.
+
+Laporkan MAE, bias, ukuran sampel, domain validasi, serta pengaruh terhadap pola musiman dan diskontinuitas seri. EQM tidak wajib diterima jika tidak memperbaiki baseline. Modul EQM yang ada bersifat eksperimental, mempertahankan nol, dan belum membuktikan dapat memulihkan api kecil yang tidak terdeteksi. Input di luar dukungan pelatihan ditandai; jangan mengekstrapolasi diam-diam.
+
+Evaluasi dilakukan per domain/wilayah yang relevan. Model Kalimantan tidak otomatis diterapkan sebagai model Papua atau seluruh dunia. Dukungan pengajuan analisis global dibedakan dari status validasi metode. Jika metode belum layak, tampilkan perbandingan mentah/eksperimental dengan status yang benar; jangan menyebut keluarannya harmonisasi tervalidasi.
+
+Setiap hasil menyimpan versi model dan seri referensi. Jika acuan/metode berubah berdasarkan evaluasi, hasil mendapat versi baru dan perubahan didokumentasikan. Penyambungan MODIS–VIIRS serta konfigurasi satelit dibekukan sebelum menerbitkan seri utama.
+
+### 7.3 Anomali dengan referensi bergerak
+
+Default untuk bulan pada tahun Y adalah bulan yang sama pada **Y−10 sampai Y−1**. Contoh: Agustus 2026 dibandingkan dengan Agustus pada 2016–2025. Tahun yang dinilai tidak masuk referensinya sendiri. Pengguna dapat mengubah panjang referensi; pilihan dan tahun yang benar-benar digunakan ikut tersimpan pada hasil dan ekspor.
+
+Pembanding menggunakan AOI, satuan harmonisasi, dan konfigurasi metode yang konsisten. Periode harian/rentang bebas memerlukan aturan musim, durasi, serta kalender yang terdokumentasi. Bagian bulan berjalan tidak dibandingkan dengan satu bulan penuh. Pengolahan tahun kabisat dan tanggal batas termasuk pengujian.
+
+Tahun awal yang belum mempunyai riwayat cukup tetap menampilkan count yang tersedia, tetapi anomali berstatus **referensi belum cukup**. Tahun/bulan hilang tidak diisi nol atau diganti data masa depan. Minimum kelengkapan, batas panjang referensi, estimator, dan ambang anomali ditentukan melalui evaluasi; jendela 10 tahun bukan jaminan seluruh pengamatan valid.
+
+Tampilkan besar aktivitas, nilai pembanding historis, selisih, periode referensi, serta kualitas data. Persentil/z-score dapat dievaluasi sebagai metode; rumus dan ambang final belum dipilih. Pembanding bernilai nol atau variasi nol tidak menghasilkan pembagian nol, nilai tak hingga, atau label normal palsu. Anomali statistik bukan probabilitas kebakaran, tingkat bahaya, atau prediksi.
+
+### 7.4 Status observasi dan data hilang
+
+Pada jalur FIRMS bedakan **ada deteksi**, **tidak ada deteksi tercatat**, dan **sumber tidak tersedia**. Katalog hotspot tidak membuktikan wilayah bebas awan atau teramati tanpa api. Coverage/QA tidak dihitung dengan menebak dari jumlah titik.
+
+Status observasi valid tanpa deteksi, awan, scan gap, missing granule, atau QA rejected hanya diberikan jika sumber pelengkap yang sesuai mendukungnya; selain itu gunakan unknown. Confidence, sensor tidak tersedia, bulan parsial, serta revisi NRT/standard ikut terlihat.
+
+Untuk eksperimen QA pelengkap:
+
+    rate_per_1000 = 1000 × fire_cell_days / observed_cell_days
+    coverage = observed_cell_days / expected_land_cell_days
+
+Gunakan mask daratan dan geometri tetap, serta kelas QA yang diperiksa per produk. Tanpa QA yang memadai, pembagi/rate/coverage bernilai null. Rate ini merupakan metrik pendamping, tidak menggantikan estimasi jumlah deteksi utama.
+
+### 7.5 Riset lanjutan
+
+FRP, CO, SMAP, gambut, dan tutupan lahan dapat menjadi konteks penelitian lanjutan dengan unit, resolusi, QA, serta keterbatasannya masing-masing. Ambang CO/kelembapan atau target peningkatan akurasi dari paper belum menjadi aturan operasional. Data pendukung tidak digunakan untuk menyatakan kebakaran bawah tanah terverifikasi tanpa validasi independen.
+
+## 8. Lokasi pemantauan, workspace, dan kontrak keluaran
+
+### Penandaan lokasi
+
+Klik deteksi membuka bukti pengamatan dan tindakan **Tandai lokasi**. Objek yang disimpan merupakan lokasi pemantauan persisten, bukan hanya baris feed yang hilang ketika filter tanggal berubah. Simpan koordinat pengamatan asli, identitas deteksi awal, nama/label lokasi, konteks AOI dan analisis saat dibuat, pembuat, waktu, serta workspace pemilik.
+
+Lokasi dapat dibuka kembali dan dianalisis pada rentang tanggal lain. Hasil baru tidak menimpa bukti awal. Referensi AOI/versinya mempertahankan cakupan analisis; radius atau aturan area sekitar titik belum dibekukan dan tidak disamakan diam-diam dengan cakupan piksel sensor. Mengubah konteks penelitian tidak memindahkan koordinat pengamatan asli.
+
+### Penugasan dan pemeriksaan
+
+Anggota berwenang dapat menugaskan pemeriksaan kepada anggota tim, memperbarui status, dan mencatat hasil. Lokasi dapat memiliki beberapa penugasan/pemeriksaan terpisah. Status melekat pada pekerjaan pemeriksaan, bukan menyatakan lokasi selamanya aman atau selesai dipantau.
+
+Model status awal untuk implementasi mencakup belum ditugaskan, ditugaskan, sedang diperiksa, selesai, atau dibatalkan; nama serta transisi final diperinci pada kontrak layanan. Status pekerjaan dipisahkan dari hasil observasi lapangan. Hasil yang telah tersedia pada prototype dapat dipertahankan: api/asap ditemukan, tidak ditemukan tanda api saat pemeriksaan, atau belum dapat dipastikan.
+
+Simpan lokasi, pemeriksa/penanggung jawab, pencatat, waktu pemeriksaan sebenarnya, waktu input, catatan, hasil, serta riwayat koreksi. Pencatat dapat berbeda dari pemeriksa. Penugasan selesai tidak berarti api padam. Deteksi baru setelah pemeriksaan tetap terlihat dan dapat memerlukan pemeriksaan baru. Refresh data, pergantian hasil analisis, atau keluarnya deteksi dari periode tampilan tidak menghapus lokasi/laporan.
+
+### Hak akses
+
+Workspace tim menjadi batas kepemilikan lokasi, penugasan, status, dan hasil pemeriksaan. Anggota tim mendapat akses sesuai kewenangannya; pengguna workspace lain tidak dapat membaca atau mengubah catatan tersebut hanya dengan mengetahui ID. Identitas individual diperlukan untuk atribusi dan pemeriksaan server. Peneliti tidak wajib berperan sebagai koordinator operasional.
+
+Hak akses diterapkan pada endpoint, job, hasil tersimpan, cache, dan ekspor yang memuat catatan tim. Idempotensi mencegah penandaan/pengiriman laporan ganda akibat retry. Koreksi mempertahankan jejak perubahan. Catatan demo tidak tercampur dengan hasil pemeriksaan nyata.
+
+### Keluaran analisis dan ekspor
+
+| Keluaran | Isi minimum |
 |---|---|
-| `fire_detected` | Ada deteksi yang lolos kebijakan kualitas |
-| `observed_no_detection` | Ada observasi daratan yang memenuhi kualitas tanpa deteksi yang diterima |
-| `insufficient_observation` | Tidak cukup observasi yang diterima untuk menyimpulkan |
+| Identitas analisis | ID run/job, AOI dan geometri/versi/hash, luas, periode, timezone, konfigurasi kueri |
+| Data dan metode | Sensor/satelit, produk/versi, NRT/standard, manifest/checksum, waktu ingest, metode/model, acuan, domain validasi |
+| Kalender dan perbandingan | Count asli per sumber, estimasi count terharmonisasi dan satuan, resolusi agregasi, durasi, kualitas, status sementara |
+| Anomali | Panjang dan tahun referensi bergerak, statistik pembanding, nilai/rumus anomali, kelengkapan, serta alasan belum dapat dinilai |
+| Spasial | Titik observasi asli dan agregat/grid yang diberi jenis/satuan eksplisit; polygon analisis tetap |
+| Lokasi/pemeriksaan | ID lokasi stabil, bukti awal, analisis terkait, penugasan/status/hasil serta audit; mengikuti akses workspace |
 
-Simpan alasan seperti `cloud`, `missing_granule`, `scan_gap`, `qa_rejected`, atau `unknown`. Suatu bulan dapat memiliki deteksi sekaligus cakupan rendah; keduanya harus tetap ditampilkan.
+Ekspor **CSV hotspot** berisi deteksi asli yang memenuhi polygon, periode, serta filter kueri. Ekspor agregat terharmonisasi dipisahkan agar estimasi count tidak diubah menjadi sejumlah titik sintetis. Ringkasan dan visualisasi kalender/grafik/peta menyertakan legenda, satuan, AOI, periode, baseline, metode, versi, dan sumber. Bentuk file visualisasi ditetapkan pada implementasi; CSV merupakan keluaran wajib.
 
-Decode QA secara spesifik per produk. Daftar kelas dalam paper adalah hipotesis implementasi yang perlu diperiksa terhadap panduan resmi, bukan pemetaan universal. Deteksi confidence rendah ditandai dan dipisahkan dalam analisis sensitivitas; jangan diubah diam-diam menjadi non-api. Nilai confidence MODIS dan kategori VIIRS tidak diperlakukan sebagai probabilitas yang identik.
-
-### 7.3 Frekuensi deteksi dan cakupan
-
-Metrik inti FIRMS adalah jumlah sel-hari dengan deteksi per satelit dan wilayah dalam jendela analisis. Namai metrik ini “aktivitas deteksi teramati”; jangan menyebutnya luas terbakar atau jumlah kejadian. Hasil harmonisasi tetap memiliki label metode dan seri referensi. Perbandingan wajib memakai geometri, durasi, serta konfigurasi satelit yang konsisten atau kalibrasi yang telah diuji.
-
-Rumus berikut hanya berlaku pada jalur dengan QA pelengkap yang memadai. Tanpa QA, `observed_cell_days`, `coverage`, dan rate berbasis observasi adalah `null`, bukan estimasi yang dibangun dari titik FIRMS:
-
-Untuk sensor dan wilayah yang sama:
-
-```text
-observed_cell_days = jumlah cell-day daratan yang lolos kebijakan kualitas
-fire_cell_days = jumlah observed cell-day dengan deteksi yang diterima
-rate_per_1000 = 1000 × fire_cell_days / observed_cell_days
-coverage = observed_cell_days / expected_land_cell_days
-```
-
-`expected_land_cell_days` ditentukan dari mask daratan tetap, wilayah, dan hari dalam periode. Jika pembagi nol, hasil adalah `null`, bukan nol. Frekuensi berada pada rentang 0–1000 dan tidak merepresentasikan probabilitas kebakaran sebenarnya atau luas terbakar.
-
-Untuk perbandingan sensor, hitung pula metrik pada irisan cell-day yang sama-sama valid. Laporkan berapa banyak data tersisih agar pemilihan sampel bebas awan tidak menyembunyikan bias.
-
-### 7.4 Kalibrasi dan evaluasi
-
-Baseline utama adalah metrik aktivitas deteksi yang sudah disejajarkan tanpa kalibrasi. Baseline tambahan adalah regresi linear sederhana. Kandidat utama dari paper adalah Empirical Quantile Mapping (EQM), dilatih hanya pada data pelatihan dan dibandingkan pada periode uji terpisah. Kalibrasi count berbasis FIRMS dan rate berbasis QA adalah eksperimen berbeda; jangan menukar keduanya dalam satu seri.
-
-Pertahankan nol pada varian awal EQM, tetapi jelaskan bahwa kebijakan ini tidak merekonstruksi kebakaran kecil yang tidak terdeteksi MODIS. Pisahkan distribusi nol dan positif; tandai input di luar dukungan pelatihan. Jangan mengekstrapolasi tanpa validasi.
-
-Laporkan MAE, bias rata-rata, ukuran sampel, dan cakupan pasangan observasi. VIIRS merupakan referensi pembandingan, bukan ground truth kebakaran. Jika EQM tidak mengungguli baseline, tampilkan hasil kegagalannya dan gunakan baseline sebagai keluaran utama.
-
-Latih dan evaluasi kandidat kalibrasi secara terpisah untuk setiap wilayah. Jangan menjadikan model Kalimantan sebagai model Papua secara otomatis. Jika sampel memadai, lakukan eksperimen tambahan: bekukan model Kalimantan lalu uji pada Papua tanpa pelatihan ulang, dan laporkan sebagai uji transfer yang terpisah. Kegagalan transfer merupakan hasil penelitian yang harus tetap terlihat.
-
-Perbandingan antardaerah menampilkan metrik aktivitas, luas wilayah, jumlah sampel, serta coverage jika tersedia. Jangan membuat peringkat tingkat keparahan hanya dari jumlah hotspot mentah. Jika tutupan lahan/gambut tersedia, gunakan sebagai konteks atau stratifikasi; jika tidak tersedia, jangan mengarang klasifikasi ekologis.
-
-### Analisis kondisi terbaru
-
-- Gunakan distribusi historis pada musim dan durasi sebanding untuk menilai apakah aktivitas terbaru menyimpang. Jangan membandingkan sebagian bulan berjalan dengan satu bulan historis penuh.
-- Pisahkan anomali statistik aktivitas dari anomali termal yang menjadi dasar deteksi satelit. Skor anomali bukan probabilitas kebakaran, tingkat bahaya, atau prediksi penyebaran.
-- Jika baseline tidak mencukupi, konfigurasi sensor berubah tanpa kalibrasi tervalidasi, atau ingest gagal, tampilkan “belum dapat dinilai”; jangan memaksakan label normal.
-- Untuk periode berjalan, tampilkan hasil sebagai sementara. Daftar utama memakai 24 jam terakhir dengan konteks persistensi 7 hari. Minimum sampel, ambang anomali, dan aturan prioritas verifikasi akan ditetapkan melalui wawancara lanjutan, lalu diuji melalui replay historis tanpa memakai data masa depan.
-- Pemrosesan yang berhasil belum membuktikan seluruh observasi satelit telah tersedia. Catat keberhasilan ingest, ketersediaan sumber, dan observabilitas sebagai informasi berbeda.
-- Usulan awal refresh adalah setiap jam, tunduk pada kuota layanan. Baca ulang jendela terbaru untuk menangkap data terlambat, simpan versi snapshot, dan tandai hasil lama saat job gagal. Interval ini adalah pilihan produk, bukan jaminan latensi NASA.
-
-### 7.5 Riset CO dan SMAP
-
-Uji apakah anomali CO dan kondisi kelembapan menambah informasi untuk periode dengan observasi termal terbatas. Sertakan QA retrieval, kondisi awan, musim, transportasi angin, dan sumber CO lain. Agregasi mengikuti resolusi efektif data pendukung; jangan memberikan kepastian tingkat piksel 1 km dari produk yang jauh lebih kasar.
-
-Ambang CO 3,5 sigma, kelembapan 0,18, dan coverage 30% pada paper belum menjadi ambang operasional tervalidasi. Gunakan sebagai kandidat eksperimen dengan analisis sensitivitas. Keluaran yang diizinkan adalah “indikasi pendukung yang memerlukan pemeriksaan”, bukan “kebakaran bawah tanah terverifikasi”. [S5][S6]
-
-## 8. Kontrak keluaran dan antarmuka
-
-Setiap ringkasan menyertakan:
-
-- `region_id` dan, untuk hasil per sel, `cell_id`; `period_start`, `period_end`, dan zona waktu UTC.
-- Referensi polygon studi, versi batas, dan luas wilayah analisis agar kedua subset dapat dibedakan dari cakupan provinsi penuh.
-- `sensor`, `product_id`, `product_version`, dan `processing_version`.
-- Metrik deteksi mentah dan harmonisasi beserta satuan, konfigurasi satelit, dan model; metrik observabilitas/rate berbasis QA nullable jika data pelengkap tidak tersedia.
-- Jendela pembanding historis, status penilaian, skor anomali nullable, serta alasan hasil belum dapat dinilai.
-- Prioritas verifikasi beserta komponen anomali, kebaruan, persistensi, alasan pemeringkatan, versi aturan, dan status penilaian lengkap/parsial. Komponen yang belum dapat dihitung tetap nullable.
-- Waktu observasi terbaru, waktu ingest berhasil, waktu penerbitan snapshot, status NRT/standard, dan status sumber per satelit. Waktu hotspot terakhir tidak dipakai sendirian sebagai ukuran kesehatan feed.
-- `observation_status`, alasan data tidak memadai, dan flag kualitas.
-- Referensi manifest sumber, waktu pemrosesan, serta metrik evaluasi jika tersedia.
-
-MVP menerbitkan hasil analitik ber-version di Neon untuk dibaca melalui Next.js. Ekspor/fallback menyediakan `manifest.json`, `latest.json`, `calendar.json`, `comparison.json`, dan data spasial per wilayah. Pertahankan hasil terakhir yang valid jika pembaruan gagal dan tampilkan status lama/gagal. Snapshot demo historis diberi label replay, tidak disamarkan sebagai data live.
-
-Backend laporan menyediakan kemampuan membaca riwayat dan menyimpan hasil pemeriksaan oleh pengguna berwenang. Kontrak laporan minimum berisi ID laporan, referensi kandidat dan posisi, waktu pemeriksaan, hasil, catatan, identitas pencatat, serta waktu penyimpanan. Pengiriman ulang permintaan yang sama tidak membuat laporan ganda. Koreksi mempertahankan jejak perubahan. Data pribadi pencatat tidak dipublikasikan melalui snapshot analitik.
-
-UI selalu menampilkan label sensor, periode, satuan, dan kualitas data. Sel tanpa observasi diberi pola/warna berbeda dari nilai nol; makna status tidak hanya bergantung pada warna. Grafik mentah dan harmonisasi dapat dibandingkan tanpa menyembunyikan salah satunya.
+Entitas target meliputi User, Workspace/Membership, AnalysisArea, AnalysisJob/Run/Result, MonitoringLocation, InspectionAssignment, InspectionReport, dan revision/audit. Nama ini adalah rancangan konseptual, bukan klaim model Prisma sudah tersedia. [Kontrak riset v2](docs/contracts/api-v2.md), schema/contoh target, dan [tiga sprint per anggota](tasks/SPRINT-PLAN.md) sudah diselaraskan dengan spesifikasi ini. V1 tetap untuk kompatibilitas; endpoint, model penyimpanan, dan worker v2 masih memerlukan implementasi serta integrasi.
 
 ## 9. Kendala dan mitigasi
 
 | Kendala | Dampak | Mitigasi |
 |---|---|---|
-| Kredensial, unduhan, dan throttling | Pipeline tidak selesai saat hackathon | Siapkan subset nyata dan checksum sebelum acara; cache unduhan |
-| HDF, subdataset, dan QA berbeda | Salah membaca mask atau kualitas | Inspeksi metadata dan contoh granule tiap produk sebelum batch |
-| Awan dan granule hilang | Ketiadaan data disalahartikan | Gunakan null, alasan kehilangan, dan indikator cakupan |
-| Sensitivitas dan waktu lintasan berbeda | Kalibrasi mencampur fenomena berbeda | Gunakan pasangan observasi, stratifikasi bila data cukup, dan baseline |
-| Sampel sedikit atau distribusi bergeser | EQM tidak stabil | Batasi klaim ke domain uji dan pertahankan baseline |
-| Distribusi observasi berbeda antara Kalimantan dan Papua | Model akurat di satu wilayah tetapi gagal di wilayah lain | Evaluasi per wilayah; pisahkan kalibrasi lokal dari eksperimen transfer |
-| Cakupan dua wilayah besar | Unduhan dan komputasi melampaui waktu MVP | Bekukan dua polygon kecil dan subset periode sebelum acara; perluas cakupan setelah demo |
-| Komputasi dan transfer data | Demo lambat | Precompute agregat dan muat data sesuai wilayah/periode |
-| CO/SMAP ambigu dan kasar | Kepastian palsu tentang gambut | Letakkan sebagai riset kontekstual dengan validasi lapangan |
-| Data batas dan gambut | Salah atribusi spasial | Dokumentasikan sumber, tahun, lisensi, dan keterbatasan |
-| Backend atau jaringan gagal | Analitik atau pencatatan terganggu | Snapshot mempertahankan analitik; tampilkan kegagalan simpan laporan secara jelas dan jangan mengklaim laporan sudah tersimpan |
-| Keterlambatan NRT dan perubahan konfigurasi satelit | Anomali semu atau kesan kondisi normal | Label hasil sementara, status sumber per satelit, dan evaluasi keterbandingan sebelum menerbitkan skor |
+| Arsip global sejak awal 2000-an | Volume, biaya, dan waktu pengolahan besar | Arsip berpartisi, agregat reusable, worker asinkron, cache hasil, serta batas job yang terlihat |
+| Request mengikuti setiap gerakan kamera | Loading berulang dan interaksi tersendat | Pisahkan kamera/AOI/analisis; tile dan cache cakupan; analisis eksplisit |
+| Kualitas satelit/label tidak konsisten | Sulit mengenali wilayah dan hotspot | Satu konfigurasi basemap, label sesuai zoom, benchmark desktop/mobile, detail koordinat |
+| Sensitivitas/jadwal/jumlah satelit berbeda | Tren atau anomali semu | Harmonisasi dan aturan konfigurasi/pairing yang diuji, provenance tetap tersedia |
+| Generalisasi model global | Akurat di satu area, gagal di area lain | Evaluasi per domain, status dukungan/validasi, dan hasil parsial yang jujur |
+| Baseline awal tidak cukup atau data hilang | Anomali menyesatkan | Referensi belum cukup, null, metadata kelengkapan, tanpa data masa depan |
+| Polygon berubah atau melintasi antimeridian | Perbandingan salah atau hitungan ganda | Validasi geometri, versi/hash, uji spasial serta durasi konsisten |
+| Kredensial/quota/jaringan NASA | Ingest/job gagal | Key server-only, timeout, retry terbatas, cache, kategori error aman |
+| Keterlambatan/revisi NRT ke standard | Hasil berubah atau tampak seolah final | Versi arsip, hasil sementara, invalidasi cache dan pemrosesan ulang terkontrol |
+| Akses lintas workspace atau laporan hilang | Catatan tim terbuka atau pekerjaan tidak tercatat | Otorisasi server, transaksi, audit, idempotensi, serta status gagal simpan yang jelas |
+| Warna dianggap tingkat bahaya | Interpretasi keliru | Legenda metrik, ramp aksesibel, angka/status tekstual, pemisahan anomali dan hasil pemeriksaan |
 
-## 10. Rencana MVP 48 jam
+## 10. Urutan implementasi dan pembagian tim
 
-Persiapan sebelum acara: akses data, dua subset nyata, polygon studi Kalimantan Tengah dan Papua Selatan, metadata, dan dependensi harus sudah diuji. Jadwal berikut merupakan alokasi kerja yang diusulkan, bukan ketentuan resmi penyelenggara.
+### Tahapan
 
-| Waktu | Pekerjaan | Keluaran dan gerbang keputusan |
-|---|---|---|
-| 0–4 jam | Verifikasi arsip dan API NRT FIRMS untuk kedua wilayah; cek skema, timestamp, satelit, dan batas | Ingest nyata serta status sumber; fallback berlabel jika akses gagal |
-| 4–12 jam | Bentuk agregat deteksi, manifest, dan job pembaruan | Snapshot terbaru, deduplikasi, serta baseline historis siap evaluasi |
-| 12–24 jam | Hitung baseline dan uji EQM per wilayah bila sampel mencukupi | Metrik data uji serta keputusan menerima/menolak kalibrasi untuk setiap wilayah |
-| 24–36 jam | Integrasikan kondisi terbaru versus baseline, peta, kalender, formulir laporan, autentikasi pencatat, dan ekspor | Alur pilih kandidat hingga simpan hasil; tampilan pendukung dijaga sederhana |
-| 36–44 jam | Replay historis; uji data terlambat, sumber gagal, persistensi laporan, hak akses, dan fallback | Skor tidak dipaksakan; laporan tidak hilang saat snapshot diperbarui; kegagalan simpan terlihat |
-| 44–48 jam | Perbaiki narasi, atribusi, dan rekam demonstrasi | Submission sesuai ketentuan resmi yang sudah diperiksa |
+1. **Fondasi pengalaman peta:** satukan Activity Map/Global Heatmap, perbaiki navigasi/cache/rendering dan label, tambahkan polygon serta penerapan area/periode secara eksplisit. Navigasi tidak menghapus hasil.
+2. **Arsip dan harmonisasi:** siapkan ingest/partisi global, job asinkron, count dan provenance, evaluasi acuan setara MODIS, serta status ketersediaan/validasi. Dua area unggulan menjadi contoh uji, bukan allowlist pengguna.
+3. **Kalender dan analisis:** kalender tahun × bulan dan detail harian, perbandingan tanggal bebas, referensi bergerak 10 tahun, status data tidak cukup, serta ekspor CSV/visualisasi.
+4. **Workspace dan pemeriksaan:** akun individual, isolasi tim, lokasi tersimpan, penugasan, beberapa pemeriksaan per lokasi, status/hasil, serta audit/idempotensi.
+5. **Integrasi dan evaluasi:** replay historis, benchmark data nyata, kegagalan jaringan/job, akses tim, reproduksibilitas ekspor, dan demonstrasi.
 
-### Kapasitas dan pembagian tim
+Tahapan ini menggantikan batas lama MVP dua wilayah/daftar patroli. Cakupan global historis merupakan target versi pertama yang disepakati; pengiriman internal dapat bertahap tanpa menyebut subset demo sebagai implementasi global yang sudah lengkap.
 
-Tim terdiri dari tiga software engineer dengan beban kerja yang dibagi rata. Pengusul produk juga memahami bisnis, desain, dan presentasi, tetapi tetap memegang tanggung jawab coding yang utuh. Keahlian tambahan tersebut menjadi kontribusi dalam review bersama, bukan alasan mengurangi porsi coding atau menumpuk pekerjaan nonteknis pada satu orang.
+Rencana lama 48 jam merupakan asumsi hackathon, bukan estimasi tervalidasi untuk seluruh scope baru. Persiapan arsip, metode, serta infrastruktur harus dihitung terpisah. Jangan menjanjikan semua kemampuan ini selesai 48 jam tanpa estimasi dan bukti kesiapan. Demonstrasi boleh menggunakan hasil nyata yang sudah diproses, dengan cakupan, antrean global, dan fitur yang belum selesai dijelaskan secara jujur.
+
+### Pembagian tiga software engineer
 
 | Anggota | Tanggung jawab utama | Keluaran |
 |---|---|---|
-| Nathan | Pipeline FIRMS, agregasi, baseline, harmonisasi, dan pengujian analitik | Dataset, snapshot analitik, serta evaluasi metode yang dapat direproduksi |
-| Bagas | Backend laporan, autentikasi, penyimpanan, job pembaruan, deployment, dan pengujian layanan | Layanan serta pembaruan data berjalan; laporan tersimpan dengan benar |
-| Orkhan | Frontend lengkap: pemilihan wilayah, peta, grafik/perbandingan historis, daftar kandidat, formulir laporan, integrasi API, dan pengujian UI | Aplikasi pengguna yang terhubung ke snapshot analitik dan backend laporan |
+| Nathan | Arsip/ingest FIRMS, partisi dan agregasi count, baseline bergerak, harmonisasi, evaluasi ilmiah | Dataset dan keluaran analisis berversi, pengujian, serta laporan dukungan metode |
+| Bagas | Prisma/Neon, autentikasi dan workspace, antrean/status job, API hasil, lokasi/penugasan/pemeriksaan, deployment | Layanan persisten dengan isolasi tim dan integrasi worker yang dapat diuji |
+| Orkhan | Satu workspace peta, polygon, kalender dan perbandingan, detail/penandaan, UI penugasan/pemeriksaan, integrasi dan pengujian UX | Alur penelitian dan tindak lanjut yang konsisten, aksesibel, serta responsif |
 
-Target alokasi waktu kerja adalah sepertiga per anggota, termasuk coding dan pekerjaan pendukung; pembagian modul tidak otomatis menjamin beban sama. Tinjau estimasi bersama dan pindahkan tugas pendukung atau potongan implementasi jika salah satu jalur menjadi bottleneck. Tetapkan kontrak snapshot dan laporan lebih awal agar ketiga anggota dapat bekerja paralel.
+Beban total dibagi rata menjadi sepertiga per anggota, termasuk coding, pengujian, dokumentasi, integrasi, dan presentasi. Tinjau estimasi bersama dan pindahkan potongan implementasi bila suatu jalur menjadi bottleneck; pembagian modul saja tidak membuktikan beban seimbang.
 
-Integrasi, review kode, pengujian end-to-end, penyusunan materi presentasi, dan latihan demo menjadi tanggung jawab bersama dengan alokasi waktu yang seimbang. Pengusul produk dapat memberi arahan bisnis/desain dan membawakan presentasi tanpa otomatis menanggung seluruh persiapannya. Review silang mencakup ketiga anggota, termasuk kode frontend, pipeline ilmiah, dan backend.
+Orkhan tetap memiliki porsi coding penuh. Kemampuan bisnis/desain/presentasi membantu review bersama dan tidak menjadi alasan mengurangi coding atau menumpuk seluruh pekerjaan pendukung padanya. Review silang, integrasi, materi presentasi, serta latihan demo menjadi tanggung jawab bersama.
 
-Scope dijaga pada satu alur utama: pilih wilayah, nilai aktivitas terbaru dengan konteks historis, pilih kandidat patroli, dan catat hasil melalui koordinator. Formulir laporan tetap ringkas; pengembangan CO/SMAP, unggah foto, routing, notifikasi, dan aplikasi petugas tidak masuk pengerjaan MVP. Jika waktu tertekan, kurangi jumlah area/periode demo dan pemolesan visual sebelum mengorbankan validasi harmonisasi atau kejujuran status data.
+## 11. Kriteria penerimaan dan pengujian
 
-Jadwal 48 jam merupakan asumsi perencanaan hackathon. Waktu persiapan tim sebelum acara belum diketahui; kelayakan menyiapkan arsip dan eksperimen kalibrasi bergantung pada waktu tersebut.
+### Peta dan alur penelitian
 
-FIRMS saja merupakan jalur utama MVP. Coverage tetap tidak diketahui tanpa QA pelengkap; analisis menyatakan batasannya sebagai analisis deteksi teramati. Jika feed terbaru tidak dapat diakses, gunakan replay historis berlabel untuk demonstrasi dan laporkan integrasi live belum terpenuhi.
+- Zoom/geser berulang tidak menjalankan ulang job historis, mengganti AOI aktif, membersihkan hasil analisis, atau mengunduh ulang batch FIRMS identik.
+- Tile baru dapat dimuat sesuai kamera; cache cakupan digunakan kembali dan loading tidak memblokir navigasi. Benchmark mencatat perangkat, volume, jaringan, serta hasil aktual.
+- Toggle heatmap/titik mempertahankan area, periode, pilihan lokasi, dan hasil. Nama wilayah, koordinat, serta unit lapisan dapat dipahami pengguna.
+- Polygon bebas, revisi geometri, antimeridian, pembatalan edit, dan klik cluster tidak menghasilkan area atau koordinat bukti palsu.
+- Kalender tahun × bulan membuka detail harian. Pemilihan tanggal bebas dan perbandingan memakai geometri yang sama; periode parsial/beda durasi diberi konteks.
+- Indonesia/English, Plus Jakarta Sans, Dashboard, keyboard/fokus, ramp warna aksesibel, serta status non-warna tetap bekerja.
 
-Jika pengolahan salah satu wilayah terhambat, pertahankan pilihan kedua wilayah tetapi tampilkan status data belum tersedia pada wilayah tersebut. Jangan mengisi data wilayah yang gagal dengan keluaran wilayah lain atau mengklaim perbandingan dua wilayah telah lengkap.
+### Data dan metode
 
-## 11. Pengujian dan kriteria keberhasilan
+- Rerun dengan input/versi sama dapat direproduksi; unduhan berulang tidak menggandakan deteksi.
+- Count asli, estimasi harmonisasi, sel-hari, jumlah laporan, luas terbakar, dan FRP tidak dipertukarkan sebagai metrik yang sama. Estimasi tidak membuat titik pengamatan sintetis.
+- Model diuji di luar data pelatihan, dibandingkan baseline, dan dilaporkan per domain. Kegagalan EQM, kurang sampel, atau input di luar dukungan tetap terlihat.
+- Acuan setara MODIS dapat ditelusuri; perubahan acuan/model menghasilkan versi baru. Tidak ada klaim angka peningkatan akurasi dari paper sebelum dibuktikan.
+- Untuk default anomali bulan pada tahun Y, referensi tepat Y−10 sampai Y−1 pada bulan yang sama. Perubahan panjang referensi tercatat; data masa depan tidak masuk penilaian historis.
+- Tahun awal, data hilang, bulan berjalan, tahun kabisat, referensi nol/variasi nol, serta revisi NRT/standard tidak memunculkan anomali palsu atau pembagian nol.
+- Coverage/observasi valid tidak direkayasa dari katalog FIRMS. Pada jalur QA, fire_cell_days ≤ observed_cell_days ≤ expected_land_cell_days; tanpa pembagi valid keluaran null.
+- Ekspor CSV berisi observasi asli di dalam polygon/periode; ekspor agregat/visualisasi mereproduksi konfigurasi, sumber, metode, serta baseline analisis.
 
-### Kebenaran data
+### Job, penyimpanan, dan workspace
 
-- Pembagi nol menghasilkan `null`; tidak ada konversi otomatis missing menjadi nol.
-- `fire_cell_days <= observed_cell_days <= expected_land_cell_days` pada jalur QA yang memenuhi definisi; metrik tersebut tidak direkayasa dari katalog FIRMS.
-- Unduhan berulang tidak menggandakan hitungan; rerun dengan input sama memberikan hasil sama.
-- Kelas QA contoh, waktu UTC, CRS, serta batas wilayah diperiksa terhadap metadata produk.
-- Kasus awan penuh, granule hilang, confidence rendah, dan observasi valid tanpa deteksi memiliki keluaran yang berbeda.
+- Pengajuan analisis baru menghasilkan job/status yang dapat dipantau; permintaan identik tidak menggandakan pekerjaan tanpa alasan. Gagal/retry tidak menerbitkan hasil setengah jadi.
+- Hasil lama tetap dapat dibuka dengan label konteks/versinya. Kegagalan tile, ingest, atau worker tidak menghapus lokasi dan laporan.
+- Lokasi tetap ada setelah refresh, pergantian periode, serta update data. Bukti awal dan analisis berikutnya dapat ditelusuri.
+- Satu lokasi dapat memiliki beberapa pemeriksaan. Status pekerjaan tidak dianggap status api; deteksi setelah pemeriksaan tidak disembunyikan.
+- Pengguna workspace lain tidak dapat membaca/mengubah lokasi, job privat, penugasan, atau laporan melalui tebakan ID, cache, maupun ekspor.
+- Pemeriksa, pencatat, waktu pemeriksaan, dan waktu input tidak tercampur. Retry tidak menggandakan laporan; koreksi mempertahankan audit dan kegagalan simpan terlihat.
 
-### Kebenaran metode
+Keberhasilan produk adalah seri dan pengalaman penelitian yang transparan, konsisten, serta dapat diuji. Klaim akurasi seluruh kebakaran atau dampak operasional memerlukan referensi independen dan validasi tambahan.
 
-- Data uji tidak digunakan untuk melatih atau memilih parameter kalibrasi.
-- MAE dan bias dibandingkan terhadap baseline pada sampel yang sama.
-- Tidak ada kewajiban mencapai penurunan MAE 42%; angka tersebut adalah target paper yang belum dibuktikan.
-- Kegagalan model dan keterbatasan sampel terlihat oleh pengguna.
-- Metrik dipisahkan per wilayah; hasil gabungan tidak boleh menyembunyikan penurunan kualitas di salah satu wilayah.
-- Polygon historis tetap konsisten, dan model transfer tidak dilatih ulang memakai data uji Papua.
-- Replay penilaian terbaru hanya memakai baseline dan data yang tersedia pada waktu penilaian. Replay memakai arsip final saja diberi label evaluasi retrospektif dan tidak membuktikan performa NRT historis.
-- Data terlambat, periode parsial, baseline nol, sensor tidak tersedia, dan perubahan NRT ke standard tidak menghasilkan skor anomali palsu atau pembagian nol.
-- Unduhan ulang tidak menaikkan persistensi; waktu unduh tidak memperbarui usia deteksi; pengamatan satelit yang berdekatan tidak otomatis dianggap pengulangan independen.
-- Kandidat tanpa baseline tetap menampilkan bukti terbaru dengan penilaian parsial; prioritas tidak disajikan sebagai probabilitas kebakaran atau kebutuhan patroli yang sudah terverifikasi.
-- Deteksi pada batas 24 jam/7 hari masuk kelompok yang konsisten tanpa duplikasi; melewati batas tidak menghasilkan status padam. Data lama yang terlambat diunduh tidak menjadi kandidat baru hanya karena waktu unduhnya baru.
+## 12. Koreksi terhadap paper dan keputusan yang masih perlu diuji
 
-### Pengalaman pengguna
-
-- Pengguna dapat memilih periode, memahami kualitas data, membandingkan sensor, dan mengekspor ringkasan.
-- Pengguna dapat beralih antara Kalimantan Tengah dan Papua Selatan tanpa tercampurnya data, metrik, atau provenance; kondisi salah satu wilayah tanpa data ditampilkan eksplisit.
-- Filter pada snapshot lokal ditargetkan selesai di bawah satu detik pada perangkat demo; ukur dan catat hasil aktual.
-- Semua grafik dan ekspor menyertakan satuan, sumber, dan waktu data.
-- Analitik berbasis snapshot tetap dapat dibuka saat backend gagal; fungsi laporan memperlihatkan kegagalan dan tidak menampilkan sukses simpan palsu. Kegagalan basemap tidak menghilangkan data analisis.
-- Pengguna dapat melihat waktu observasi dan pembaruan secara terpisah, memahami hasil sementara, dan membedakan live, stale, serta replay.
-- Pengguna dapat menelusuri alasan suatu lokasi menjadi kandidat verifikasi dan mengekspor lokasi beserta bukti waktunya; label anomali tidak ditampilkan sebagai tingkat bahaya atau kebakaran terkonfirmasi.
-- Laporan tetap ada setelah refresh, ingest baru, dan kandidat keluar dari jendela utama; deteksi setelah pemeriksaan tetap terlihat sebagai bukti baru.
-- Hak tulis diperiksa di server; pengiriman ulang tidak menggandakan laporan, dan laporan demo tidak disajikan sebagai verifikasi lapangan nyata.
-- Koordinator dapat memasukkan hasil pemeriksaan yang diterima dari tim; waktu pemeriksaan tetap terpisah dari waktu input dan akun pencatat tidak dianggap sebagai pemeriksa lapangan.
-- Pemilihan wilayah memakai daftar tetap; data terbaru, baseline, laporan lokasi, dan ekspor mengacu pada ID serta geometri yang konsisten, tanpa tercampur ketika pilihan berubah.
-
-Keberhasilan MVP adalah demonstrasi harmonisasi yang transparan dan dapat diuji. Akurasi kebakaran dunia nyata memerlukan referensi independen dan pekerjaan validasi tambahan.
-
-## 12. Koreksi penting terhadap paper
-
-| Pernyataan/arah dalam paper | Keputusan produk |
+| Klaim/arah lama | Keputusan produk sekarang |
 |---|---|
-| VNP14A1 disebut 750 m | Gunakan identitas resmi produk harian grid 1 km; bedakan dari instrumen dan FIRMS 375 m [S3][S4] |
-| H3 menghilangkan seluruh distorsi dan memiliki luas seragam | Tidak digunakan sebagai jaminan geometris; analisis memakai grid bersama |
-| Nol bebas awan disebut verified zero | Gunakan “observasi valid tanpa deteksi”; api yang tidak terdeteksi tetap mungkin |
-| CO + SMAP memverifikasi smoldering bawah awan | Turunkan menjadi hipotesis riset dan indikasi kontekstual [S5][S6] |
-| 26 tahun seamless, MAE turun 42%, deteksi <24 jam | Target yang belum dibuktikan, bukan fitur selesai |
-| Klaim jutaan rekaman sub-second dan jutaan titik 60 FPS | Benchmark diperlukan pada perangkat dan volume nyata |
-| Kerugian terhindarkan serta probabilitas 0,74 | Tidak digunakan sebagai bukti dampak tanpa data dan metode yang dapat diperiksa |
-| Audit-grade EUDR/NDPE otomatis | Hanya laporan analitis dengan provenance; tidak menjanjikan kepatuhan legal |
-| FIRMS/SiPongi dianggap selalu menyatakan nol api ketika berawan | Hindari generalisasi perilaku platform; fokus pada risiko interpretasi katalog deteksi |
-| Beralih ke LUMEN jika ingest gagal | Gunakan fallback data nyata dalam challenge yang sama |
-| Studi kasus utama Riau | Ubah fokus produk menjadi Kalimantan dan Papua; gunakan dua subset MVP dan validasi ulang tile serta domain kalibrasi |
-| Granule raster sebagai fondasi wajib dan fokus riwayat | FIRMS menjadi sumber utama; pengalaman utama adalah kondisi terbaru dibandingkan baseline historis, dengan raster QA sebagai pelengkap |
+| Pengguna utama koordinator patroli | Peneliti; pemeriksaan merupakan tindak lanjut dalam workspace tim |
+| Riwayat lengkap hanya untuk dua subset dan area dipilih dari daftar tetap | Target historis global sejak versi pertama, AOI polygon bebas, job baru boleh asinkron |
+| Feed terbaru sebagai pusat pengalaman | Kalender harmonisasi lintas waktu, perubahan antarperiode, dan anomali menjadi pusat; kondisi terbaru termasuk di dalamnya |
+| Sel-hari sebagai angka utama | Estimasi jumlah deteksi terharmonisasi menjadi angka utama; sel-hari/QA sebagai pendamping |
+| Seri acuan belum dipilih | Setara MODIS menjadi hipotesis awal yang harus lolos evaluasi |
+| Penugasan tim di luar MVP | Penandaan lokasi, penugasan, status, hasil, dan riwayat pemeriksaan termasuk target versi pertama |
+| VNP14A1 disebut 750 m | Bedakan produk harian grid 1 km dari instrumen/FIRMS 375 m [S3][S4] |
+| Grid/H3 menjamin seluruh distorsi hilang | Grid merupakan alat analisis; geometri, luas, dan reproyeksi tetap diperiksa |
+| Nol/CO/SMAP membuktikan tidak ada api atau kebakaran bawah tanah | Observabilitas dan bukti pendukung tetap mempunyai keterbatasan; tidak ada verifikasi otomatis |
+| 26 tahun seamless, MAE turun 42%, jutaan titik 60 FPS | Target yang memerlukan validasi/benchmark, bukan kemampuan selesai |
+| Estimasi dampak ekonomi, probabilitas api, atau kepatuhan legal otomatis | Tidak menjadi klaim produk tanpa data dan metode yang memadai |
 
-Referensi bibliografi dalam paper, terutama yang detail tahun/judulnya tidak konsisten, harus diverifikasi sebelum digunakan dalam publikasi. Cerita Bengkalis 2028 adalah ilustrasi hipotetis, bukan kejadian atau hasil validasi.
+Keputusan ilmiah yang masih terbuka: pairing dan penyambungan satelit, resolusi/agregasi model, minimum kelengkapan referensi, metode/ambang anomali, serta aturan domain validasi. Keputusan teknis yang masih terbuka: penyedia antrean/worker/object storage, batas kapasitas job, aturan cakupan sekitar lokasi titik, format visualisasi unduhan, penyedia identitas, dan transisi detail penugasan.
+
+Hal-hal tersebut diperinci melalui kontrak dan pengujian; tidak membatalkan keputusan produk tentang cakupan global, polygon bebas, analisis eksplisit, kalender, referensi 10 tahun, dan workspace tim. Referensi bibliografi paper serta ilustrasi hipotetis tidak dipakai sebagai bukti hasil eksperimen.
 
 ## 13. Sumber dan tindak lanjut
 
-Paper lokal menjadi sumber gagasan, bukan bukti bahwa seluruh klaimnya telah tervalidasi. Sumber resmi berikut mendasari pemeriksaan teknis awal:
+Keputusan produk pada dokumen ini mengikuti wawancara tim tanggal 10 November 2026 dan objective challenge yang dibagikan pengguna dalam percakapan. Paper lokal menjadi sumber gagasan, bukan bukti bahwa seluruh klaimnya telah tervalidasi. Referensi teknis dari versi sebelumnya dipertahankan di bawah; persyaratan submission dan detail produk data tetap perlu diperiksa sebelum implementasi ilmiah atau pengumpulan.
 
-- **[S1]** [NASA Space Apps — Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/harmonization-of-modis-and-viirs-hot-spots/) — halaman challenge; isi lengkap perlu diperiksa kembali.
+- **[S1]** [NASA Space Apps — Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/harmonization-of-modis-and-viirs-hot-spots/) — halaman challenge; objective yang dibagikan pengguna menjadi dasar lingkup produk, sedangkan ketentuan submission resmi tetap perlu diperiksa.
 - **[S2]** [NASA FIRMS — Fire Alert Notes](https://firms.modaps.eosdis.nasa.gov/alerts/notes.php) — karakteristik deteksi dan confidence.
 - **[S3]** [NASA CMR — LP DAAC Collection Directory](https://cmr.earthdata.nasa.gov/search/site/collections/directory/LPCLOUD/gov.nasa.eosdis) — identitas MOD14A1.061 dan VNP14A1.002.
 - **[S4]** [NASA — VIIRS Active Fire User Guide](https://www.earthdata.nasa.gov/s3fs-public/imported/VIIRS_activefire_User_Guide.pdf) — dokumentasi produk; acuan pemeriksaan QA/SDS sebelum implementasi.
@@ -475,4 +404,4 @@ Paper lokal menjadi sumber gagasan, bukan bukti bahwa seluruh klaimnya telah ter
 - **[S14]** [Neon — Prisma Integration](https://neon.com/docs/guides/prisma) — konfigurasi Prisma dengan Neon dan koneksi database.
 - **[S15]** [scikit-learn — QuantileTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html) — transformasi kuantil; bukan pengganti validasi harmonisasi antarsensor.
 
-Sebelum implementasi ilmiah penuh: tetapkan aturan prioritas kandidat verifikasi, ukuran lokasi, layanan penyimpanan/autentikasi koordinator, seri referensi, aturan penyambungan, dan definisi anomali; bekukan versi arsip serta polygon studi, verifikasi ingest NRT, dan simpan manifest. Jika QA pelengkap digunakan, verifikasi tile serta pemetaan kelas produknya. Sebelum submission: periksa persyaratan challenge, lengkapi atribusi, dan ganti setiap target performa dengan hasil pengukuran aktual atau label “belum diuji”.
+Sebelum implementasi ilmiah penuh, bekukan versi arsip dan aturan pairing, uji hipotesis setara MODIS pada data tumpang tindih dengan evaluasi terpisah, tentukan aturan baseline/anomali serta status kurang data, dan ukur kueri polygon global pada worker. Integrasikan kontrak v2, model penyimpanan, serta task/sprint yang sudah diselaraskan tanpa menganggap dokumen/schema target sebagai fitur yang sudah berjalan. Sebelum submission, periksa ketentuan resmi, atribusi, serta kesesuaian klaim demonstrasi dengan hasil pengukuran sebenarnya.
