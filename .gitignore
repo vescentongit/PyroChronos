@@ -3,6 +3,8 @@ node_modules/
 .env*
 !.env.example
 .cache/
+data/raw/
+data/processed/grid/
 *.tsbuildinfo
 __pycache__/
 *.pyc
