@@ -11,8 +11,12 @@ Keputusan tim (10 Nov 2026): **titik api dan kalender bersifat global**. Penggun
 | [firms_catalog.py](../../pipeline/firms_catalog.py) | Feed, lokasi arsip, area unggulan, bbox `world`/kustom (termasuk antimeridian) |
 | [firms_parse.py](../../pipeline/firms_parse.py) | Parser/validator baris FIRMS (batch API maupun streaming arsip) |
 | [firms_ingest.py](../../pipeline/firms_ingest.py) | Unduh API area (NRT/terbaru) untuk area apa pun → raw batch + manifest |
-| [firms_archive.py](../../pipeline/firms_archive.py) | Unduh arsip tahunan global → grid bulanan 0,25° |
+| [firms_archive.py](../../pipeline/firms_archive.py) | Unduh arsip tahunan global → store deteksi asli + grid bulanan 0,25° (agregat kasar) |
 | [firms_calendar.py](../../pipeline/firms_calendar.py) | Kalender bulanan + median historis + anomali untuk area apa pun |
+| [detection_store.py](../../pipeline/detection_store.py) | Store deteksi asli per sumber dan bulan, dibagi ubin 5° (format `pcd1`) |
+| [area_query.py](../../pipeline/area_query.py) | Kueri polygon bebas (lubang, antimeridian) dan irisan tanggal inklusif UTC |
+| [area_counts.py](../../pipeline/area_counts.py) | Count mentah per sumber, cakupan eksplisit, dan manifest analisis |
+| [research_adapter.py](../../pipeline/research_adapter.py) | Adapter producer → payload `research-2` (result, daily page, detections page) |
 
 ## Feed
 
@@ -56,6 +60,55 @@ python pipeline/firms_calendar.py --source MODIS_SP --area 94,-12,142,7 --includ
 - Confidence low (MODIS <30, VIIRS `l`) dikecualikan default; `--include-low` untuk menyertakan.
 - `climatology[bulan].median` dihitung hanya dari bulan berstatus `observed`. `anomaly(result, "YYYY-MM")` membandingkan satu bulan dengan median bulan yang sama pada tahun lain, beserta persentil; tanpa riwayat → `insufficient_history`.
 - Output: `data/processed/calendar/{SOURCE}_{area}.json`. Bentuk ini belum menjadi kontrak frontend; perlu disepakati dengan Orkhan dan Bagas sebelum dipakai UI.
+
+## Store deteksi asli (R2-P0-N1)
+
+`python pipeline/firms_archive.py --source MODIS_SP --years 2000-2025` kini menulis **deteksi asli**, bukan hanya grid:
+
+- Lokasi: `data/processed/detections/{SOURCE}/{YYYY}/{YYYY-MM}.pcd` (di-gitignore). Satu berkas per sumber dan bulan, berisi ubin 5° yang dikompresi terpisah sehingga kueri bbox hanya membaca ubin yang dibutuhkan.
+- Rekaman (19 byte): lintang/bujur 1e-5°, menit akuisisi UTC sejak 2000-01-01, FRP (NaN = tidak ada), satelit, tipe api, siang/malam, dan kode confidence mentah (MODIS persen 0-100; VIIRS 101=l, 102=n, 103=h). Sekitar 10 byte/rekaman setelah kompresi.
+- Duplikat (sumber, posisi, menit, satelit yang sama) dibuang saat penyimpanan dan dihitung di manifest. Baris invalid ditolak dengan alasan dan dihitung.
+- Manifest: `data/processed/detections/{SOURCE}/manifest.jsonl`, satu baris per tahun dengan SHA-256 arsip, rentang observasi pertama/terakhir, jumlah per bulan, SHA-256 tiap berkas bulan, satelit yang terlihat tiap bulan, serta peringatan. Periode yang tidak ada di manifest berarti **tidak ada arsip**, bukan nol deteksi.
+- Pemrosesan ulang melewati tahun yang sudah ada kecuali `--force`.
+- **Grid 0,25° bulanan** (`data/processed/grid/`) diturunkan dari rekaman yang sama dan diberi label `coarse-aggregate`: pendekatan di tepi polygon dan untuk area kecil, tidak dipakai untuk hitungan akhir.
+
+## Kueri polygon (R2-P0-N2)
+
+`area_query.Polygon` menerima GeoJSON Polygon WGS84 dengan cincin luar dan lubang. Validasi: cincin tertutup, ≥3 titik berbeda, luas positif, tidak berpotongan sendiri, lubang di dalam cincin luar dan tidak saling bersinggungan/bersarang, batas jumlah titik, serta batas luas opsional. Aturan geometri:
+
+- Sisi dianggap garis lurus pada bidang bujur/lintang (bukan geodesik). Sisi lebih dari 180° bujur dibaca melewati antimeridian (konvensi RFC 7946); polygon seperti itu dipecah menjadi dua bbox untuk prefilter.
+- Prefilter bbox memilih ubin, lalu setiap titik diuji terhadap polygon sebenarnya (ray casting). Titik di sisi cincin luar dianggap di dalam, di sisi lubang dianggap di luar. Hasil berbeda dari bbox saja bila polygon bukan persegi.
+- Tanggal inklusif UTC: `[awal 00:00, akhir+1 hari 00:00)`.
+- Luas dihitung bola (R = 6371,0088 km) untuk batas validasi dan manifest; `areaKm2` resmi tetap dihitung layanan geometri.
+
+## Count per sumber dan manifest (R2-P0-N3)
+
+`area_counts.py` menghitung deteksi per sumber, hari, dan bulan:
+
+- **Definisi:** jumlah deteksi asli yang lolos kebijakan kualitas `quality-policy-1` di dalam polygon dan periode; bukan sel-hari, jumlah kejadian, atau luas terbakar.
+- **Kebijakan:** tipe `vegetation` (dan `unknown` untuk feed tanpa kolom tipe), confidence nominal/high. Yang dikecualikan (confidence rendah, gunung api, sumber statis, lepas pantai) dihitung dan dilaporkan di `excluded`.
+- **Cakupan:** status bulan dari rentang observasi arsip: `observed` (arsip mencakup seluruh bulan; count 0 berarti nol deteksi, bukan tidak ada api), `partial` (hanya sebagian bulan), `no_data` (tanpa arsip → count `null`, tidak pernah 0).
+- **Satelit:** satelit yang terlihat tiap bulan dicatat (`satellite-config-1`). Penambahan satelit atau sumber tidak dianggap seri setara tanpa kalibrasi tervalidasi; sumber tidak dijumlahkan menjadi nilai terharmonisasi.
+- **Manifest** (`analysis-manifest-1`, id turunan hash isi sehingga dapat direproduksi): kebijakan kualitas, definisi count, aturan dedup dan overlap, hash geometri, luas, periode, serta per sumber: checksum arsip tiap tahun, bulan tanpa data/parsial, satelit per bulan, eksklusi, dan `rawCount`.
+
+## Adapter producer ke research-2 (R2-P0-N4)
+
+```bash
+python pipeline/research_adapter.py --area kalteng --start 2019-08-01 --end 2019-10-31 --comparison-start 2018-08-01 --comparison-end 2018-10-31
+python pipeline/research_adapter.py --polygon area.json --start 2015-06-01 --end 2015-11-30
+```
+
+Keluaran di `data/processed/research/{hash geometri}/`: `result.json`, `manifest.json`, `daily-{bulan}.json`, `detections-page-1.json`. Semua lolos schema `research-2` (diperiksa oleh `tests/research-adapter.test.mjs` dengan data sintetis berlabel).
+
+- `mode: research`, tetapi **tidak ada estimasi**: `harmonizedCount` selalu `null`, `method.validation` = `unsupported`, anomali `method_unsupported` (atau `insufficient_data` bila tanpa data). Hanya `rawCountsBySource` yang terisi; `rawCount` adalah jumlah sumber yang punya data.
+- Status metrik: `no_data` (semua sumber tanpa arsip, count `null`), `partial` (ada sumber/bulan kosong atau sebagian), `method_unsupported` (data lengkap tetapi belum ada model).
+- Detail observasi: urut waktu lalu sumber, maksimum 1000 per halaman, cursor buram terikat pada query (analisis, peran, periode, sumber).
+- ID area/workspace/job/analisis berupa placeholder lokal; layanan persistensi menggantinya. `generatedAt` = `publishedAt` hingga ada publikasi.
+- Handoff untuk Bagas: validasi payload, simpan hasil dan manifest, dan publikasi atomik. Untuk Orkhan: kalender tetap menampilkan bulan `no_data`/`partial` secara eksplisit.
+
+## Pemrosesan arsip: batas dan kecepatan
+
+Unduhan arsip dibatasi jaringan (±0,5 MB/s pada uji ini): MODIS ≈ 65-80 MB per tahun, VIIRS S-NPP ≈ 370 MB per tahun, dan pembacaan ±4 menit per tahun MODIS. Tahun yang belum diproses **tidak tersedia** di hasil; adapter menandainya `no_data`. Ruang disk: store ≈ 10 byte/deteksi.
 
 ## Data terbaru: API area
 
