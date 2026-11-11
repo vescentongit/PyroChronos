@@ -4,6 +4,10 @@ This step adds persistence and internal contracts for R2-P1-B1/B2. It does not
 implement a worker, publication service, routes, or production authorization.
 The public `research-2` contracts in `research-contracts.ts` remain unchanged.
 
+The subsequent [Step 2 worker](research-worker.md) adds queue/lease handling and
+native PostgreSQL integration tests. Publication, producer and authorization
+integration remain separate steps.
+
 ## P0 boundary
 
 `workspaceId`, `requestedById`, `createdById`, `areaId` and `areaRevision` are
