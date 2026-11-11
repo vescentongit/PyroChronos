@@ -533,8 +533,6 @@ function HeatSurface({
 
 export default function GlobalHeatmap({ language }: { language: Language }) {
   const [query, setQuery] = useState<HotspotQuery>(initial),
-    [draftQuery, setDraftQuery] = useState<HotspotQuery>(initial),
-    [requested, setRequested] = useState(false),
     [refresh, setRefresh] = useState(0),
     [now, setNow] = useState(Date.now()),
     [boundsError, setBoundsError] = useState(false);
@@ -585,7 +583,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       now > Date.parse(data.freshUntil));
   const onViewport = useCallback(
     (bbox: Bounds, zoom: number) =>
-      setDraftQuery((previous) =>
+      setQuery((previous) =>
         JSON.stringify(previous.bbox) === JSON.stringify(bbox) &&
         previous.zoom === zoom
           ? previous
@@ -598,7 +596,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
-    if (!requested) return;
+    if (mode !== "nrt") return;
     const abort = new AbortController();
     let cancelled = false;
     const cached = cache.current.get(key);
@@ -678,7 +676,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       clearTimeout(debounce);
       abort.abort();
     };
-  }, [key, query, refresh, requested]);
+  }, [key, query, refresh, mode]);
   function area(bbox: Bounds) {
     setBoundsError(false);
     if (controller.current) controller.current.fit(bbox);
@@ -717,19 +715,12 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </h1>
           <p>
             {t(
-              "Jelajahi citra satelit, pilih area, lalu muat deteksi atau analisis riwayatnya.",
-              "Explore satellite imagery, select an area, then load detections or analyze its history.",
+              "Geser atau zoom peta untuk melihat hotspot. Data menyesuaikan otomatis; pilih wilayah di bawah untuk mulai.",
+              "Pan or zoom to explore hotspots. Data updates automatically; choose a region below to get started.",
             )}
           </p>
         </div>
-        <button
-          className="outline"
-          disabled={!data || loading || mode !== "nrt"}
-          onClick={exportData}
-        >
-          <Download size={16} />
-          JSON
-        </button>
+
       </div>
       <div
         className="global-toolbar"
@@ -744,17 +735,20 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             setDrawing(false);
           }}
         >
-          {t("FIRMS terbaru · mentah", "Recent FIRMS · raw")}
+          {t("Hotspot terbaru", "Recent hotspots")}
         </button>
         <button
           className="outline"
           aria-pressed={mode === "research"}
           onClick={() => setMode("research")}
         >
-          {t("Riset historis", "Historical research")}
+          {t("Analisis historis", "Historical analysis")}
         </button>
       </div>
       <div hidden={mode !== "research"}>
+        <p className="global-note">
+          {t("Untuk melihat perubahan dari waktu ke waktu: gambar area di peta, tentukan periode, lalu jalankan analisis. Hasil tersimpan di browser ini tanpa login.", "To explore changes over time: draw an area on the map, choose a period, then run an analysis. Results stay in this browser without signing in.")}
+        </p>
         <ResearchPanel
           language={language}
           vertices={vertices}
@@ -772,9 +766,9 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           <label>
             {t("Sensor / satelit", "Sensor / satellite")}
             <select
-              value={draftQuery.source}
+              value={query.source}
               onChange={(event) =>
-                setDraftQuery((previous) => ({
+                setQuery((previous) => ({
                   ...previous,
                   source: event.target.value as HotspotQuery["source"],
                 }))
@@ -788,11 +782,11 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             </select>
           </label>
           <label>
-            {t("Periode bergerak", "Rolling window")}
+            {t("Deteksi dalam", "Detections from")}
             <select
-              value={draftQuery.hours}
+              value={query.hours}
               onChange={(event) =>
-                setDraftQuery((previous) => ({
+                setQuery((previous) => ({
                   ...previous,
                   hours: Number(event.target.value) as HotspotQuery["hours"],
                 }))
@@ -807,15 +801,15 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </label>
           <button
             className="outline"
+            hidden={!state.failed && !stale}
             disabled={loading}
             onClick={() => {
-              setQuery(draftQuery);
-              setRequested(true);
+              cache.current.delete(key);
               setRefresh((value) => value + 1);
             }}
           >
             <RefreshCw size={15} />
-            {t("Muat area tampilan", "Load visible area")}
+            {t("Coba muat ulang", "Retry loading")}
           </button>
         </div>
       </div>
@@ -831,18 +825,49 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </button>
         ))}
       </div>
+      <div
+        className="global-toolbar"
+        role="group"
+        aria-label={t("Lapisan peta", "Map layers")}
+      >
+        <button
+          className="outline"
+          aria-pressed={layer === "heatmap"}
+          onClick={() => setLayer("heatmap")}
+        >
+          {t("Kepadatan hotspot", "Hotspot density")}
+        </button>
+        <button
+          className="outline"
+          aria-pressed={layer === "points"}
+          onClick={() => setLayer("points")}
+        >
+          {t("Titik hotspot", "Hotspot points")}
+        </button>
+      </div>
+      <HeatSurface
+        query={query}
+        data={data}
+        language={language}
+        onViewport={onViewport}
+        controller={controller}
+        layer={layer}
+        vertices={mode === "research" ? vertices : []}
+        drawing={drawing && mode === "research"}
+        draft={mode === "research" ? draftPolygon : null}
+        research={mode === "research" ? researchOverlay : null}
+        onAddVertex={addVertex}
+        toolsHostRef={setToolsHost}
+      />
       <div hidden={mode !== "nrt"}>
         <div className="global-data-status" role="status">
           <strong>
             {loading
-              ? t("Memuat FIRMS…", "Loading FIRMS…")
+              ? t("Memperbarui hotspot otomatis…", "Updating hotspots automatically…")
               : !data
-                ? requested
-                  ? t("Data tidak tersedia", "Data unavailable")
-                  : t(
-                      "Klik Muat area tampilan untuk mengambil FIRMS.",
-                      "Click Load visible area to fetch FIRMS.",
-                    )
+                ? state.failed
+                  ? t("Data belum tersedia — coba muat ulang", "Data unavailable — retry loading")
+                  : t("Menunggu data FIRMS", "Waiting for FIRMS data")
                 : stale
                   ? t(
                       "Data lama — periksa waktu",
@@ -867,48 +892,24 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             )}
           </p>
         )}
-        {data && (
+        {data && (data.source !== query.source || data.hours !== query.hours || data.bbox.some((value, index) => value !== query.bbox[index])) && (
           <p className="global-note">
-            {t("Konteks overlay tersimpan", "Retained overlay context")}:{" "}
+            {t("Masih menampilkan data area sebelumnya sampai data baru tersedia", "Showing the previous area until new data is available")}:{" "}
             {data.source} · {data.hours}h · {data.bbox.join(", ")} ·{" "}
             {date(data.observedFrom)} → {date(data.observedTo)}
           </p>
         )}
       </div>
-      <div
-        className="global-toolbar"
-        role="group"
-        aria-label={t("Lapisan peta", "Map layers")}
-      >
+      <div hidden={mode !== "nrt"}>
         <button
           className="outline"
-          aria-pressed={layer === "heatmap"}
-          onClick={() => setLayer("heatmap")}
+          disabled={!data || loading || mode !== "nrt"}
+          onClick={exportData}
         >
-          Heatmap
-        </button>
-        <button
-          className="outline"
-          aria-pressed={layer === "points"}
-          onClick={() => setLayer("points")}
-        >
-          {t("Titik / agregat mentah", "Raw points / aggregates")}
+          <Download size={16} />
+          {t("Unduh data JSON", "Download JSON")}
         </button>
       </div>
-      <HeatSurface
-        query={draftQuery}
-        data={data}
-        language={language}
-        onViewport={onViewport}
-        controller={controller}
-        layer={layer}
-        vertices={mode === "research" ? vertices : []}
-        drawing={drawing && mode === "research"}
-        draft={mode === "research" ? draftPolygon : null}
-        research={mode === "research" ? researchOverlay : null}
-        onAddVertex={addVertex}
-        toolsHostRef={setToolsHost}
-      />
       <div ref={setResultsHost} hidden={mode !== "research"} />
       <details className="region-metadata">
         <summary>
@@ -918,7 +919,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           )}
         </summary>
         <form
-          key={draftQuery.bbox.join(",")}
+          key={query.bbox.join(",")}
           className="global-bounds"
           onSubmit={(event) => {
             event.preventDefault();
@@ -947,7 +948,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
                 step="any"
                 min={index % 2 ? -90 : -180}
                 max={index % 2 ? 90 : 180}
-                defaultValue={draftQuery.bbox[index]}
+                defaultValue={query.bbox[index]}
               />
             </label>
           ))}

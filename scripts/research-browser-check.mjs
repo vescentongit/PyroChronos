@@ -142,46 +142,28 @@ const change = async (tab, selector, value) =>
   tab.evaluate(
     `(() => { const element=document.querySelector(${JSON.stringify(selector)}); const prototype=element.tagName==='SELECT'?HTMLSelectElement.prototype:element.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(prototype,'value').set.call(element,${JSON.stringify(value)}); element.dispatchEvent(new Event(element.tagName==='SELECT'?'change':'input',{bubbles:true})); })()`,
   );
-assert.equal(
-  await desktop.evaluate(
-    `performance.getEntriesByType('resource').filter(r=>r.name.includes('/api/hotspots?')).length`,
-  ),
-  0,
-);
+await desktop.until("window.nrtCalls.length > 0");
 await desktop.evaluate(
   `window.originalMapCanvas=document.querySelector('.maplibregl-canvas')`,
 );
+const beforePan = await desktop.evaluate("window.nrtCalls.length");
 await click(desktop, "Kalimantan");
-await click(desktop, "Titik / agregat mentah");
-await pause(200);
-assert.equal(
-  await desktop.evaluate(
-    `performance.getEntriesByType('resource').filter(r=>r.name.includes('/api/hotspots?')).length`,
-  ),
-  0,
-);
-await click(desktop, "Muat area tampilan");
+await click(desktop, "Titik hotspot");
+await desktop.until(`window.nrtCalls.length > ${beforePan}`);
 await desktop.until(
   `document.querySelector('.global-data-status').textContent.includes('Data FIRMS tersedia')`,
 );
-assert.equal(await desktop.evaluate("window.nrtCalls.length"), 1);
-await click(desktop, "Muat area tampilan");
-await pause(600);
-assert.equal(await desktop.evaluate("window.nrtCalls.length"), 1);
+const beforeZoom = await desktop.evaluate("window.nrtCalls.length");
 await click(desktop, "Papua");
 await desktop.evaluate(
   `document.querySelector('.maplibregl-ctrl-zoom-in').click()`,
 );
-await pause(600);
-assert.equal(await desktop.evaluate("window.nrtCalls.length"), 1);
-assert.equal(
-  await desktop.evaluate(
-    `document.querySelector('.global-data-status').textContent.includes('Data FIRMS tersedia')`,
-  ),
-  true,
+await desktop.until(`window.nrtCalls.length > ${beforeZoom}`);
+await desktop.until(
+  `document.querySelector('.global-data-status').textContent.includes('Data FIRMS tersedia')`,
 );
 await click(desktop, "Kalimantan");
-await click(desktop, "Riset historis");
+await click(desktop, "Analisis historis");
 await desktop.until('document.querySelector(".research-panel select").value');
 await desktop.evaluate(
   `document.querySelector('.research-panel details').open=true`,
@@ -192,7 +174,7 @@ await change(
   "113, -4\n115, -3\n114, 0\n112, -1",
 );
 await click(desktop, "Gunakan koordinat sebagai draft");
-await click(desktop, "Terapkan polygon");
+await click(desktop, "Gunakan area ini");
 await desktop.until(
   `document.querySelector('.research-panel .global-toolbar').textContent.includes('1')`,
 );
@@ -200,7 +182,7 @@ assert.equal(
   await desktop.evaluate("window.researchCalls.filter(c=>c.body).length"),
   0,
 );
-await click(desktop, "Gambar / edit polygon");
+await click(desktop, "Gambar / edit area");
 await desktop.until(`document.querySelector('.global-drawing-tools button')`);
 const canvasBox = await desktop.evaluate(
   `(() => {const r=document.querySelector('.maplibregl-canvas').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`,
@@ -371,7 +353,7 @@ await onboarding.send("Page.addScriptToEvaluateOnNewDocument", {
 });
 await onboarding.go("/simulation");
 await onboarding.until('document.querySelector(".global-heatmap")');
-await click(onboarding, "Riset historis");
+await click(onboarding, "Analisis historis");
 await onboarding.until(`document.querySelector('.research-panel').textContent.includes('Buat workspace untuk menyimpan area')`);
 await onboarding.evaluate(`(() => { const field=[...document.querySelectorAll('.research-panel label')].find(label => label.textContent.includes('Nama workspace')).querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(field,'QA Workspace'); field.dispatchEvent(new Event('input',{bubbles:true})); })()`);
 await click(onboarding, "Buat workspace");

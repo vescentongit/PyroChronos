@@ -26,8 +26,11 @@ import {
   watchResearch,
   researchDays,
   researchDetections,
-  ResearchApiError,
-} from "@/lib/research-client";
+  lastResearchResult,
+  researchHistory,
+  openResearchResult,
+} from "@/lib/local-research-client";
+import { ResearchApiError } from "@/lib/research-client";
 import demo from "@/lib/fixtures/research-demo.json";
 
 const labels: Record<string, [string, string]> = {
@@ -94,6 +97,7 @@ const labels: Record<string, [string, string]> = {
     "Koneksi riset gagal atau melewati batas waktu. Coba lagi dengan pilihan yang sama.",
     "Research connection failed or timed out. Retry with the same selection.",
   ],
+  STORAGE_UNAVAILABLE: ["Penyimpanan browser tidak tersedia atau penuh. Hasil belum tersimpan.", "Browser storage is unavailable or full. The result was not saved."],
   cancelled: [
     "Pemantauan dihentikan; job server mungkin masih berjalan. Klik Analisis area untuk melanjutkan.",
     "Monitoring stopped; the server job may still be running. Click Analyze area to resume.",
@@ -167,14 +171,13 @@ export default function ResearchPanel({
   const [compareEnd, setCompareEnd] = useState("2025-08-31");
   const [years, setYears] = useState(10);
   const [policy, setPolicy] = useState(
-    process.env.NEXT_PUBLIC_RESEARCH_QUALITY_POLICY_VERSION ?? "",
+    process.env.NEXT_PUBLIC_RESEARCH_QUALITY_POLICY_VERSION ?? "quality-policy-1",
   );
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>(
     [],
   );
   const [workspace, setWorkspace] = useState("");
   const [workspaceError, setWorkspaceError] = useState("");
-  const [workspaceRefresh, setWorkspaceRefresh] = useState(0);
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
   const [workspaceCreating, setWorkspaceCreating] = useState(false);
@@ -192,6 +195,8 @@ export default function ResearchPanel({
   const [cursor, setCursor] = useState<string | null>(null);
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [points, setPoints] = useState<ResearchOverlay["features"]>([]);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [history, setHistory] = useState<ReturnType<typeof researchHistory>>([]);
   const request = useRef<ReturnType<typeof requestIdentity> | null>(null);
   const areaRequest = useRef<ReturnType<typeof requestIdentity> | null>(null);
   const abort = useRef<AbortController | null>(null);
@@ -215,6 +220,39 @@ export default function ResearchPanel({
   selectionRef.current = selectionKey;
   const resultKey = useRef("");
   useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("pyro-research-draft-v1") || "null");
+      if (stored && typeof stored === "object") {
+        if (typeof stored.name === "string") setName(stored.name);
+        if (typeof stored.start === "string") setStart(stored.start);
+        if (typeof stored.end === "string") setEnd(stored.end);
+        if (typeof stored.compare === "boolean") setCompare(stored.compare);
+        if (typeof stored.compareStart === "string") setCompareStart(stored.compareStart);
+        if (typeof stored.compareEnd === "string") setCompareEnd(stored.compareEnd);
+        if (Number.isInteger(stored.years) && stored.years > 0 && stored.years <= 30) setYears(stored.years);
+        if (typeof stored.policy === "string") setPolicy(stored.policy);
+        if (Array.isArray(stored.vertices) && stored.vertices.length) {
+          const restored = polygonFromVertices(stored.vertices);
+          setVertices(stored.vertices); setPolygon(restored); onDraft(restored);
+        }
+      }
+      setDraftLoaded(true);
+    } catch { setError("STORAGE_UNAVAILABLE"); }
+  }, []);
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try { localStorage.setItem("pyro-research-draft-v1", JSON.stringify({ name, start, end, compare, compareStart, compareEnd, years, policy, vertices: polygon?.coordinates[0].slice(0, -1) ?? [] })); }
+    catch { setError("STORAGE_UNAVAILABLE"); }
+  }, [draftLoaded, name, start, end, compare, compareStart, compareEnd, years, policy, polygon]);
+  useEffect(() => {
+    let active = true;
+    try { setHistory(researchHistory()); } catch { setError("STORAGE_UNAVAILABLE"); }
+    lastResearchResult().then(saved => {
+      if (active && saved) { publishResult(saved, "saved-local-result"); setStatus("succeeded"); }
+    }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
     const controller = new AbortController();
     setWorkspaceLoaded(false);
     setWorkspaceError("");
@@ -236,7 +274,7 @@ export default function ResearchPanel({
           );
       });
     return () => controller.abort();
-  }, [workspaceRefresh]);
+  }, []);
   async function addWorkspace() {
     const name = newWorkspaceName.trim();
     if (!name || workspaceCreating) return;
@@ -370,6 +408,7 @@ export default function ResearchPanel({
       );
       if (current()) {
         publishResult(next, key);
+        setHistory(researchHistory());
         setStatus("succeeded");
       }
     } catch (reason) {
@@ -493,7 +532,7 @@ export default function ResearchPanel({
         createPortal(
           <>
             <button className="outline" onClick={applyPolygon}>
-              {t("Terapkan polygon", "Apply polygon")}
+              {t("Gunakan area ini", "Use this area")}
             </button>
             <button className="outline" onClick={cancelEdit}>
               {t("Batal edit", "Cancel edit")}
@@ -526,7 +565,7 @@ export default function ResearchPanel({
         >
           {drawing
             ? t("Jeda menggambar", "Pause drawing")
-            : t("Gambar / edit polygon", "Draw / edit polygon")}
+            : t("Gambar / edit area", "Draw / edit area")}
         </button>
         <button
           className="outline"
@@ -536,7 +575,7 @@ export default function ResearchPanel({
           {t("Hapus titik terakhir", "Undo vertex")}
         </button>
         <button className="outline" onClick={applyPolygon}>
-          {t("Terapkan polygon", "Apply polygon")}
+          {t("Gunakan area ini", "Use this area")}
         </button>
         <button className="outline" onClick={cancelEdit}>
           {t("Batal edit", "Cancel edit")}
@@ -549,8 +588,8 @@ export default function ResearchPanel({
       {drawing && (
         <p role="status">
           {t(
-            "Klik peta untuk menambah titik. Gunakan editor koordinat untuk mengubah titik dengan keyboard.",
-            "Click the map to add vertices. Use the coordinate editor to edit vertices with a keyboard.",
+            "Klik minimal 3 titik di peta untuk membatasi area, lalu pilih Gunakan area ini. Untuk keyboard, gunakan editor koordinat.",
+            "Click at least 3 points on the map to outline an area, then choose Use this area. For keyboard input, use the coordinate editor.",
           )}
         </p>
       )}
@@ -700,7 +739,6 @@ export default function ResearchPanel({
         {workspaceError && (
           <p className="global-error" role="status">
             {label(workspaceError)}
-            {workspaceError === "UNAUTHENTICATED" && <> <a href="/api/auth/signin?callbackUrl=%2Fsimulation">{t("Masuk dengan Google", "Sign in with Google")}</a></>}
           </p>
         )}
         {!workspaceError && workspaceLoaded && workspaces.length === 0 && (
@@ -717,6 +755,19 @@ export default function ResearchPanel({
             {workspaceCreateError && <p className="global-error" role="alert">{label(workspaceCreateError)}</p>}
           </div>
         )}
+        <p className="global-note">{t("Area dan hasil disimpan di browser ini. Pemrosesan analisis menggunakan data pada server.", "Areas and results are stored in this browser. Analysis uses data on the server.")}</p>
+        {history.length > 0 && <label>{t("Buka hasil tersimpan", "Open saved result")}
+          <select value="" onChange={event => {
+            const id = event.target.value;
+            if (!id) return;
+            abort.current?.abort();
+            const current = ++generation.current;
+            void openResearchResult(id).then(saved => { if (current === generation.current) { publishResult(saved, "saved-local-result"); setJob(null); setError(""); setStatus("succeeded"); } }).catch(() => { if (current === generation.current) setError("STORAGE_UNAVAILABLE"); });
+          }}>
+            <option value="">{t("Pilih hasil", "Select a result")}</option>
+            {history.map(item => <option key={item.id} value={item.id}>{item.name} · {item.start} → {item.end}</option>)}
+          </select>
+        </label>}
         {!policy && (
           <p className="global-note">
             {t(
@@ -739,13 +790,6 @@ export default function ResearchPanel({
             }
           >
             {t("Analisis area", "Analyze area")}
-          </button>
-          <button
-            type="button"
-            className="outline"
-            onClick={() => setWorkspaceRefresh((value) => value + 1)}
-          >
-            {t("Periksa koneksi riset", "Check research connection")}
           </button>
           {busy && (
             <button
