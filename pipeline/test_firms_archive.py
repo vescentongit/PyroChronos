@@ -17,6 +17,10 @@ def row(lat, lon, day, confidence=70, kind=0, frp="5"):
     return f"{lat},{lon},320,1,1,{day},0300,Terra,MODIS,{confidence},6.1,295,{frp},D,{kind}"
 
 
+def many(count, day):
+    return [row(round(-2.4 - index * 0.01, 2), 114.1, day) for index in range(count)]
+
+
 def make_zip(path, files, year=2019):
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr(f"modis/{year}/", "")
@@ -51,18 +55,15 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(cell_of(180, 90), (1439, 719))
         self.assertEqual(cell_of(114.1, -2.4), (1176, 350))
 
-    def test_aggregate_counts_by_month_cell_type_and_confidence(self):
+    def test_aggregate_buckets_by_month_and_counts_rejects(self):
         path = self.dir / "a.zip"
         make_zip(path, {
             "Indonesia": [row(-2.4, 114.1, "2019-09-14"), row(-2.45, 114.15, "2019-09-20", frp=""), row(-2.4, 114.1, "2019-09-14", kind=2), row(-2.4, 114.1, "2019-10-01", confidence=10)],
             "Brazil": [row(-10, -55, "2019-08-01"), row(-10, -55, "2018-12-31"), "bad,row"],
         })
-        totals, stats = aggregate(path, "MODIS_SP", 2019)
-        self.assertEqual(totals[("2019-09", 1176, 350, "vegetation", "nominal")], [2, 5.0, 1])
-        self.assertEqual(totals[("2019-09", 1176, 350, "static", "nominal")][0], 1)
-        self.assertEqual(totals[("2019-10", 1176, 350, "vegetation", "low")][0], 1)
+        builder, stats = aggregate(path, "MODIS_SP", 2019)
+        self.assertEqual(builder.months(), ["2019-08", "2019-09", "2019-10"])
         self.assertEqual((stats["files"], stats["accepted"], stats["rejected"], stats["wrong_year"]), (2, 5, 1, 1))
-        self.assertEqual((stats["first_observed"][:10], stats["last_observed"][:10]), ("2019-08-01", "2019-10-01"))
         self.assertEqual(stats["reject_reasons"], {"column_count": 1})
 
     def test_schema_mismatch_and_empty_archive_fail(self):
@@ -79,12 +80,14 @@ class ArchiveTests(unittest.TestCase):
     def test_process_year_downloads_writes_manifest_and_removes_zip(self):
         source = self.dir / "src.zip"
         make_zip(source, {"Indonesia": [row(-2.4, 114.1, "2019-09-14")]})
-        entry = process_year("MODIS_SP", 2019, self.dir / "raw", self.dir / "grid", opener=opener_for(source))
+        entry = process_year("MODIS_SP", 2019, self.dir / "raw", self.dir / "grid", opener=opener_for(source), store_dir=self.dir / "store")
         self.assertFalse((self.dir / "raw/MODIS_SP/2019.zip").exists())
         self.assertEqual(entry["bytes"], source.stat().st_size)
         self.assertIn("modis_2019_all_countries.zip", entry["url"])
         with gzip.open(self.dir / "grid" / entry["grid_path"], "rt") as handle:
             self.assertEqual(handle.read().splitlines()[1], "2019-09,1176,350,vegetation,nominal,1,5.0,0")
+        self.assertEqual(entry["grid_resolution"], "coarse-aggregate")
+        self.assertEqual(entry["months"][0]["count"], 1)
         manifest = (self.dir / "grid/manifest.jsonl").read_text().splitlines()
         self.assertEqual(json.loads(manifest[0])["sha256"], entry["sha256"])
 
@@ -103,14 +106,14 @@ class CalendarTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.grid = Path(self.tmp.name)
         years = {
-            2017: [row(-2.4, 114.1, "2017-01-01"), *[row(-2.4, 114.1, "2017-09-03")] * 2, row(-2.4, 114.1, "2017-12-31")],
-            2018: [row(-2.4, 114.1, "2018-01-01"), *[row(-2.4, 114.1, "2018-09-03")] * 4, row(-2.4, 114.1, "2018-12-31")],
-            2019: [row(-2.4, 114.1, "2019-01-01"), *[row(-2.4, 114.1, "2019-09-03")] * 9, row(10, 10, "2019-09-03"), row(-2.4, 114.1, "2019-09-04", kind=2), row(-2.4, 114.1, "2019-10-15")],
+            2017: [row(-2.4, 114.1, "2017-01-01"), *many(2, "2017-09-03"), row(-2.4, 114.1, "2017-12-31")],
+            2018: [row(-2.4, 114.1, "2018-01-01"), *many(4, "2018-09-03"), row(-2.4, 114.1, "2018-12-31")],
+            2019: [row(-2.4, 114.1, "2019-01-01"), *many(9, "2019-09-03"), row(10, 10, "2019-09-03"), row(-2.4, 114.1, "2019-09-04", kind=2), row(-2.4, 114.1, "2019-10-15")],
         }
         for year, rows in years.items():
             path = self.grid / f"{year}.zip"
             make_zip(path, {"X": rows}, year)
-            process_year("MODIS_SP", year, self.grid / "raw", self.grid, opener=opener_for(path))
+            process_year("MODIS_SP", year, self.grid / "raw", self.grid, opener=opener_for(path), store_dir=self.grid / "store")
 
     def tearDown(self):
         self.tmp.cleanup()
