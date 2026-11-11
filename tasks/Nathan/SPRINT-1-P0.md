@@ -2,7 +2,7 @@
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Bagas.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status:** implementasi R2-P0-N1 sampai N4 selesai dengan tes; menunggu review Bagas dan integrasi sebelum dicentang. Pemrosesan arsip MODIS/VIIRS penuh masih berjalan bertahap.
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
@@ -18,6 +18,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [ ] **Selesai dan direview** — estimasi 5 poin.
 
+*Implementasi selesai, menunggu review Bagas:* store deteksi asli `pcd1` per sumber/bulan (`detection_store.py`, `firms_archive.py`), manifest dengan checksum dan cakupan per tahun, grid lama diberi label `coarse-aggregate`. Pemrosesan arsip nyata berjalan bertahap; tahun yang belum diproses tercatat `no_data`. Lihat [catatan data](../../docs/data/firms-sources.md).
+
 **Pekerjaan:** Audit firms_archive.py dan manifest yang sudah ada. Simpan partisi deteksi asli menurut waktu/sumber untuk kueri polygon dan detail harian; jangan hanya mengandalkan grid bulanan 0,25 derajat.
 
 **Kriteria selesai:** Periode arsip tersedia/hilang dicatat; observasi harian dan titik asli dapat ditelusuri dari checksum. Grid lama diberi label agregat kasar, tidak diklaim tepat pada tepi polygon.
@@ -27,6 +29,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 ### R2-P0-N2 — Kueri polygon bebas dan irisan waktu
 
 - [ ] **Selesai dan direview** — estimasi 8 poin.
+
+*Implementasi selesai, menunggu review Bagas:* `area_query.py` (polygon dengan lubang, antimeridian, validasi, batas luas/titik, tanggal inklusif UTC); 11 tes termasuk hasil berbeda dari bbox.
 
 **Pekerjaan:** Bangun prefilter bbox diikuti pengujian geometri terhadap polygon WGS84, termasuk lubang, antimeridian, batas area, dan tanggal inklusif UTC. Jangan memakai pusat grid kasar sebagai pengganti deteksi asli.
 
@@ -38,6 +42,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [ ] **Selesai dan direview** — estimasi 4 poin.
 
+*Implementasi selesai, menunggu review Bagas:* `area_counts.py` (count per sumber/hari/bulan, kebijakan `quality-policy-1`, cakupan observed/partial/no_data, manifest reproducible).
+
 **Pekerjaan:** Definisikan rawCount dan rawCountsBySource, deduplikasi rekaman, kebijakan confidence/type, status missing/partial, serta versi konfigurasi satelit. Count bukan sel-hari atau jumlah kejadian kebakaran.
 
 **Kriteria selesai:** Jumlah count per sumber cocok dengan rawCount; missing tidak menjadi nol; bertambahnya satelit tidak dianggap seri setara tanpa kalibrasi. Manifest menyimpan aturan dan versi arsip.
@@ -47,6 +53,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 ### R2-P0-N4 — Adapter producer ke research-2
 
 - [ ] **Selesai dan direview** — estimasi 3 poin.
+
+*Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan result/daily/detections `research-2` tanpa estimasi (harmonizedCount null, validation unsupported); `tests/research-adapter.test.mjs` memvalidasi dengan schema zod.
 
 **Pekerjaan:** Petakan keluaran mentah dan draft calendar-1 ke kontrak v2 dengan status belum terharmonisasi bila model belum diuji. Pertahankan modul lama sebagai sumber, bukan kontrak UI baru.
 

@@ -92,7 +92,7 @@ def build(grid_dir, source_id, area, include_low=False, fire_types=DEFAULT_TYPES
         "sensor": source.sensor,
         "harmonized": False,
         "area": {"id": area_id, "bbox": list(bbox), "featured": area_id in FEATURED_REGIONS},
-        "grid": {"version": GRID_VERSION, "cellDegrees": cell, "cellRule": "cell centre inside bbox"},
+        "grid": {"version": GRID_VERSION, "cellDegrees": cell, "cellRule": "cell centre inside bbox", "resolution": "coarse-aggregate", "note": "Approximate at bbox edges and for small areas; exact polygon counts come from area_counts/research_adapter."},
         "filters": {"fireTypes": list(fire_types), "confidence": sorted(confidences)},
         "unit": "detections",
         "archive": [{"year": y, "sha256": e["sha256"], "firstObserved": e["first_observed"], "lastObserved": e["last_observed"]} for y, e in years.items()],
