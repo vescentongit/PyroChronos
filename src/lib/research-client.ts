@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   createResearchAreaSchema,
+  createResearchWorkspaceSchema,
   createResearchAnalysisSchema,
   researchAreaSchema,
   researchWorkspaceSchema,
@@ -78,6 +79,8 @@ export const listResearchWorkspaces = (signal: AbortSignal) =>
     }),
     signal,
   );
+export const createResearchWorkspace = (body: z.infer<typeof createResearchWorkspaceSchema>, signal: AbortSignal) =>
+  researchRequest("/api/v2/workspaces", researchWorkspaceSchema, signal, createResearchWorkspaceSchema.parse(body));
 export async function createResearchArea(
   workspace: string,
   body: z.infer<typeof createResearchAreaSchema>,

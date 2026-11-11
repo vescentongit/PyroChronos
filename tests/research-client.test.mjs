@@ -140,6 +140,18 @@ test("create area validates geometry and workspace returned by the server", asyn
     { code: "INVALID_RESPONSE" },
   );
 });
+test("workspace creation sends the idempotency key and validates its response", async (t) => {
+  const request = fixture("workspace-create"), workspace = fixture("workspace");
+  const mock = t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.equal(url, "/api/v2/workspaces");
+    assert.equal(options.method, "POST");
+    assert.deepEqual(JSON.parse(options.body), request);
+    return Response.json(workspace);
+  });
+  assert.deepEqual(await client.createResearchWorkspace(request, signal()), workspace);
+  mock.mock.mockImplementation(async () => Response.json({ id: "invalid" }));
+  await assert.rejects(client.createResearchWorkspace(request, signal()), { code: "INVALID_RESPONSE" });
+});
 test("job and result must match the exact submitted area, dates, policy and workspace", async (t) => {
   const job = fixture("job");
   const request = fixture("analysis-create");

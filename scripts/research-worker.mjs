@@ -1,12 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { claimRun, failRun, hash, heartbeat, publishRun } from "../src/lib/research-store.ts";
 
+if (existsSync(".env")) process.loadEnvFile(".env");
 const client = new PrismaClient();
 function sql(client) {
   return {
     query: (statement, params = []) => client.$queryRawUnsafe(statement, ...params),
-    transaction: fn => client.$transaction(tx => fn(sql(tx)), { timeout: 120000 }),
+    transaction: fn => client.$transaction(tx => fn(sql(tx)), { maxWait: 30000, timeout: 120000 }),
   };
 }
 const db = sql(client);
@@ -31,7 +33,15 @@ try {
     console.log(`Registered dataset ${id}`);
   } else {
     do {
-      const run = await claimRun(db);
+      let run;
+      try {
+        run = await claimRun(db);
+      } catch {
+        console.error("RESEARCH_QUEUE_UNAVAILABLE; retrying");
+        if (process.argv.includes("--once")) { process.exitCode = 1; break; }
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        continue;
+      }
       if (!run) {
         if (process.argv.includes("--once")) break;
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -43,7 +53,10 @@ try {
         const bundle = await python({ root, run });
         if (!lost) await publishRun(db, run, bundle);
       } catch {
-        if (!lost) await failRun(db, run);
+        if (!lost) {
+          try { await failRun(db, run); }
+          catch { console.error("RESEARCH_JOB_STATUS_UNAVAILABLE; lease will expire"); }
+        }
       } finally { clearInterval(timer); }
       if (process.argv.includes("--once")) break;
     } while (true);
