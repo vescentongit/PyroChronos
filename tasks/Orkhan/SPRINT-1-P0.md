@@ -16,10 +16,10 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-O1 — Satu peta dan navigasi tanpa reload analisis
 
-- [ ] **Selesai dan direview** — estimasi 7 poin.
+- [x] **Selesai dan direview** — estimasi 7 poin.
 - [x] Satu workspace, toggle heatmap/titik, kamera terpisah, cache dan hasil tetap saat navigasi; diuji di browser dengan NRT sintetis.
 - [x] Layer satelit dan label wilayah terpasang; kegagalan tile tidak menghapus overlay.
-- [ ] Verifikasi ketajaman citra/label live pada jaringan normal dan review Nathan.
+- [x] Verifikasi ketajaman citra/label live pada jaringan normal dan review Nathan.
 
 **Pekerjaan:** Satukan Activity Map dan Global Heatmap menjadi satu workspace dengan toggle heatmap/titik. Pisahkan kamera, AOI draft, dan hasil aktif; gunakan instance map stabil dan cache/lapisan yang dapat digunakan ulang.
 
@@ -29,10 +29,10 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-O2 — Editor polygon penelitian
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [x] **Selesai dan direview** — estimasi 5 poin.
 - [x] Draw, edit koordinat, undo, batal, validasi polygon, revisi draft dan outline area hasil.
 - [x] Polygon non-persegi, antimeridian, penolakan geometri invalid serta interaksi keyboard/pointer diuji. Preset nama dan navigasi koordinat tersedia.
-- [ ] Review Nathan; persistensi/revisi server diverifikasi saat endpoint area v2 tersedia.
+- [x] Review Nathan; persistensi/revisi server diverifikasi saat endpoint area v2 tersedia.
 
 **Pekerjaan:** Tambahkan gambar/edit polygon bebas, outline AOI aktif, batal edit, serta navigasi bantuan nama/koordinat. Simpan draft terpisah dari area yang sudah dianalisis; tampilkan validasi geometri.
 
@@ -42,7 +42,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-O3 — Rentang tanggal dan Analisis area
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** — estimasi 4 poin.
 - [x] Tanggal bebas, pembanding, default referensi 10 tahun dan pengajuan eksplisit melalui Analisis area.
 - [x] Retry mempertahankan requestId; queued/running, cancellation dan respons usang diuji dengan backend sintetis.
 - [ ] Integrasi B2 memakai sesi/workspace nyata, kebijakan kualitas yang disepakati, serta review Nathan.
@@ -55,7 +55,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-O4 — Consumer v2 dan UI state yang jujur
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** — estimasi 4 poin.
 - [x] Consumer research-2 memvalidasi schema/konteks; contoh sintetis, ringkasan kalender/detail, pemisahan v1 dan label raw/estimasi tersedia.
 - [x] EN/ID, status job/data, missing data, desktop/mobile, fokus keyboard, font dan Dashboard diperiksa; 31 tes serta browser acceptance lulus.
 - [ ] Integrasi B3/N4 dengan hasil nyata dan review Nathan.

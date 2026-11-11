@@ -1,0 +1,63 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { test } from "node:test";
+import { PGlite } from "@electric-sql/pglite";
+import { claimRun, createArea, getArtifact, getJobRow, hash, idempotent, jobWire, member, publishRun, resultWire, submitAnalysis } from "../src/lib/research-store.ts";
+
+test("isolated database: authorization, idempotency, leased job and atomic publication", async () => {
+  const pg = await PGlite.create();
+  const root = mkdtempSync(path.join(tmpdir(), "research-store-"));
+  const sql = client => ({ query: async (statement, params = []) => (await client.query(statement, params)).rows, transaction: fn => client.transaction(tx => fn(sql(tx))) });
+  const db = sql(pg);
+  try {
+    for (const dir of readdirSync("prisma/migrations", { withFileTypes: true }).filter(item => item.isDirectory()).map(item => item.name).sort()) await pg.exec(readFileSync(`prisma/migrations/${dir}/migration.sql`, "utf8"));
+    await db.query('INSERT INTO "Workspace" (id,name,"createdById") VALUES ($1,$2,$3)', ["w1", "Team", "u1"]);
+    await db.query('INSERT INTO "Membership" ("workspaceId","userId",role) VALUES ($1,$2,$3)', ["w1", "u1", "owner"]);
+    await member(db, "w1", "u1");
+    await assert.rejects(member(db, "w1", "outsider"), error => error.code === "FORBIDDEN");
+    const geometry = { type: "Polygon", coordinates: [[[113,-3],[114,-3],[114,-2],[113,-2],[113,-3]]] };
+    const area = await createArea(db, "w1", { name: "test", geometry });
+    const worker = request => {
+      const p = spawnSync(process.env.PYTHON || "python", ["pipeline/research_worker.py"], { input: JSON.stringify(request), encoding: "utf8" });
+      assert.equal(p.status, 0, p.stderr);
+      return JSON.parse(p.stdout);
+    };
+    const fingerprint = worker({ action: "fingerprint", root });
+    const config = { fingerprint, sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-raw-1" };
+    await db.query('INSERT INTO "ResearchDataset" (id,config) VALUES ($1,$2::jsonb)', [hash(config), JSON.stringify(config)]);
+    const request = { requestId: randomUUID(), areaId: area.id, areaRevision: 1, period: { start: "2019-01-01", end: "2019-01-02" }, comparisonPeriod: null, baseline: { kind: "rolling-same-calendar-period", windowYears: 10 }, referenceScale: "MODIS-equivalent", qualityPolicyVersion: "quality-policy-1", monitoringLocationId: null };
+    const make = () => db.transaction(tx => idempotent(tx, "analysis:w1:u1", request.requestId, request, async () => ({ value: await submitAnalysis(tx, "w1", "u1", request), status: 202 })));
+    const first = await make();
+    assert.deepEqual(await make(), first);
+    await assert.rejects(db.transaction(tx => idempotent(tx, "analysis:w1:u1", request.requestId, { ...request, qualityPolicyVersion: "changed" }, async () => first)), error => error.code === "IDEMPOTENCY_CONFLICT");
+    await assert.rejects(getJobRow(db, "w2", first.value.id), error => error.code === "NOT_FOUND");
+    const run = await claimRun(db);
+    assert.equal(jobWire(await getJobRow(db, "w1", first.value.id)).status, "running");
+    const bundle = worker({ root, run });
+    writeFileSync(path.join(root, "manifest.jsonl"), "changed");
+    const stale = spawnSync(process.env.PYTHON || "python", ["pipeline/research_worker.py"], { input: JSON.stringify({ root, run }), encoding: "utf8" });
+    assert.notEqual(stale.status, 0);
+    rmSync(path.join(root, "manifest.jsonl"));
+    await assert.rejects(publishRun(db, { ...run, leaseToken: randomUUID() }, bundle));
+    assert.equal((await db.query('SELECT count(*)::int AS n FROM "AnalysisArtifact"'))[0].n, 0);
+    await publishRun(db, run, bundle);
+    const { job, artifact } = await getArtifact(db, "w1", first.value.id);
+    assert.equal(jobWire(job).status, "succeeded");
+    assert.equal(resultWire(job, artifact).primary.metric.status, "no_data");
+    assert.equal(resultWire(job, artifact).primary.metric.rawCount, null);
+    const secondRequest = { ...request, requestId: randomUUID(), period: { start: "2019-02-01", end: "2019-02-02" } };
+    const second = await db.transaction(tx => submitAnalysis(tx, "w1", "u1", secondRequest));
+    const old = await claimRun(db);
+    await db.query('UPDATE "AnalysisRun" SET "leaseUntil"=CURRENT_TIMESTAMP-INTERVAL \'1 second\' WHERE id=$1 RETURNING id', [old.id]);
+    const reclaimed = await claimRun(db);
+    assert.equal(reclaimed.id, old.id);
+    assert.notEqual(reclaimed.leaseToken, old.leaseToken);
+    await assert.rejects(publishRun(db, old, worker({ root, run: old })));
+    await publishRun(db, reclaimed, worker({ root, run: reclaimed }));
+    assert.equal(jobWire(await getJobRow(db, "w1", second.id)).status, "succeeded");
+  } finally { await pg.close(); rmSync(root, { recursive: true, force: true }); }
+});

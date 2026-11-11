@@ -15,6 +15,7 @@
     "check:hotspots": "node --test scripts/hotspots-checks.mjs",
     "check:contracts": "node scripts/check-contracts.mjs",
     "check:browser": "node scripts/browser-acceptance.mjs",
+    "research:worker": "node scripts/research-worker.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "keywords": [],
@@ -22,6 +23,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@auth/prisma-adapter": "2.11.3",
     "@prisma/client": "^6.19.3",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",
@@ -32,6 +34,7 @@
     "lucide-react": "^1.70.0",
     "maplibre-gl": "^6.17.0",
     "next": "^16.4.5",
+    "next-auth": "5.0.0-beta.32",
     "prisma": "^6.19.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

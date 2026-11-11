@@ -9,10 +9,9 @@ import hashlib
 import json
 from collections import defaultdict
 from datetime import date, timedelta
-from pathlib import Path
 
 from area_query import Polygon, months_between, period_minutes, query
-from detection_store import FORMAT_VERSION, minute_to_iso
+from detection_store import FORMAT_VERSION, minute_to_iso, source_coverage
 from firms_catalog import get_source
 
 QUALITY_POLICY = {
@@ -31,18 +30,6 @@ DEFAULT_SOURCES = ("MODIS_SP", "VIIRS_SNPP_SP")
 def accepts(policy):
     types, classes = set(policy["fireTypes"]), set(policy["confidenceClasses"])
     return lambda item: item["fireType"] in types and item["confidenceClass"] in classes
-
-
-def source_coverage(store_dir, source_id):
-    """Latest manifest entry per year plus its first/last observed UTC day."""
-    manifest = Path(store_dir) / source_id / "manifest.jsonl"
-    years = {}
-    if manifest.exists():
-        for line in manifest.read_text(encoding="utf-8").splitlines():
-            entry = json.loads(line)
-            if entry.get("detections_format") == FORMAT_VERSION:
-                years[entry["year"]] = entry
-    return dict(sorted(years.items()))
 
 
 def month_status(coverage, month):
@@ -103,7 +90,7 @@ def count_area(store_dir, polygon, start, end, sources=DEFAULT_SOURCES, policy=Q
     return {"period": {"start": start, "end": end}, "sources": per_source, "policy": policy}
 
 
-def build_manifest(result, polygon, generated_at):
+def build_manifest(result, polygon, generated_at, comparison=None):
     """Reproducible manifest of the rules and archive versions behind a count result."""
     start_minute, end_minute = period_minutes(result["period"]["start"], result["period"]["end"])
     months = months_between(start_minute, end_minute)
@@ -140,5 +127,8 @@ def build_manifest(result, polygon, generated_at):
         "period": result["period"],
         "sources": sources,
     }
+    if comparison is not None:
+        compared = build_manifest(comparison, polygon, generated_at)
+        content["comparison"] = {"period": compared["period"], "sources": compared["sources"]}
     digest = hashlib.sha256(json.dumps(content, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return {"id": f"manifest-{digest[:16]}", "contentSha256": digest, "generatedAt": generated_at, **content}

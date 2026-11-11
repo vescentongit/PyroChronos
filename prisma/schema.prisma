@@ -62,3 +62,158 @@ model RawBatch {
   @@index([regionId, sourceId, fetchedAt])
   @@index([status, fetchStartedAt])
 }
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Workspace {
+  id          String   @id
+  name        String
+  createdById String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model Membership {
+  workspaceId String
+  userId      String
+  role        String
+  active      Boolean @default(true)
+  revision    Int     @default(1)
+  @@id([workspaceId, userId])
+  @@index([userId, active])
+}
+
+model AnalysisArea {
+  id           String   @id
+  workspaceId  String
+  revision     Int      @default(1)
+  name         String
+  geometry     Json
+  geometryHash String
+  areaKm2      Float
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  @@index([workspaceId, id])
+}
+
+model ResearchDataset {
+  id        String   @id
+  config    Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model AnalysisRun {
+  id             String   @id
+  workspaceId    String
+  analysisKey    String
+  datasetId      String
+  input          Json
+  status         String   @default("queued")
+  attempts       Int      @default(0)
+  leaseToken     String?
+  leaseUntil     DateTime? @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  startedAt      DateTime? @db.Timestamptz(3)
+  completedAt    DateTime? @db.Timestamptz(3)
+  error          Json?
+  @@index([workspaceId, analysisKey, createdAt])
+  @@index([status, leaseUntil, createdAt])
+}
+
+// A submission keeps its own request identity while identical inputs share a run.
+model AnalysisJob {
+  id          String   @id
+  workspaceId String
+  areaId      String
+  actorId     String
+  requestId   String
+  runId       String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([workspaceId, actorId, requestId])
+}
+
+model AnalysisAttempt {
+  runId       String
+  attempt     Int
+  token       String   @unique
+  startedAt   DateTime @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  error       String?
+  @@id([runId, attempt])
+}
+
+model ResearchRequest {
+  scope       String
+  requestId   String
+  payloadHash String
+  response    Json
+  statusCode  Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  @@id([scope, requestId])
+}
+
+model AnalysisArtifact {
+  runId       String @id
+  result      Json
+  manifest    Json
+  days        Json
+}
+
+model ResearchObservation {
+  runId      String
+  periodRole String
+  ordinal    Int
+  longitude  Float
+  latitude   Float
+  payload    Json
+  @@id([runId, periodRole, ordinal])
+  @@index([runId, periodRole, longitude, latitude])
+}
+
+model ResearchTile {
+  runId      String
+  periodRole String
+  z          Int
+  x          Int
+  y          Int
+  payload    Json
+  @@id([runId, periodRole, z, x, y])
+}
