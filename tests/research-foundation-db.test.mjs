@@ -33,25 +33,25 @@ function queuedJob(overrides = {}) {
 }
 async function start() {
   const f = foundationFixture();
-  await insert('AnalysisJob', queuedJob());
-  await db.query(`UPDATE "AnalysisJob" SET "status"='running', "startedAt"=$1 WHERE "id"=$2`, [f.job.startedAt, f.job.id]);
-  await insert('AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null });
+  await insert('P1AnalysisJob', queuedJob());
+  await db.query(`UPDATE "P1AnalysisJob" SET "status"='running', "startedAt"=$1 WHERE "id"=$2`, [f.job.startedAt, f.job.id]);
+  await insert('P1AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null });
   return f;
 }
 async function prepared() {
   const f = await start();
-  await db.query(`UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1 WHERE "id"=$2`, [f.attempt.completedAt, f.attempt.id]);
+  await db.query(`UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1 WHERE "id"=$2`, [f.attempt.completedAt, f.attempt.id]);
   await insert('AnalysisManifest', {
     id: f.manifest.id, workspaceId: f.job.workspaceId, jobId: f.job.id,
     dataVersion: f.result.dataVersion, checksum: digest, content: f.manifest,
   });
   await insert('AnalysisResult', f.result);
-  await insert('AnalysisArtifact', f.artifacts[0]);
+  await insert('P1AnalysisArtifact', f.artifacts[0]);
   return f;
 }
 async function published() {
   const f = await prepared();
-  await db.query(`UPDATE "AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2 WHERE "id"=$3`,
+  await db.query(`UPDATE "P1AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2 WHERE "id"=$3`,
     [f.result.id, f.result.publishedAt, f.job.id]);
   return f;
 }
@@ -62,7 +62,7 @@ function locationRow(f = foundationFixture()) {
 const rejects = (action, code = '23514') => assert.rejects(action, (error) => error.code === code);
 
 test('migration creates all seven P1 entities and preserves legacy rows and uniqueness', async () => {
-  for (const name of ['AnalysisJob', 'AnalysisJobAttempt', 'AnalysisResult', 'AnalysisManifest', 'AnalysisArtifact', 'MonitoringLocation', 'MonitoringLocationAnalysis']) {
+  for (const name of ['P1AnalysisJob', 'P1AnalysisJobAttempt', 'AnalysisResult', 'AnalysisManifest', 'P1AnalysisArtifact', 'MonitoringLocation', 'MonitoringLocationAnalysis']) {
     const result = await db.query('SELECT to_regclass($1) AS name', [`"${name}"`]);
     assert.ok(result.rows[0].name, `${name} is missing`);
   }
@@ -72,54 +72,54 @@ test('migration creates all seven P1 entities and preserves legacy rows and uniq
 });
 
 test('job idempotency is scoped to workspace and actor while input remains frozen', async () => {
-  await insert('AnalysisJob', queuedJob());
-  await rejects(() => insert('AnalysisJob', queuedJob({ id: 'duplicate' })), '23505');
-  await insert('AnalysisJob', queuedJob({ id: 'other-actor', requestedById: 'other-actor' }));
-  await rejects(() => db.exec(`UPDATE "AnalysisJob" SET "analysisKey"='sha256:${'b'.repeat(64)}'`));
+  await insert('P1AnalysisJob', queuedJob());
+  await rejects(() => insert('P1AnalysisJob', queuedJob({ id: 'duplicate' })), '23505');
+  await insert('P1AnalysisJob', queuedJob({ id: 'other-actor', requestedById: 'other-actor' }));
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJob" SET "analysisKey"='sha256:${'b'.repeat(64)}'`));
   const input = structuredClone(foundationFixture().job.input); input.area.workspaceId = 'other';
-  await rejects(() => insert('AnalysisJob', queuedJob({ id: 'wrong-scope', requestedById: 'new', input })));
+  await rejects(() => insert('P1AnalysisJob', queuedJob({ id: 'wrong-scope', requestedById: 'new', input })));
 });
 
 test('jobs cannot be inserted terminal, skip running, or claim success without a result', async () => {
-  await rejects(() => insert('AnalysisJob', { ...queuedJob(), status: 'failed', error: {}, completedAt: '2026-09-02' }));
-  await insert('AnalysisJob', queuedJob());
-  await rejects(() => db.exec(`UPDATE "AnalysisJob" SET "status"='succeeded', "completedAt"='2026-09-02'`));
-  await rejects(() => db.exec(`UPDATE "AnalysisJob" SET "status"='failed', "completedAt"='2026-09-02'`));
+  await rejects(() => insert('P1AnalysisJob', { ...queuedJob(), status: 'failed', error: {}, completedAt: '2026-09-02' }));
+  await insert('P1AnalysisJob', queuedJob());
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJob" SET "status"='succeeded', "completedAt"='2026-09-02'`));
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJob" SET "status"='failed', "completedAt"='2026-09-02'`));
 });
 
 test('attempts require a running parent, unique sequence/token and a valid lease', async () => {
   const f = foundationFixture();
-  await insert('AnalysisJob', queuedJob());
-  await rejects(() => insert('AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null }));
-  await db.exec(`UPDATE "AnalysisJob" SET "status"='running', "startedAt"='2026-09-02'`);
-  await rejects(() => insert('AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null, leaseExpiresAt: f.attempt.claimedAt }));
-  await insert('AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null });
-  await rejects(() => insert('AnalysisJobAttempt', { ...f.attempt, id: 'concurrent', attemptNo: 2, leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null }));
-  await rejects(() => db.exec(`UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"='2026-09-04'`));
+  await insert('P1AnalysisJob', queuedJob());
+  await rejects(() => insert('P1AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null }));
+  await db.exec(`UPDATE "P1AnalysisJob" SET "status"='running', "startedAt"='2026-09-02'`);
+  await rejects(() => insert('P1AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null, leaseExpiresAt: f.attempt.claimedAt }));
+  await insert('P1AnalysisJobAttempt', { ...f.attempt, status: 'running', completedAt: null });
+  await rejects(() => insert('P1AnalysisJobAttempt', { ...f.attempt, id: 'concurrent', attemptNo: 2, leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null }));
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"='2026-09-04'`));
 });
 
 test('expired attempts retain history and allow a new attempt without resetting the job', async () => {
   const f = await start();
-  await db.exec(`UPDATE "AnalysisJobAttempt" SET "status"='expired', "completedAt"='2026-09-03', "errorCode"='LEASE_EXPIRED', "retryable"=true`);
-  await rejects(() => db.exec(`UPDATE "AnalysisJobAttempt" SET "status"='running', "completedAt"=null, "errorCode"=null, "retryable"=null`));
-  await insert('AnalysisJobAttempt', { ...f.attempt, id: 'next', attemptNo: 2, leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null });
-  assert.equal((await rows('AnalysisJobAttempt')).length, 2);
-  assert.equal((await rows('AnalysisJob'))[0].status, 'running');
+  await db.exec(`UPDATE "P1AnalysisJobAttempt" SET "status"='expired', "completedAt"='2026-09-03', "errorCode"='LEASE_EXPIRED', "retryable"=true`);
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJobAttempt" SET "status"='running', "completedAt"=null, "errorCode"=null, "retryable"=null`));
+  await insert('P1AnalysisJobAttempt', { ...f.attempt, id: 'next', attemptNo: 2, leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null });
+  assert.equal((await rows('P1AnalysisJobAttempt')).length, 2);
+  assert.equal((await rows('P1AnalysisJob'))[0].status, 'running');
 });
 
 test('replacement attempt numbers increase even when a lower unused number is available', async () => {
   const f = await start();
-  await db.query(`UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1`, [f.attempt.completedAt]);
-  await insert('AnalysisJobAttempt', { ...f.attempt, id: 'higher', attemptNo: 3,
+  await db.query(`UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1`, [f.attempt.completedAt]);
+  await insert('P1AnalysisJobAttempt', { ...f.attempt, id: 'higher', attemptNo: 3,
     leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null });
-  await db.query(`UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1 WHERE "id"='higher'`, [f.attempt.completedAt]);
-  await rejects(() => insert('AnalysisJobAttempt', { ...f.attempt, id: 'late-lower', attemptNo: 2,
+  await db.query(`UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1 WHERE "id"='higher'`, [f.attempt.completedAt]);
+  await rejects(() => insert('P1AnalysisJobAttempt', { ...f.attempt, id: 'late-lower', attemptNo: 2,
     leaseToken: '55555555-5555-4555-8555-555555555555', status: 'running', completedAt: null }));
 });
 
 test('manifest/result foreign keys reject mixed jobs and workspaces', async () => {
   const f = await prepared();
-  await rejects(() => insert('AnalysisArtifact', { ...f.artifacts[0], id: 'cross', objectKey: 'other/data', workspaceId: 'other' }), '23503');
+  await rejects(() => insert('P1AnalysisArtifact', { ...f.artifacts[0], id: 'cross', objectKey: 'other/data', workspaceId: 'other' }), '23503');
   await rejects(() => insert('AnalysisResult', { ...f.result, id: 'cross', workspaceId: 'other',
     payload: { ...f.result.payload, id: 'cross', workspaceId: 'other' } }), '23503');
 });
@@ -137,34 +137,34 @@ test('publication transaction rolls back the entire new result on failure', asyn
   await db.exec('BEGIN');
   try {
     await prepared();
-    await rejects(() => db.exec(`UPDATE "AnalysisJob" SET "status"='succeeded', "resultId"='missing', "completedAt"='2026-09-02'`));
+    await rejects(() => db.exec(`UPDATE "P1AnalysisJob" SET "status"='succeeded', "resultId"='missing', "completedAt"='2026-09-02'`));
   } finally { await db.exec('ROLLBACK'); }
-  for (const table of ['AnalysisJob', 'AnalysisResult', 'AnalysisManifest', 'AnalysisArtifact']) assert.equal((await rows(table)).length, 0);
+  for (const table of ['P1AnalysisJob', 'AnalysisResult', 'AnalysisManifest', 'P1AnalysisArtifact']) assert.equal((await rows(table)).length, 0);
 });
 
 test('successful publication is immutable and cannot receive late artifacts', async () => {
   const f = await published();
-  for (const table of ['AnalysisJob', 'AnalysisJobAttempt', 'AnalysisManifest', 'AnalysisResult', 'AnalysisArtifact']) {
+  for (const table of ['P1AnalysisJob', 'P1AnalysisJobAttempt', 'AnalysisManifest', 'AnalysisResult', 'P1AnalysisArtifact']) {
     await rejects(() => db.exec(`DELETE FROM "${table}"`));
     await rejects(() => db.exec(`TRUNCATE "${table}" CASCADE`));
   }
   await rejects(() => db.exec(`UPDATE "AnalysisResult" SET "dataVersion"='replacement'`));
-  await rejects(() => db.exec(`UPDATE "AnalysisJob" SET "status"='running', "resultId"=null, "completedAt"=null`));
-  await rejects(() => insert('AnalysisArtifact', { ...f.artifacts[0], id: 'late', objectKey: 'late/file' }));
+  await rejects(() => db.exec(`UPDATE "P1AnalysisJob" SET "status"='running', "resultId"=null, "completedAt"=null`));
+  await rejects(() => insert('P1AnalysisArtifact', { ...f.artifacts[0], id: 'late', objectKey: 'late/file' }));
 });
 
 test('an older completed attempt cannot publish after a newer attempt has claimed the job', async () => {
   const f = await prepared();
-  await insert('AnalysisJobAttempt', { ...f.attempt, id: 'new-owner', attemptNo: 2,
+  await insert('P1AnalysisJobAttempt', { ...f.attempt, id: 'new-owner', attemptNo: 2,
     leaseToken: '44444444-4444-4444-8444-444444444444', status: 'running', completedAt: null });
-  await rejects(() => db.query(`UPDATE "AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2`,
+  await rejects(() => db.query(`UPDATE "P1AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2`,
     [f.result.id, f.result.publishedAt]));
 });
 
 test('private artifact constraints reject public URLs, traversal and invalid sizes/checksums', async () => {
   const f = await prepared();
   for (const patch of [{ objectKey: '../escape' }, { objectKey: 'https://private.invalid/key' }, { bytes: -1 }, { checksum: 'bad' }])
-    await rejects(() => insert('AnalysisArtifact', { ...f.artifacts[0], id: 'bad', objectKey: 'bad/file', ...patch }));
+    await rejects(() => insert('P1AnalysisArtifact', { ...f.artifacts[0], id: 'bad', objectKey: 'bad/file', ...patch }));
 });
 
 test('locations retain original evidence and retry cannot duplicate a location', async () => {
@@ -183,7 +183,7 @@ test('locations retain original evidence and retry cannot duplicate a location',
 test('location creation rejects unpublished results, false anchor identity and mismatched AOI', async () => {
   const f = await prepared();
   await rejects(() => insert('MonitoringLocation', locationRow(f)));
-  await db.query(`UPDATE "AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2`, [f.result.id, f.result.publishedAt]);
+  await db.query(`UPDATE "P1AnalysisJob" SET "status"='succeeded', "resultId"=$1, "completedAt"=$2`, [f.result.id, f.result.publishedAt]);
   await rejects(() => insert('MonitoringLocation', { ...locationRow(f), anchorDetectionId: 'cluster' }));
   await rejects(() => insert('MonitoringLocation', { ...locationRow(f), areaRevision: 2 }));
 });

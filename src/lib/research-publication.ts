@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-	type AnalysisArtifact,
+	type P1AnalysisArtifact,
 	analysisArtifactSchema,
 } from "./research-foundation-contracts";
 import {
@@ -83,7 +83,7 @@ function requireOwner(context: PublicationContext, replay = false): void {
 function metadataFor(
 	artifacts: z.infer<typeof artifactInput>[],
 	context: PublicationContext,
-): AnalysisArtifact[] {
+): P1AnalysisArtifact[] {
 	const scope = publicationScope(context);
 	return artifacts.map((artifact) => {
 		if (
@@ -108,7 +108,7 @@ function metadataFor(
 
 async function verifyAll(
 	storage: PrivateResearchArtifactStorage,
-	artifacts: readonly AnalysisArtifact[],
+	artifacts: readonly P1AnalysisArtifact[],
 ): Promise<void> {
 	try {
 		for (const artifact of artifacts)

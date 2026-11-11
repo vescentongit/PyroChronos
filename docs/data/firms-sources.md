@@ -93,6 +93,8 @@ python pipeline/firms_calendar.py --source MODIS_SP --area 94,-12,142,7 --includ
 
 ## Adapter producer ke research-2 (R2-P0-N4)
 
+Integritas: partisi bulanan yang tercatat pada manifest tetapi hilang sekarang menyebabkan `MISSING_PARTITION`, bukan count nol. Manifest dan `dataVersion` juga mencakup arsip periode pembanding. Pengujian ini memakai arsip sintetis; validasi data nyata dan integrasi worker tetap terbuka.
+
 ```bash
 python pipeline/research_adapter.py --area kalteng --start 2019-08-01 --end 2019-10-31 --comparison-start 2018-08-01 --comparison-end 2018-10-31
 python pipeline/research_adapter.py --polygon area.json --start 2015-06-01 --end 2015-11-30

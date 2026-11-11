@@ -6,9 +6,9 @@ import traceback
 import unittest
 from datetime import datetime, timezone
 
-if importlib.util.find_spec("research_worker"):
+if importlib.util.find_spec("research_p1_worker"):
     from research_jobs import ResearchClaim, WorkerFailure, WorkerPolicy
-    from research_worker import ResearchWorker
+    from research_p1_worker import ResearchWorker
 else:
     ResearchWorker = None
 

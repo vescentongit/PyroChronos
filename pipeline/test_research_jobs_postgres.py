@@ -10,7 +10,7 @@ from uuid import uuid4
 
 if importlib.util.find_spec("research_jobs"):
     from research_jobs import PostgresResearchQueue, WorkerFailure, WorkerPolicy
-    from research_worker import ResearchWorker
+    from research_p1_worker import ResearchWorker
 else:
     PostgresResearchQueue = None
 
@@ -59,7 +59,7 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
                          "satelliteConfigVersion": "synthetic-satellites-1", "aggregationVersion": "synthetic-aggregation-1"},
             "baselinePolicy": {"version": payload["baseline"]["policyVersion"], "minimumValidYears": 10},
         }
-        await self.connection.execute('''INSERT INTO "AnalysisJob"
+        await self.connection.execute('''INSERT INTO "P1AnalysisJob"
             ("id", "workspaceId", "requestedById", "requestId", "analysisKey", "areaId", "areaRevision", "input")
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)''',
             [job_id, payload["workspaceId"], "synthetic-actor", request_id, "sha256:" + "a" * 64,
@@ -67,10 +67,10 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
         return job_id
 
     async def job(self, job_id):
-        return await (await self.connection.execute('SELECT * FROM "AnalysisJob" WHERE "id"=%s', [job_id])).fetchone()
+        return await (await self.connection.execute('SELECT * FROM "P1AnalysisJob" WHERE "id"=%s', [job_id])).fetchone()
 
     async def attempts(self, job_id):
-        return await (await self.connection.execute('SELECT * FROM "AnalysisJobAttempt" WHERE "jobId"=%s ORDER BY "attemptNo"', [job_id])).fetchall()
+        return await (await self.connection.execute('SELECT * FROM "P1AnalysisJobAttempt" WHERE "jobId"=%s ORDER BY "attemptNo"', [job_id])).fetchall()
 
     async def test_two_sessions_race_for_one_job_without_a_duplicate_claim(self):
         job_id = await self.seed()
@@ -88,7 +88,7 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
     async def test_skip_locked_claims_another_job_instead_of_waiting(self):
         first, second = await self.seed(), await self.seed()
         async with self.connection.transaction():
-            await self.connection.execute('SELECT "id" FROM "AnalysisJob" WHERE "id"=%s FOR UPDATE', [first])
+            await self.connection.execute('SELECT "id" FROM "P1AnalysisJob" WHERE "id"=%s FOR UPDATE', [first])
             claim = await asyncio.wait_for(self.other_queue.claim(), 0.5)
             self.assertEqual(claim.job_id, second)
         self.assertEqual((await self.queue.claim()).job_id, first)
@@ -214,7 +214,7 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
     async def test_old_completed_attempt_cannot_claim_the_replacement_publication(self):
         await self.seed()
         first = await self.queue.claim()
-        await self.other.execute('''UPDATE "AnalysisJobAttempt" SET "status"='succeeded',
+        await self.other.execute('''UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded',
             "completedAt"=date_trunc('milliseconds', clock_timestamp()) WHERE "id"=%s''', [first.attempt_id])
         await asyncio.sleep(0.23)
         second = await self.other_queue.claim()
@@ -226,7 +226,7 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
         job_id = await self.seed()
         await self.connection.execute('''CREATE FUNCTION reject_claim() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN RAISE EXCEPTION 'private-credential-sentinel'; END; $$;
-            CREATE TRIGGER reject_claim BEFORE INSERT ON "AnalysisJobAttempt" FOR EACH ROW EXECUTE FUNCTION reject_claim();''', prepare=False)
+            CREATE TRIGGER reject_claim BEFORE INSERT ON "P1AnalysisJobAttempt" FOR EACH ROW EXECUTE FUNCTION reject_claim();''', prepare=False)
         with self.assertRaises(WorkerFailure) as caught:
             await self.queue.claim()
         self.assertNotIn("private-credential-sentinel", "".join(traceback.format_exception(caught.exception)))
@@ -248,7 +248,7 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
     async def publish_fixture(self, claim):
         # A test-only publisher. Production publication remains the next step.
         async with self.other.transaction():
-            await self.other.execute('SELECT "id" FROM "AnalysisJob" WHERE "id"=%s FOR UPDATE', [claim.job_id])
+            await self.other.execute('SELECT "id" FROM "P1AnalysisJob" WHERE "id"=%s FOR UPDATE', [claim.job_id])
             now = (await (await self.other.execute("SELECT date_trunc('milliseconds', clock_timestamp()) AS now")).fetchone())["now"]
             payload = json.loads(json.dumps(self.examples["result"]))
             payload.update(id=str(uuid4()), jobId=claim.job_id, workspaceId=claim.workspace_id,
@@ -257,10 +257,10 @@ class NativeResearchQueueTests(unittest.IsolatedAsyncioTestCase):
             payload["method"]["manifestId"] = manifest_id
             manifest = {"schemaVersion": "research-manifest-1", "id": manifest_id, "jobId": claim.job_id,
                         "workspaceId": claim.workspace_id, "dataVersion": payload["dataVersion"]}
-            await self.other.execute('''UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=%s
+            await self.other.execute('''UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=%s
                 WHERE "id"=%s AND "leaseToken"=%s AND "leaseExpiresAt">clock_timestamp()''', [now, claim.attempt_id, claim.lease_token])
             await self.other.execute('''INSERT INTO "AnalysisManifest" ("id","jobId","workspaceId","dataVersion","checksum","content")
                 VALUES (%s,%s,%s,%s,%s,%s::jsonb)''', [manifest_id, claim.job_id, claim.workspace_id, payload["dataVersion"], "sha256:" + "a" * 64, json.dumps(manifest)])
             await self.other.execute('''INSERT INTO "AnalysisResult" ("id","jobId","workspaceId","manifestId","dataVersion","generatedAt","publishedAt","payload")
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s::jsonb)''', [payload["id"], claim.job_id, claim.workspace_id, manifest_id, payload["dataVersion"], now, now, json.dumps(payload)])
-            await self.other.execute('''UPDATE "AnalysisJob" SET "status"='succeeded', "resultId"=%s, "completedAt"=%s WHERE "id"=%s''', [payload["id"], now, claim.job_id])
+            await self.other.execute('''UPDATE "P1AnalysisJob" SET "status"='succeeded', "resultId"=%s, "completedAt"=%s WHERE "id"=%s''', [payload["id"], now, claim.job_id])

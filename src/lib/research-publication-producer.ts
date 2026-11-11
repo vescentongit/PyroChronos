@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { researchAnalysisResultSchema } from "./research-contracts";
 import {
-	type AnalysisArtifact,
+	type P1AnalysisArtifact,
 	type AnalysisPublication,
 	analysisManifestSchema,
 	analysisPublicationSchema,
@@ -33,7 +33,7 @@ export function publicationScope(context: PublicationContext): string {
 export function bindResearchProducer(
 	producer: unknown,
 	context: PublicationContext,
-	artifacts: readonly AnalysisArtifact[],
+	artifacts: readonly P1AnalysisArtifact[],
 	generatedAt: string,
 	publishedAt: string,
 ): AnalysisPublication {

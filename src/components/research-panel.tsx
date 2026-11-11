@@ -20,6 +20,7 @@ import {
 } from "@/lib/research-contracts";
 import {
   listResearchWorkspaces,
+  createResearchWorkspace,
   createResearchArea,
   submitResearch,
   watchResearch,
@@ -174,6 +175,11 @@ export default function ResearchPanel({
   const [workspace, setWorkspace] = useState("");
   const [workspaceError, setWorkspaceError] = useState("");
   const [workspaceRefresh, setWorkspaceRefresh] = useState(0);
+  const [workspaceLoaded, setWorkspaceLoaded] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState("");
+  const [workspaceCreating, setWorkspaceCreating] = useState(false);
+  const [workspaceCreateError, setWorkspaceCreateError] = useState("");
+  const workspaceRequest = useRef<ReturnType<typeof requestIdentity> | null>(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [job, setJob] = useState<ResearchJob | null>(null);
@@ -210,11 +216,13 @@ export default function ResearchPanel({
   const resultKey = useRef("");
   useEffect(() => {
     const controller = new AbortController();
+    setWorkspaceLoaded(false);
     setWorkspaceError("");
     listResearchWorkspaces(controller.signal)
       .then((page) => {
         if (controller.signal.aborted) return;
         setWorkspaces(page.items);
+        setWorkspaceLoaded(true);
         setWorkspace((current) =>
           page.items.some((item) => item.id === current)
             ? current
@@ -229,6 +237,24 @@ export default function ResearchPanel({
       });
     return () => controller.abort();
   }, [workspaceRefresh]);
+  async function addWorkspace() {
+    const name = newWorkspaceName.trim();
+    if (!name || workspaceCreating) return;
+    setWorkspaceCreating(true);
+    setWorkspaceCreateError("");
+    workspaceRequest.current = requestIdentity(workspaceRequest.current, name);
+    try {
+      const created = await createResearchWorkspace({ requestId: workspaceRequest.current.id, name }, new AbortController().signal);
+      setWorkspaces(current => [...current, created]);
+      setWorkspace(created.id);
+      setNewWorkspaceName("");
+      workspaceRequest.current = null;
+    } catch (reason) {
+      setWorkspaceCreateError(reason instanceof ResearchApiError ? reason.code : "NETWORK_ERROR");
+    } finally {
+      setWorkspaceCreating(false);
+    }
+  }
   useEffect(
     () => () => {
       abort.current?.abort();
@@ -674,15 +700,22 @@ export default function ResearchPanel({
         {workspaceError && (
           <p className="global-error" role="status">
             {label(workspaceError)}
+            {workspaceError === "UNAUTHENTICATED" && <> <a href="/api/auth/signin?callbackUrl=%2Fsimulation">{t("Masuk dengan Google", "Sign in with Google")}</a></>}
           </p>
         )}
-        {!workspaceError && workspaces.length === 0 && (
-          <p role="status">
-            {t(
-              "Belum ada workspace yang dapat diakses.",
-              "No accessible workspace yet.",
-            )}
-          </p>
+        {!workspaceError && workspaceLoaded && workspaces.length === 0 && (
+          <div>
+            <p role="status">{t("Buat workspace untuk menyimpan area dan analisis tim.", "Create a workspace to save your team's areas and analyses.")}</p>
+            <div className="research-fields">
+              <label>{t("Nama workspace", "Workspace name")}
+                <input maxLength={200} value={newWorkspaceName} onChange={event => setNewWorkspaceName(event.target.value)} />
+              </label>
+            </div>
+            <button type="button" className="outline" disabled={workspaceCreating || !newWorkspaceName.trim()} onClick={() => void addWorkspace()}>
+              {workspaceCreating ? t("Membuat…", "Creating…") : t("Buat workspace", "Create workspace")}
+            </button>
+            {workspaceCreateError && <p className="global-error" role="alert">{label(workspaceCreateError)}</p>}
+          </div>
         )}
         {!policy && (
           <p className="global-note">

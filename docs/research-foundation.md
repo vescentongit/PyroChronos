@@ -1,5 +1,14 @@
 # R2-P1 Step 1: data foundation
 
+> Merge compatibility: the existing P0 `AnalysisJob` and `AnalysisArtifact`
+> remain authoritative for the application. P1's corresponding tables and
+> Prisma models are named `P1AnalysisJob` and `P1AnalysisArtifact`; the P1
+> migration is separate from the already-applied P0 migration. This preserves
+> both implementations but does not connect P1's worker or publisher to P0
+> jobs. Integration and review remain open. A database that already applied
+> the earlier P1 migration under the P0 migration name requires a separately
+> reviewed reconciliation; do not apply these migrations blindly there.
+
 This step adds persistence and internal contracts for R2-P1-B1/B2. It does not
 implement a worker, publication service, routes, or production authorization.
 The public `research-2` contracts in `research-contracts.ts` remain unchanged.
@@ -19,12 +28,12 @@ must supply those checks and any additional foreign keys once its models exist.
 
 ## Models and invariants
 
-- `AnalysisJob`: frozen input (including AOI snapshot and resolved data/model
+- `P1AnalysisJob`: frozen input (including AOI snapshot and resolved data/model
   versions), workspace/actor/request-scoped idempotency, and public job state.
   New jobs are queued; running jobs can finish succeeded or failed. Terminal
   jobs cannot be reset. `analysisKey` is indexed, not globally unique: reuse of
   compute must remain subject to workspace permissions and retry policy.
-- `AnalysisJobAttempt`: immutable claim identity/token, monotonic heartbeat and
+- `P1AnalysisJobAttempt`: immutable claim identity/token, monotonic heartbeat and
   lease, and retained terminal history. The database serializes inserts by
   locking the parent job and permits only one running attempt at a time.
   Every replacement uses an attempt number greater than all previous attempts;
@@ -39,7 +48,7 @@ must supply those checks and any additional foreign keys once its models exist.
 - `AnalysisResult`: one immutable result per job, tied to a manifest of the same
   job/workspace and to the frozen input. Result rows are prepared while the job
   is running; readers must only expose results referenced by a succeeded job.
-- `AnalysisArtifact`: private logical storage keys, checksum and safe byte count.
+- `P1AnalysisArtifact`: private logical storage keys, checksum and safe byte count.
   New artifacts can only be attached before publication. No global raw archive
   is copied into these metadata tables. `BigInt` bytes map to a JSON-safe integer
   at the contract boundary (maximum `Number.MAX_SAFE_INTEGER`).

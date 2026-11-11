@@ -203,12 +203,12 @@ export const monitoringLocationAnalysisSchema = z.object({
   locationId: id, workspaceId: id, analysisId: id, createdAt: instant,
 }).strict();
 
-export type AnalysisJobInput = z.infer<typeof analysisJobInputSchema>;
-export type AnalysisJobRecord = z.infer<typeof analysisJobRecordSchema>;
-export type AnalysisJobAttempt = z.infer<typeof analysisJobAttemptSchema>;
+export type P1AnalysisJobInput = z.infer<typeof analysisJobInputSchema>;
+export type P1AnalysisJobRecord = z.infer<typeof analysisJobRecordSchema>;
+export type P1AnalysisJobAttempt = z.infer<typeof analysisJobAttemptSchema>;
 export type AnalysisManifest = z.infer<typeof analysisManifestSchema>;
 export type AnalysisResultRecord = z.infer<typeof analysisResultRecordSchema>;
-export type AnalysisArtifact = z.infer<typeof analysisArtifactSchema>;
+export type P1AnalysisArtifact = z.infer<typeof analysisArtifactSchema>;
 export type AnalysisPublication = z.infer<typeof analysisPublicationSchema>;
 export type MonitoringLocationRecord = z.infer<typeof monitoringLocationRecordSchema>;
 export type MonitoringLocationAnalysis = z.infer<typeof monitoringLocationAnalysisSchema>;

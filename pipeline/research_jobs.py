@@ -116,9 +116,9 @@ class PostgresResearchQueue:
         while True:
             exhausted = False
             async with self._transaction():
-                job = await self._one('''SELECT j.* FROM "AnalysisJob" j
+                job = await self._one('''SELECT j.* FROM "P1AnalysisJob" j
                     LEFT JOIN LATERAL (
-                        SELECT * FROM "AnalysisJobAttempt" WHERE "jobId"=j."id"
+                        SELECT * FROM "P1AnalysisJobAttempt" WHERE "jobId"=j."id"
                         ORDER BY "attemptNo" DESC LIMIT 1
                     ) a ON true
                     WHERE j."status"='queued' OR (j."status"='running' AND (
@@ -132,14 +132,14 @@ class PostgresResearchQueue:
                     [self.policy.retry_max_seconds, self.policy.retry_base_seconds])
                 if job is None:
                     return None
-                latest = await self._one('''SELECT * FROM "AnalysisJobAttempt" WHERE "jobId"=%s
+                latest = await self._one('''SELECT * FROM "P1AnalysisJobAttempt" WHERE "jobId"=%s
                     ORDER BY "attemptNo" DESC LIMIT 1''', [job["id"]])
                 now = await self._now()
                 # The scan snapshot may predate a newer failure; recheck its backoff too.
                 if not self._eligible(latest, now):
                     continue
                 if latest and latest["status"] == "running":
-                    await self.connection.execute('''UPDATE "AnalysisJobAttempt" SET "status"='expired',
+                    await self.connection.execute('''UPDATE "P1AnalysisJobAttempt" SET "status"='expired',
                         "completedAt"=%s, "errorCode"='LEASE_EXPIRED', "retryable"=true WHERE "id"=%s''',
                         [now, latest["id"]])
                 attempt_no = latest["attemptNo"] + 1 if latest else 1
@@ -147,12 +147,12 @@ class PostgresResearchQueue:
                     await self._fail_job(job["id"], now, "RETRY_EXHAUSTED")
                     exhausted = True
                 else:
-                    await self.connection.execute('''UPDATE "AnalysisJob" SET "status"='running',
+                    await self.connection.execute('''UPDATE "P1AnalysisJob" SET "status"='running',
                         "startedAt"=coalesce("startedAt", %s), "stage"='ingest', "progressPercent"=null WHERE "id"=%s''',
                         [now, job["id"]])
                     attempt_id, token = str(uuid4()), str(uuid4())
                     expires = now + timedelta(seconds=self.policy.lease_seconds)
-                    stored = await self._one('''INSERT INTO "AnalysisJobAttempt"
+                    stored = await self._one('''INSERT INTO "P1AnalysisJobAttempt"
                         ("id","jobId","workspaceId","attemptNo","leaseToken","claimedAt","heartbeatAt","leaseExpiresAt")
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING "leaseExpiresAt"''',
                         [attempt_id, job["id"], job["workspaceId"], attempt_no, token, now, now, expires])
@@ -163,11 +163,11 @@ class PostgresResearchQueue:
                 return claim
 
     async def _owned(self, claim):
-        job = await self._one('''SELECT "id" FROM "AnalysisJob" WHERE "id"=%s AND "workspaceId"=%s
+        job = await self._one('''SELECT "id" FROM "P1AnalysisJob" WHERE "id"=%s AND "workspaceId"=%s
             AND "status"='running' FOR UPDATE''', [claim.job_id, claim.workspace_id])
         if job is None:
             return None
-        return await self._one('''SELECT * FROM "AnalysisJobAttempt" WHERE "id"=%s AND "jobId"=%s
+        return await self._one('''SELECT * FROM "P1AnalysisJobAttempt" WHERE "id"=%s AND "jobId"=%s
             AND "workspaceId"=%s AND "leaseToken"=%s AND "status"='running'
             AND "leaseExpiresAt">clock_timestamp() FOR UPDATE''',
             [claim.attempt_id, claim.job_id, claim.workspace_id, claim.lease_token])
@@ -180,7 +180,7 @@ class PostgresResearchQueue:
                 return False
             now = await self._now()
             expires = max(attempt["leaseExpiresAt"], now + timedelta(seconds=self.policy.lease_seconds))
-            updated = await self._one('''UPDATE "AnalysisJobAttempt" SET "heartbeatAt"=%s,
+            updated = await self._one('''UPDATE "P1AnalysisJobAttempt" SET "heartbeatAt"=%s,
                 "leaseExpiresAt"=%s WHERE "id"=%s AND "leaseExpiresAt">clock_timestamp() RETURNING "id"''',
                 [now, expires, claim.attempt_id])
             if updated is None:
@@ -195,7 +195,7 @@ class PostgresResearchQueue:
             if attempt is None:
                 return None
             now = await self._now()
-            updated = await self._one('''UPDATE "AnalysisJobAttempt" SET "status"='failed',
+            updated = await self._one('''UPDATE "P1AnalysisJobAttempt" SET "status"='failed',
                 "completedAt"=%s, "errorCode"=%s, "retryable"=%s WHERE "id"=%s
                 AND "leaseExpiresAt">clock_timestamp() RETURNING "id"''',
                 [now, failure.code, failure.retryable, claim.attempt_id])
@@ -214,17 +214,17 @@ class PostgresResearchQueue:
         # Detailed bounded reason belongs to the attempt; API error keeps the v2 enum.
         if code == "DATABASE_FAILED":
             error["code"] = "DEPENDENCY_UNAVAILABLE"
-        await self.connection.execute('''UPDATE "AnalysisJob" SET "status"='failed', "completedAt"=%s,
+        await self.connection.execute('''UPDATE "P1AnalysisJob" SET "status"='failed', "completedAt"=%s,
             "error"=%s::jsonb WHERE "id"=%s''', [now, json.dumps(error), job_id])
 
     @_database_operation
     async def published_result(self, claim):
         async with self._transaction():
-            row = await self._one('''SELECT j."resultId" FROM "AnalysisJob" j
-                JOIN "AnalysisJobAttempt" a ON a."jobId"=j."id" AND a."workspaceId"=j."workspaceId"
+            row = await self._one('''SELECT j."resultId" FROM "P1AnalysisJob" j
+                JOIN "P1AnalysisJobAttempt" a ON a."jobId"=j."id" AND a."workspaceId"=j."workspaceId"
                 WHERE j."id"=%s AND j."workspaceId"=%s AND j."status"='succeeded'
                   AND a."id"=%s AND a."leaseToken"=%s AND a."status"='succeeded'
-                  AND NOT EXISTS (SELECT 1 FROM "AnalysisJobAttempt" newer
+                  AND NOT EXISTS (SELECT 1 FROM "P1AnalysisJobAttempt" newer
                       WHERE newer."jobId"=j."id" AND newer."attemptNo">a."attemptNo") ''',
                 [claim.job_id, claim.workspace_id, claim.attempt_id, claim.lease_token])
             return row["resultId"] if row else None

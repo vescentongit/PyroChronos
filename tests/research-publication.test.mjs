@@ -84,15 +84,15 @@ const fails = (run, code) =>
 test("raw unsupported output publishes one immutable result with verified private artifacts", async () => {
 	makeRawResult(request);
 	const result = await publish();
-	const [job] = await rows("AnalysisJob"),
-		[attempt] = await rows("AnalysisJobAttempt");
+	const [job] = await rows("P1AnalysisJob"),
+		[attempt] = await rows("P1AnalysisJobAttempt");
 	assert.equal(job.status, "succeeded");
 	assert.equal(attempt.status, "succeeded");
 	assert.equal(job.resultId, result.resultId);
 	const [stored] = await rows("AnalysisResult");
 	assert.equal(stored.payload.primary.metric.harmonizedCount, null);
 	assert.equal(stored.payload.method.validation, "unsupported");
-	const [metadata] = await rows("AnalysisArtifact");
+	const [metadata] = await rows("P1AnalysisArtifact");
 	assert.equal(metadata.checksum, request.artifacts[0].checksum);
 	assert.equal(Number(metadata.bytes), request.artifacts[0].bytes);
 	assert.match(metadata.objectKey, /^research\/[a-f0-9]{64}\//);
@@ -252,8 +252,8 @@ test("storage failure halfway through staging cannot expose a partial result", a
 		verify: (...args) => storage.verify(...args),
 	};
 	await fails(() => publish({ storage: failedStorage }), "STORAGE_FAILED");
-	assert.equal((await rows("AnalysisArtifact")).length, 0);
-	assert.equal((await rows("AnalysisJob"))[0].status, "running");
+	assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+	assert.equal((await rows("P1AnalysisJob"))[0].status, "running");
 });
 
 test("database failure after manifest insertion rolls back metadata, result and completion", async () => {
@@ -263,23 +263,23 @@ test("database failure after manifest insertion rolls back metadata, result and 
 	for (const table of [
 		"AnalysisManifest",
 		"AnalysisResult",
-		"AnalysisArtifact",
+		"P1AnalysisArtifact",
 	])
 		assert.equal((await rows(table)).length, 0);
-	assert.equal((await rows("AnalysisJobAttempt"))[0].status, "running");
+	assert.equal((await rows("P1AnalysisJobAttempt"))[0].status, "running");
 });
 
 test("failure in final job update rolls back every preceding write", async () => {
 	await db.exec(`CREATE FUNCTION reject_success() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW."status"='succeeded' THEN RAISE EXCEPTION 'transaction-sentinel'; END IF; RETURN NEW; END; $$;
-    CREATE TRIGGER reject_success BEFORE UPDATE ON "AnalysisJob" FOR EACH ROW EXECUTE FUNCTION reject_success();`);
+    CREATE TRIGGER reject_success BEFORE UPDATE ON "P1AnalysisJob" FOR EACH ROW EXECUTE FUNCTION reject_success();`);
 	await fails(() => publish(), "DATABASE_FAILED");
 	for (const table of [
 		"AnalysisManifest",
 		"AnalysisResult",
-		"AnalysisArtifact",
+		"P1AnalysisArtifact",
 	])
 		assert.equal((await rows(table)).length, 0);
-	assert.equal((await rows("AnalysisJobAttempt"))[0].status, "running");
+	assert.equal((await rows("P1AnalysisJobAttempt"))[0].status, "running");
 });
 
 test("unavailable artifact is rejected by the final verification inside the transaction", async () => {
@@ -293,7 +293,7 @@ test("unavailable artifact is rejected by the final verification inside the tran
 	};
 	await fails(() => publish({ storage: unavailable }), "STORAGE_FAILED");
 	assert.equal((await rows("AnalysisResult")).length, 0);
-	assert.equal((await rows("AnalysisJobAttempt"))[0].status, "running");
+	assert.equal((await rows("P1AnalysisJobAttempt"))[0].status, "running");
 });
 
 test("secret-bearing metadata, bytes and logging exceptions never escape", async () => {
@@ -312,7 +312,7 @@ test("secret-bearing metadata, bytes and logging exceptions never escape", async
 		},
 	});
 	assert.ok(result.resultId);
-	assert.ok(!JSON.stringify(await rows("AnalysisArtifact")).includes(secret));
+	assert.ok(!JSON.stringify(await rows("P1AnalysisArtifact")).includes(secret));
 	assert.ok(!JSON.stringify(events).includes(request.claim.leaseToken));
 });
 
@@ -376,7 +376,7 @@ test("lost lease, wrong token and superseded attempt cannot publish", async () =
 	await fails(() => publish(), "LEASE_LOST");
 	request.claim.leaseToken = fixture.attempt.leaseToken;
 	await db.query(
-		`UPDATE "AnalysisJobAttempt" SET "status"='failed', "completedAt"=$1, "errorCode"='PROCESSOR_FAILED', "retryable"=true`,
+		`UPDATE "P1AnalysisJobAttempt" SET "status"='failed', "completedAt"=$1, "errorCode"='PROCESSOR_FAILED', "retryable"=true`,
 		[fixture.attempt.heartbeatAt],
 	);
 	await fails(() => publish(), "LEASE_LOST");
@@ -397,7 +397,7 @@ test("retry after an ambiguous committed response reuses the same result without
 	assert.equal(recovered.resultId, original.id);
 	assert.equal(recovered.reused, true);
 	assert.equal((await rows("AnalysisResult")).length, 1);
-	assert.equal((await rows("AnalysisArtifact")).length, 1);
+	assert.equal((await rows("P1AnalysisArtifact")).length, 1);
 });
 
 test("a changed retry conflicts while the original result and bytes remain intact", async () => {
@@ -410,7 +410,7 @@ test("a changed retry conflicts while the original result and bytes remain intac
 test("a failed new job preserves an earlier published result and its readable artifacts", async () => {
 	const original = await publish();
 	const previous = (await rows("AnalysisResult"))[0];
-	const metadata = (await rows("AnalysisArtifact"))[0];
+	const metadata = (await rows("P1AnalysisArtifact"))[0];
 	({ request, fixture } = publicationFixture());
 	fixture.job.id = "new-job";
 	fixture.job.requestId = fixture.job.input.request.requestId =

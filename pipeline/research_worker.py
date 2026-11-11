@@ -1,104 +1,65 @@
-"""Async worker supervisor; producer and atomic publisher are injected explicitly."""
-import asyncio
-from contextlib import suppress
+"""Build a bounded research bundle from a versioned local detection store."""
+import hashlib
+import json
+import sys
+from pathlib import Path
 
-from research_jobs import WorkerFailure
+from area_query import Polygon, months_between, period_minutes
+from research_adapter import build_result, daily_page, detections_page
 
 
-class ResearchWorker:
-    def __init__(self, queue, processor, log=None):
-        if not callable(processor):
-            raise ValueError("An async research processor must be configured")
-        self.queue, self.processor = queue, processor
-        self.log = log or (lambda record: None)
+def fingerprint(root):
+    root = Path(root)
+    if not root.is_dir():
+        raise ValueError("MISSING_DATASET")
+    digest = hashlib.sha256()
+    for path in sorted(p for p in root.rglob("*") if p.is_file() and (p.suffix == ".pcd" or p.name == "manifest.jsonl")):
+        digest.update(path.relative_to(root).as_posix().encode() + b"\0")
+        with path.open("rb") as stream:
+            for block in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(block)
+    return "sha256:" + digest.hexdigest()
 
-    def _result(self, status, claim=None, code=None, result_id=None):
-        value = {"status": status}
-        if claim is not None:
-            value.update(jobId=claim.job_id, attemptNo=claim.attempt_no)
-        if code is not None:
-            value["errorCode"] = WorkerFailure(code).code
-        if result_id is not None:
-            value["resultId"] = result_id
-        try:
-            self.log(dict(value))
-        except Exception:
-            pass
-        return value
 
-    async def _heartbeat(self, claim):
+def produce(root, run):
+    data = run["input"]
+    if fingerprint(root) != data["dataset"]["fingerprint"]:
+        raise ValueError("DATASET_CHANGED")
+    area = data["area"]
+    polygon = Polygon(area["geometry"])
+    period, comparison = data["period"], data["comparisonPeriod"]
+    sources = tuple(data["dataset"]["sources"])
+    built = build_result(root, polygon, period["start"], period["end"], comparison, sources=sources,
+                         name=area["name"], area_id=area["id"], workspace_id=run["workspaceId"],
+                         job_id=run["id"], result_id=run["id"], window_years=data["baseline"]["windowYears"])
+    built["result"]["area"] = area
+    # The server's canonical hash identifies the submitted area in its own namespace.
+    built["manifest"]["serverGeometryHash"] = area["geometryHash"]
+    days, pages = [], []
+    for role, selected, counts in (("primary", period, built["counts"]), ("comparison", comparison, built["comparisonCounts"])):
+        if selected is None:
+            continue
+        for month in months_between(*period_minutes(selected["start"], selected["end"])):
+            days.append(daily_page(counts, run["id"], month, role))
+        cursor = None
         while True:
-            await asyncio.sleep(self.queue.policy.heartbeat_seconds)
-            if not await self.queue.heartbeat(claim):
-                raise WorkerFailure("LEASE_LOST")
+            page = detections_page(root, polygon, run["id"], selected["start"], selected["end"], sources, role, cursor)
+            pages.append(page)
+            if sum(len(item["observations"]) for item in pages) > 100000:
+                raise ValueError("CAPACITY_LIMIT")
+            cursor = page["nextCursor"]
+            if cursor is None:
+                break
+    if fingerprint(root) != data["dataset"]["fingerprint"]:
+        raise ValueError("DATASET_CHANGED")
+    return {"result": built["result"], "manifest": built["manifest"], "days": days, "detections": pages}
 
-    async def _execute(self, claim):
-        await self.processor(claim)
 
-    async def run_once(self):
-        try:
-            claim = await self.queue.claim()
-        except WorkerFailure:
-            return self._result("database_unavailable", code="DATABASE_FAILED")
-        if claim is None:
-            return self._result("idle")
-
-        work = asyncio.create_task(self._execute(claim))
-        heartbeat = asyncio.create_task(self._heartbeat(claim))
-        failure = None
-        cancelled = False
-        try:
-            async with asyncio.timeout(self.queue.policy.process_timeout_seconds):
-                done, _ = await asyncio.wait({work, heartbeat}, return_when=asyncio.FIRST_COMPLETED)
-                if heartbeat in done:
-                    await heartbeat
-                await work
-        except asyncio.CancelledError:
-            cancelled = True
-            failure = WorkerFailure("WORKER_CANCELLED", True)
-        except TimeoutError:
-            failure = WorkerFailure("PROCESS_TIMEOUT", True)
-        except WorkerFailure as error:
-            failure = error
-        except Exception:
-            failure = WorkerFailure("PROCESSOR_FAILED", True)
-        finally:
-            for task in (work, heartbeat):
-                task.cancel()
-            await asyncio.gather(work, heartbeat, return_exceptions=True)
-
-        try:
-            result_id = await self.queue.published_result(claim)
-            if result_id is not None:
-                result = self._result("succeeded", claim, result_id=result_id)
-            elif failure and failure.code in {"LEASE_LOST", "DATABASE_FAILED"}:
-                result = self._result("lease_lost" if failure.code == "LEASE_LOST" else "database_unavailable",
-                                      claim, failure.code)
-            else:
-                failure = failure or WorkerFailure("PUBLICATION_NOT_CONFIRMED")
-                status = await self.queue.fail(claim, failure.code, failure.retryable)
-                result = self._result(status or "lease_lost", claim, failure.code)
-        except WorkerFailure:
-            result = self._result("database_unavailable", claim, "DATABASE_FAILED")
-        if cancelled:
-            raise asyncio.CancelledError
-        return result
-
-    async def run(self, stop):
-        while not stop.is_set():
-            work = asyncio.create_task(self.run_once())
-            stopping = asyncio.create_task(stop.wait())
-            try:
-                done, _ = await asyncio.wait({work, stopping}, return_when=asyncio.FIRST_COMPLETED)
-                if stopping in done:
-                    work.cancel()
-                    with suppress(asyncio.CancelledError):
-                        await work
-                    return
-                await work
-            finally:
-                for task in (work, stopping):
-                    task.cancel()
-                await asyncio.gather(work, stopping, return_exceptions=True)
-            with suppress(TimeoutError):
-                await asyncio.wait_for(stop.wait(), self.queue.policy.poll_seconds)
+if __name__ == "__main__":
+    try:
+        request = json.load(sys.stdin)
+        result = fingerprint(request["root"]) if request.get("action") == "fingerprint" else produce(request["root"], request["run"])
+        json.dump(result, sys.stdout, allow_nan=False)
+    except Exception:
+        print("RESEARCH_WORKER_FAILED", file=sys.stderr)
+        sys.exit(1)

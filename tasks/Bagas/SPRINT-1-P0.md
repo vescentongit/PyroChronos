@@ -2,7 +2,7 @@
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Orkhan.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status:** fondasi B1–B4 dan worker diimplementasikan; pengujian terisolasi lulus. Review rekan, OAuth/Neon non-produksi, pengujian HTTP dan integrasi data nyata masih terbuka. [Bukti dan cara uji](../../docs/bagas-sprint-1-progress.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 

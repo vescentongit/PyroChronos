@@ -1,7 +1,7 @@
 # R2-P1 Step 2: PostgreSQL worker, claims and leases
 
 `pipeline/research_jobs.py` implements the queue over the Step 1 Prisma tables.
-`pipeline/research_worker.py` supervises an explicitly injected asynchronous
+`pipeline/research_p1_worker.py` supervises an explicitly injected asynchronous
 processor. This step does not implement the Nathan adapter or production
 publication service; the integration tests use a publisher fixture inside their
 isolated test schema.
@@ -53,7 +53,7 @@ import psycopg
 from psycopg.rows import dict_row
 
 from research_jobs import PostgresResearchQueue, WorkerPolicy
-from research_worker import ResearchWorker
+from research_p1_worker import ResearchWorker
 
 
 async def serve(dsn, processor, stop):
@@ -116,7 +116,7 @@ Example temporary PostgreSQL (synthetic password, no persistent volume):
 docker run --name pyrochronos-worker-test --rm -d -p 127.0.0.1:55432:5432 -e POSTGRES_USER=research_test -e POSTGRES_PASSWORD=synthetic-local-test-only -e POSTGRES_DB=research_worker_test postgres:16-alpine
 $env:RESEARCH_TEST_DATABASE_URL = 'postgresql://research_test:synthetic-local-test-only@127.0.0.1:55432/research_worker_test'
 .cache/ingest-venv/Scripts/python.exe -m unittest discover -s pipeline -v
-.cache/ingest-venv/Scripts/ruff.exe check pipeline/research_jobs.py pipeline/research_worker.py pipeline/test_research_worker.py pipeline/test_research_jobs_postgres.py
+.cache/ingest-venv/Scripts/ruff.exe check pipeline/research_jobs.py pipeline/research_p1_worker.py pipeline/test_research_worker.py pipeline/test_research_jobs_postgres.py
 npm.cmd test
 npm.cmd run typecheck
 npm.cmd run check:contracts

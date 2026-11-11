@@ -44,8 +44,8 @@ export async function insertRow(sql, table, row) {
 	const cast = (key) => {
 		if (key === "requestId" || key === "leaseToken") return "::uuid";
 		if (key === "status")
-			return table === "AnalysisJob"
-				? '::"AnalysisJobStatus"'
+			return table === "P1AnalysisJob"
+				? '::"P1AnalysisJobStatus"'
 				: '::"AnalysisAttemptStatus"';
 		if (
 			[
@@ -80,7 +80,7 @@ export async function insertRow(sql, table, row) {
 
 export async function seedPublication(sql, f) {
 	const { schemaVersion, ...job } = f.job;
-	await insertRow(sql, "AnalysisJob", {
+	await insertRow(sql, "P1AnalysisJob", {
 		...job,
 		status: "queued",
 		stage: null,
@@ -88,10 +88,10 @@ export async function seedPublication(sql, f) {
 		startedAt: null,
 	});
 	await sql.query(
-		'UPDATE "AnalysisJob" SET "status"=\'running\', "startedAt"=$1::timestamptz WHERE "id"=$2',
+		'UPDATE "P1AnalysisJob" SET "status"=\'running\', "startedAt"=$1::timestamptz WHERE "id"=$2',
 		[f.job.startedAt, f.job.id],
 	);
-	await insertRow(sql, "AnalysisJobAttempt", f.attempt);
+	await insertRow(sql, "P1AnalysisJobAttempt", f.attempt);
 }
 
 export async function applyResearchMigrations(sql) {

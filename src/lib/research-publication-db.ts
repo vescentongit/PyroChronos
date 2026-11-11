@@ -1,9 +1,9 @@
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import {
-	type AnalysisArtifact,
-	type AnalysisJobAttempt,
-	type AnalysisJobRecord,
+	type P1AnalysisArtifact,
+	type P1AnalysisJobAttempt,
+	type P1AnalysisJobRecord,
 	type AnalysisManifest,
 	type AnalysisPublication,
 	type AnalysisResultRecord,
@@ -36,14 +36,14 @@ export interface PublicationClaim {
 	leaseToken: string;
 }
 export interface PublicationContext {
-	job: AnalysisJobRecord;
-	attempt: AnalysisJobAttempt;
+	job: P1AnalysisJobRecord;
+	attempt: P1AnalysisJobAttempt;
 	now: string;
 }
 export interface StoredPublication {
 	result: AnalysisResultRecord;
 	manifest: AnalysisManifest;
-	artifacts: AnalysisArtifact[];
+	artifacts: P1AnalysisArtifact[];
 }
 
 export function prismaPublicationDatabase(
@@ -78,13 +78,13 @@ export async function readPublicationContext(
 ): Promise<PublicationContext> {
 	if (lock)
 		await sql.query(
-			'SELECT "id" FROM "AnalysisJob" WHERE "id"=$1 AND "workspaceId"=$2 FOR UPDATE',
+			'SELECT "id" FROM "P1AnalysisJob" WHERE "id"=$1 AND "workspaceId"=$2 FOR UPDATE',
 			[claim.jobId, claim.workspaceId],
 		);
 	const [raw] = await sql.query(
 		`SELECT to_jsonb(j) AS job, to_jsonb(a) AS attempt,
-    date_trunc('milliseconds', clock_timestamp()) AS now FROM "AnalysisJob" j
-    JOIN LATERAL (SELECT * FROM "AnalysisJobAttempt" WHERE "jobId"=j."id"
+    date_trunc('milliseconds', clock_timestamp()) AS now FROM "P1AnalysisJob" j
+    JOIN LATERAL (SELECT * FROM "P1AnalysisJobAttempt" WHERE "jobId"=j."id"
       ORDER BY "attemptNo" DESC LIMIT 1) a ON true
     WHERE j."id"=$1 AND j."workspaceId"=$2 AND a."id"=$3 AND a."leaseToken"=$4::uuid`,
 		[claim.jobId, claim.workspaceId, claim.attemptId, claim.leaseToken],
@@ -117,7 +117,7 @@ export async function readStoredPublication(
 		})
 		.parse(raw);
 	const artifacts = await sql.query(
-		'SELECT * FROM "AnalysisArtifact" WHERE "resultId"=$1 ORDER BY "id"',
+		'SELECT * FROM "P1AnalysisArtifact" WHERE "resultId"=$1 ORDER BY "id"',
 		[row.result.id],
 	);
 	return {
@@ -165,9 +165,9 @@ export async function insertPublication(
 	);
 	for (const artifact of artifacts)
 		await sql.query(
-			`INSERT INTO "AnalysisArtifact"
+			`INSERT INTO "P1AnalysisArtifact"
     ("id","resultId","workspaceId","kind","periodRole","objectKey","checksum","bytes","format")
-    VALUES ($1,$2,$3,$4::"AnalysisArtifactKind",$5,$6,$7,$8::bigint,$9)`,
+    VALUES ($1,$2,$3,$4::"P1AnalysisArtifactKind",$5,$6,$7,$8::bigint,$9)`,
 			[
 				artifact.id,
 				result.id,
@@ -181,16 +181,16 @@ export async function insertPublication(
 			],
 		);
 	const completed = await sql.query(
-		`UPDATE "AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1::timestamptz
+		`UPDATE "P1AnalysisJobAttempt" SET "status"='succeeded', "completedAt"=$1::timestamptz
     WHERE "id"=$2 AND "jobId"=$3 AND "leaseToken"=$4::uuid AND "status"='running'
       AND "leaseExpiresAt">clock_timestamp() RETURNING "id"`,
 		[attempt.completedAt, attempt.id, job.id, attempt.leaseToken],
 	);
 	if (!completed.length) throw new PublicationFailure("LEASE_LOST");
 	const published = await sql.query(
-		`UPDATE "AnalysisJob" SET "status"='succeeded', "stage"='publish',
+		`UPDATE "P1AnalysisJob" SET "status"='succeeded', "stage"='publish',
     "progressPercent"=100, "resultId"=$1, "completedAt"=$2::timestamptz WHERE "id"=$3 AND "status"='running'
-    AND EXISTS (SELECT 1 FROM "AnalysisJobAttempt" WHERE "id"=$4 AND "leaseExpiresAt">clock_timestamp()) RETURNING "id"`,
+    AND EXISTS (SELECT 1 FROM "P1AnalysisJobAttempt" WHERE "id"=$4 AND "leaseExpiresAt">clock_timestamp()) RETURNING "id"`,
 		[result.id, result.publishedAt, job.id, attempt.id],
 	);
 	if (!published.length) throw new PublicationFailure("LEASE_LOST");
