@@ -44,6 +44,13 @@ test("isolated database: authorization, idempotency, leased job and atomic publi
     rmSync(path.join(root, "manifest.jsonl"));
     await assert.rejects(publishRun(db, { ...run, leaseToken: randomUUID() }, bundle));
     assert.equal((await db.query('SELECT count(*)::int AS n FROM "AnalysisArtifact"'))[0].n, 0);
+    const expiringDb = { ...db, transaction: fn => db.transaction(tx => fn({ ...tx, query: async (statement, params) => {
+      const rows = await tx.query(statement, params);
+      if (statement.startsWith('INSERT INTO "AnalysisArtifact"')) await tx.query('UPDATE "AnalysisRun" SET "leaseUntil"=clock_timestamp()-INTERVAL \'1 second\' WHERE id=$1', [run.id]);
+      return rows;
+    } })) };
+    await assert.rejects(publishRun(expiringDb, run, bundle), /LEASE_LOST/);
+    assert.equal((await db.query('SELECT count(*)::int AS n FROM "AnalysisArtifact"'))[0].n, 0);
     await publishRun(db, run, bundle);
     const { job, artifact } = await getArtifact(db, "w1", first.value.id);
     assert.equal(jobWire(job).status, "succeeded");

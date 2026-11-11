@@ -217,3 +217,156 @@ model ResearchTile {
   payload    Json
   @@id([runId, periodRole, z, x, y])
 }
+
+// R2-P1 foundation. Workspace/user/AOI IDs are opaque P0 references for now;
+// no synthetic identity tables or production memberships are fabricated here.
+enum P1AnalysisJobStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+enum AnalysisAttemptStatus {
+  running
+  succeeded
+  failed
+  expired
+}
+
+enum P1AnalysisArtifactKind {
+  observations
+  daily
+  estimated_grid
+}
+
+model P1AnalysisJob {
+  id              String            @id @default(cuid())
+  workspaceId     String
+  requestedById   String
+  requestId       String            @db.Uuid
+  analysisKey     String            @db.VarChar(71)
+  areaId          String
+  areaRevision    Int
+  input           Json              @db.JsonB
+  status          P1AnalysisJobStatus @default(queued)
+  stage           String?
+  progressPercent Float?
+  createdAt       DateTime          @default(now()) @db.Timestamptz(3)
+  startedAt       DateTime?         @db.Timestamptz(3)
+  completedAt     DateTime?         @db.Timestamptz(3)
+  resultId        String?           @unique
+  error           Json?             @db.JsonB
+
+  attempts        P1AnalysisJobAttempt[]
+  manifests       AnalysisManifest[]
+  result          AnalysisResult?      @relation("JobResult")
+  publishedResult AnalysisResult?      @relation("PublishedResult", fields: [resultId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, requestedById, requestId])
+  @@index([workspaceId, analysisKey])
+  @@index([status, createdAt])
+}
+
+model P1AnalysisJobAttempt {
+  id             String                @id @default(cuid())
+  jobId          String
+  workspaceId    String
+  attemptNo      Int
+  leaseToken     String                @unique @db.Uuid
+  status         AnalysisAttemptStatus @default(running)
+  claimedAt      DateTime              @db.Timestamptz(3)
+  heartbeatAt    DateTime              @db.Timestamptz(3)
+  leaseExpiresAt DateTime              @db.Timestamptz(3)
+  completedAt    DateTime?             @db.Timestamptz(3)
+  errorCode      String?
+  retryable      Boolean?
+  job            P1AnalysisJob           @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([jobId, attemptNo])
+  @@index([status, leaseExpiresAt])
+}
+
+model AnalysisManifest {
+  id          String           @id @default(cuid())
+  jobId       String
+  workspaceId String
+  dataVersion String
+  checksum    String           @db.VarChar(71)
+  content     Json             @db.JsonB
+  job         P1AnalysisJob      @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  results     AnalysisResult[]
+
+  @@unique([id, jobId, workspaceId])
+}
+
+model AnalysisResult {
+  id               String                       @id @default(cuid())
+  jobId            String
+  workspaceId      String
+  manifestId       String
+  dataVersion      String
+  generatedAt      DateTime                     @db.Timestamptz(3)
+  publishedAt      DateTime                     @db.Timestamptz(3)
+  payload          Json                         @db.JsonB
+  job              P1AnalysisJob                  @relation("JobResult", fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  manifest         AnalysisManifest             @relation(fields: [manifestId, jobId, workspaceId], references: [id, jobId, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  publishedBy      P1AnalysisJob?                 @relation("PublishedResult")
+  artifacts        P1AnalysisArtifact[]
+  initialLocations MonitoringLocation[]
+  locationLinks    MonitoringLocationAnalysis[]
+
+  @@unique([id, workspaceId])
+  @@unique([jobId, workspaceId])
+  @@index([workspaceId, publishedAt])
+}
+
+model P1AnalysisArtifact {
+  id          String               @id @default(cuid())
+  resultId    String
+  workspaceId String
+  kind        P1AnalysisArtifactKind
+  periodRole  String
+  objectKey   String               @unique
+  checksum    String               @db.VarChar(71)
+  bytes       BigInt
+  format      String
+  result      AnalysisResult       @relation(fields: [resultId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([resultId, kind, periodRole])
+}
+
+model MonitoringLocation {
+  id                String                       @id @default(cuid())
+  workspaceId       String
+  requestId         String                       @db.Uuid
+  requestHash       String                       @db.VarChar(71)
+  name              String
+  anchorDetectionId String
+  anchor            Json                         @db.JsonB
+  initialAnalysisId String
+  areaId            String
+  areaRevision      Int
+  createdById       String
+  createdBy         Json                         @db.JsonB
+  createdAt         DateTime                     @default(now()) @db.Timestamptz(3)
+  initialAnalysis   AnalysisResult               @relation(fields: [initialAnalysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  analyses          MonitoringLocationAnalysis[]
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, createdById, requestId])
+  @@index([workspaceId, createdAt, id])
+}
+
+model MonitoringLocationAnalysis {
+  locationId  String
+  workspaceId String
+  analysisId  String
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+  location    MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  analysis    AnalysisResult     @relation(fields: [analysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([locationId, analysisId])
+  @@index([workspaceId, analysisId])
+}

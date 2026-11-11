@@ -132,12 +132,12 @@ export async function claimRun(db: Sql) {
   });
 }
 export async function heartbeat(db: Sql, id: string, token: string) {
-  const rows = await db.query('UPDATE "AnalysisRun" SET "leaseUntil"=CURRENT_TIMESTAMP+INTERVAL \'120 seconds\' WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">CURRENT_TIMESTAMP RETURNING id', [id, token]);
+  const rows = await db.query('UPDATE "AnalysisRun" SET "leaseUntil"=clock_timestamp()+INTERVAL \'120 seconds\' WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">clock_timestamp() RETURNING id', [id, token]);
   return rows.length === 1;
 }
 export async function failRun(db: Sql, run: Row, code = "DEPENDENCY_UNAVAILABLE") {
   await db.transaction(async tx => {
-    const rows = await tx.query('UPDATE "AnalysisRun" SET status=\'failed\',"completedAt"=CURRENT_TIMESTAMP,error=$3::jsonb,"leaseToken"=NULL,"leaseUntil"=NULL WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">CURRENT_TIMESTAMP RETURNING id', [run.id, run.leaseToken, json(errorPayload(code))]);
+    const rows = await tx.query('UPDATE "AnalysisRun" SET status=\'failed\',"completedAt"=clock_timestamp(),error=$3::jsonb,"leaseToken"=NULL,"leaseUntil"=NULL WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">clock_timestamp() RETURNING id', [run.id, run.leaseToken, json(errorPayload(code))]);
     if (rows.length) await tx.query('UPDATE "AnalysisAttempt" SET "completedAt"=CURRENT_TIMESTAMP,error=$3 WHERE "runId"=$1 AND token=$2', [run.id, run.leaseToken, code]);
   });
 }
@@ -175,7 +175,7 @@ export async function publishRun(db: Sql, run: Row, raw: unknown) {
   if ([...bundle.days, ...bundle.detections].some(page => !roles.includes(page.periodRole))) throw new Error("INVALID_PERIOD_ROLE");
   if (bundle.detections.reduce((sum, page) => sum + page.observations.length, 0) > 100000) throw new ResearchFailure("CAPACITY_LIMIT", 503);
   return db.transaction(async tx => {
-    const [current] = await tx.query('SELECT * FROM "AnalysisRun" WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">CURRENT_TIMESTAMP FOR UPDATE', [run.id, run.leaseToken]);
+    const [current] = await tx.query('SELECT * FROM "AnalysisRun" WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">clock_timestamp() FOR UPDATE', [run.id, run.leaseToken]);
     if (!current) throw new Error("LEASE_LOST");
     const published = { ...result, publishedAt: new Date().toISOString() };
     await tx.query('INSERT INTO "AnalysisArtifact" ("runId",result,manifest,days) VALUES ($1,$2::jsonb,$3::jsonb,$4::jsonb)', [run.id, json(published), json(bundle.manifest), json(bundle.days)]);
@@ -186,7 +186,8 @@ export async function publishRun(db: Sql, run: Row, raw: unknown) {
         await tx.query('INSERT INTO "ResearchObservation" ("runId","periodRole",ordinal,longitude,latitude,payload) SELECT $1,$2,ordinal,longitude,latitude,payload FROM jsonb_to_recordset($3::jsonb) AS x(ordinal int,longitude double precision,latitude double precision,payload jsonb)', [run.id, role, json(rows)]);
       }
     }
-    await tx.query('UPDATE "AnalysisRun" SET status=\'succeeded\',"completedAt"=CURRENT_TIMESTAMP,"leaseToken"=NULL,"leaseUntil"=NULL WHERE id=$1', [run.id]);
+    const completed = await tx.query('UPDATE "AnalysisRun" SET status=\'succeeded\',"completedAt"=clock_timestamp(),"leaseToken"=NULL,"leaseUntil"=NULL WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">clock_timestamp() RETURNING id', [run.id, run.leaseToken]);
+    if (!completed.length) throw new Error("LEASE_LOST");
     await tx.query('UPDATE "AnalysisAttempt" SET "completedAt"=CURRENT_TIMESTAMP WHERE "runId"=$1 AND token=$2', [run.id, run.leaseToken]);
   });
 }
