@@ -1,0 +1,185 @@
+{
+ "schemaVersion": "research-2",
+ "id": "analysis-local",
+ "jobId": "job-local",
+ "workspaceId": "workspace-local",
+ "mode": "research",
+ "area": {
+  "schemaVersion": "research-2",
+  "id": "area-local",
+  "workspaceId": "workspace-local",
+  "revision": 1,
+  "name": "-61,-12,-60,-11",
+  "geometry": {
+   "type": "Polygon",
+   "coordinates": [
+    [
+     [
+      -61.0,
+      -12.0
+     ],
+     [
+      -60.0,
+      -12.0
+     ],
+     [
+      -60.0,
+      -11.0
+     ],
+     [
+      -61.0,
+      -11.0
+     ],
+     [
+      -61.0,
+      -12.0
+     ]
+    ]
+   ]
+  },
+  "geometryHash": "sha256:36199cf84a7e078fca555f51e6e1f9d84033c864d0ca91363d1dc58dcd086132",
+  "areaKm2": 12115.974,
+  "createdAt": "2026-11-12T14:48:01Z"
+ },
+ "primary": {
+  "period": {
+   "start": "2024-08-01",
+   "end": "2024-09-30"
+  },
+  "days": 61,
+  "metric": {
+   "rawCount": 6475,
+   "harmonizedCount": 1283.326204,
+   "rawCountsBySource": {
+    "MODIS_SP": 1253,
+    "VIIRS_SNPP_SP": 5222
+   },
+   "status": "available"
+  }
+ },
+ "comparison": {
+  "period": {
+   "start": "2023-08-01",
+   "end": "2023-09-30"
+  },
+  "days": 61,
+  "metric": {
+   "rawCount": 252,
+   "harmonizedCount": 44.23568,
+   "rawCountsBySource": {
+    "MODIS_SP": 72,
+    "VIIRS_SNPP_SP": 180
+   },
+   "status": "available"
+  }
+ },
+ "baseline": {
+  "kind": "rolling-same-calendar-period",
+  "windowYears": 10,
+  "minimumValidYears": 4,
+  "policyVersion": "reference-policy-1"
+ },
+ "method": {
+  "name": "viirs-snpp-ratio-to-modis",
+  "version": "1",
+  "referenceScale": "MODIS-equivalent",
+  "unit": "estimated-hotspot-detections",
+  "validation": "validated",
+  "validationDomain": "Validated for polygons inside these domains (evaluation evaluation-275ac4d8b7c6096b, test MAE 12.53 against 130.64 for uncorrected VIIRS per 1-degree cell-month, S-NPP with Terra/Aqua): africa_north_of_equator, africa_south_of_equator, australia, boreal_eurasia, south_america. This polygon lies in south_america. Diagnostic on small test-year polygons with at least 30 MODIS detections: 61% of 185 polygon-years fall within 25% of native MODIS, so treat an estimate for a small area as approximate.",
+  "manifestId": "manifest-99ec8aab9fe25895"
+ },
+ "sources": [
+  {
+   "id": "MODIS_SP",
+   "product": "FIRMS MODIS Collection 6.1 yearly archive",
+   "version": "firms-catalog-2",
+   "processingLevel": "STANDARD",
+   "status": "available",
+   "observedFrom": "2023-01-01T01:28:00Z",
+   "observedTo": "2024-12-31T23:50:00Z",
+   "checksum": "sha256:d4b030967d0f0ae5367b7a1e3497a9836958bb6825861590c012e09b4ed77c01"
+  },
+  {
+   "id": "VIIRS_SNPP_SP",
+   "product": "FIRMS VIIRS 375 m yearly archive",
+   "version": "firms-catalog-2",
+   "processingLevel": "STANDARD",
+   "status": "available",
+   "observedFrom": "2023-01-01T00:00:00Z",
+   "observedTo": "2024-12-31T23:59:00Z",
+   "checksum": "sha256:a44d37310f19b47f7ab005cee9213598b2279394f915bf5ea9b4ed79435576d6"
+  }
+ ],
+ "dataVersion": "firms-detections-aecc69b21f4d",
+ "qualityPolicyVersion": "quality-policy-1",
+ "generatedAt": "2026-11-12T14:48:01Z",
+ "publishedAt": "2026-11-12T14:48:01Z",
+ "months": [
+  {
+   "month": "2024-08",
+   "metric": {
+    "rawCount": 2366,
+    "harmonizedCount": 479.957119,
+    "rawCountsBySource": {
+     "MODIS_SP": 413,
+     "VIIRS_SNPP_SP": 1953
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "assessed",
+    "referenceYears": [
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "baselineStatistic": "median",
+    "baselineValue": 23.469486,
+    "delta": 456.487633,
+    "scoreKind": "percentile",
+    "score": 100.0
+   },
+   "isPartialPeriod": false
+  },
+  {
+   "month": "2024-09",
+   "metric": {
+    "rawCount": 4109,
+    "harmonizedCount": 803.369085,
+    "rawCountsBySource": {
+     "MODIS_SP": 840,
+     "VIIRS_SNPP_SP": 3269
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "assessed",
+    "referenceYears": [
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "baselineStatistic": "median",
+    "baselineValue": 71.391471,
+    "delta": 731.977614,
+    "scoreKind": "percentile",
+    "score": 100.0
+   },
+   "isPartialPeriod": false
+  }
+ ]
+}

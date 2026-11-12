@@ -1,0 +1,185 @@
+{
+ "schemaVersion": "research-2",
+ "id": "analysis-local",
+ "jobId": "job-local",
+ "workspaceId": "workspace-local",
+ "mode": "research",
+ "area": {
+  "schemaVersion": "research-2",
+  "id": "area-local",
+  "workspaceId": "workspace-local",
+  "revision": 1,
+  "name": "kalteng",
+  "geometry": {
+   "type": "Polygon",
+   "coordinates": [
+    [
+     [
+      113.0,
+      -3.6
+     ],
+     [
+      115.0,
+      -3.6
+     ],
+     [
+      115.0,
+      -1.5
+     ],
+     [
+      113.0,
+      -1.5
+     ],
+     [
+      113.0,
+      -3.6
+     ]
+    ]
+   ]
+  },
+  "geometryHash": "sha256:2090879cf15eb2a45562e85b204b3b7cab9019279c36f03822e4b9eaeda0ac6a",
+  "areaKm2": 51875.926,
+  "createdAt": "2026-11-12T14:48:03Z"
+ },
+ "primary": {
+  "period": {
+   "start": "2023-08-01",
+   "end": "2023-10-31"
+  },
+  "days": 92,
+  "metric": {
+   "rawCount": 23754,
+   "harmonizedCount": null,
+   "rawCountsBySource": {
+    "MODIS_SP": 4276,
+    "VIIRS_SNPP_SP": 19478
+   },
+   "status": "method_unsupported"
+  }
+ },
+ "comparison": {
+  "period": {
+   "start": "2022-08-01",
+   "end": "2022-10-31"
+  },
+  "days": 92,
+  "metric": {
+   "rawCount": 146,
+   "harmonizedCount": null,
+   "rawCountsBySource": {
+    "MODIS_SP": 32,
+    "VIIRS_SNPP_SP": 114
+   },
+   "status": "method_unsupported"
+  }
+ },
+ "baseline": {
+  "kind": "rolling-same-calendar-period",
+  "windowYears": 10,
+  "minimumValidYears": 4,
+  "policyVersion": "reference-policy-1"
+ },
+ "method": {
+  "name": "viirs-snpp-ratio-to-modis",
+  "version": "1",
+  "referenceScale": "MODIS-equivalent",
+  "unit": "estimated-hotspot-detections",
+  "validation": "unsupported",
+  "validationDomain": "Not validated for this polygon: it touches maritime_southeast_asia. Validated domains are africa_north_of_equator, africa_south_of_equator, australia, boreal_eurasia, south_america; estimates are withheld and only original per-source counts are published.",
+  "manifestId": "manifest-c7c11be12f642b3b"
+ },
+ "sources": [
+  {
+   "id": "MODIS_SP",
+   "product": "FIRMS MODIS Collection 6.1 yearly archive",
+   "version": "firms-catalog-2",
+   "processingLevel": "STANDARD",
+   "status": "available",
+   "observedFrom": "2022-01-01T00:28:00Z",
+   "observedTo": "2023-12-31T23:17:00Z",
+   "checksum": "sha256:3f96fc7b83897b5c2a4224c6bf8a3ffdbb922997ddbcf0ca4f9a8e1b13e999c8"
+  },
+  {
+   "id": "VIIRS_SNPP_SP",
+   "product": "FIRMS VIIRS 375 m yearly archive",
+   "version": "firms-catalog-2",
+   "processingLevel": "STANDARD",
+   "status": "available",
+   "observedFrom": "2022-01-01T00:26:00Z",
+   "observedTo": "2023-12-31T23:30:00Z",
+   "checksum": "sha256:6eed86101d3b0563bc26661ea6ed021bcba6a13a4a75a101c575cbf35f24d114"
+  }
+ ],
+ "dataVersion": "firms-detections-1ab3f966a003",
+ "qualityPolicyVersion": "quality-policy-1",
+ "generatedAt": "2026-11-12T14:48:03Z",
+ "publishedAt": "2026-11-12T14:48:03Z",
+ "months": [
+  {
+   "month": "2023-08",
+   "metric": {
+    "rawCount": 3290,
+    "harmonizedCount": null,
+    "rawCountsBySource": {
+     "MODIS_SP": 612,
+     "VIIRS_SNPP_SP": 2678
+    },
+    "status": "method_unsupported"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   },
+   "isPartialPeriod": false
+  },
+  {
+   "month": "2023-09",
+   "metric": {
+    "rawCount": 10524,
+    "harmonizedCount": null,
+    "rawCountsBySource": {
+     "MODIS_SP": 1824,
+     "VIIRS_SNPP_SP": 8700
+    },
+    "status": "method_unsupported"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   },
+   "isPartialPeriod": false
+  },
+  {
+   "month": "2023-10",
+   "metric": {
+    "rawCount": 9940,
+    "harmonizedCount": null,
+    "rawCountsBySource": {
+     "MODIS_SP": 1840,
+     "VIIRS_SNPP_SP": 8100
+    },
+    "status": "method_unsupported"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   },
+   "isPartialPeriod": false
+  }
+ ]
+}

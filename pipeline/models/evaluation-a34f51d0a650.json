@@ -1,0 +1,1538 @@
+{
+ "id": "evaluation-275ac4d8b7c6096b",
+ "contentSha256": "275ac4d8b7c6096b2c4dc58e20886f8941a1e16c7c530ef2abcf69f9dd3f5658",
+ "schema": "evaluation-1",
+ "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+ "pairsSha256": "e194422b2197a112c5b98bde604b0610318f9f21c8260a97b15da5b432d89a7e",
+ "decisionRule": {
+  "version": "decision-rule-1",
+  "minimumTestCellMonths": 500,
+  "minimumMaeReductionVersusRaw": 0.2,
+  "maximumAbsoluteRelativeBiasAggregated": 0.15,
+  "aggregateUnit": "domain-month sum over cells",
+  "transferRequired": true,
+  "transferRule": "the same model family refitted without the domain on train must also meet both thresholds on the domain's test cell-months",
+  "outsideSupportMaximumShare": 0.1,
+  "text": "a domain is validated when, on test, its cell-months number at least minimumTestCellMonths, MAE falls by at least minimumMaeReductionVersusRaw against raw alignment, absolute relative bias of domain-month sums is at most maximumAbsoluteRelativeBiasAggregated, the leave-domain-out transfer meets both thresholds, and no more than outsideSupportMaximumShare of test VIIRS counts exceed the train support"
+ },
+ "selectionRule": "the published method is the additive candidate with the lowest validation MAE on cell-months; non-additive candidates are evaluated and reported but cannot be applied to arbitrary clipped polygons or to daily allocation",
+ "labels": {
+  "fixtureOrReal": "real FIRMS archive data",
+  "status": "retrospective evaluation; not an operational validation of future months"
+ },
+ "limits": [
+  "pairs list cells with at least one accepted detection in either source; cells empty in both are not enumerated",
+  "cell-month units are 1 degree; polygon estimates apply the multiplier to counts inside the polygon, which is exact only because the selected method is additive",
+  "the evaluation compares VIIRS-derived estimates to MODIS counts, not to fire occurrence on the ground",
+  "a multiplier fitted for S-NPP plus Terra/Aqua does not transfer to a different satellite set"
+ ],
+ "models": {
+  "raw_alignment": {},
+  "ratio_global": {
+   "ratio": 0.24575377326604025
+  },
+  "ratio_domain": {
+   "ratios": {
+    "africa_north_of_equator": 0.2748194072308109,
+    "africa_south_of_equator": 0.2652771885870478,
+    "australia": 0.21324471671827502,
+    "boreal_eurasia": 0.20405095076783508,
+    "europe_mediterranean": 0.32221227770300237,
+    "maritime_southeast_asia": 0.15992239042828005,
+    "north_america": 0.1730697885653728,
+    "south_america": 0.24843978039069173,
+    "south_and_mainland_southeast_asia": 0.19588346287188113
+   }
+  },
+  "affine_global": {
+   "intercept": 0.20436984559485438,
+   "slope": 0.245678329740933
+  },
+  "support": {
+   "maxViirs": 32054,
+   "positiveRows": 555959
+  }
+ },
+ "selected": "ratio_global",
+ "validation": {
+  "raw_alignment": {
+   "cellMonths": 190747,
+   "skipped": 0,
+   "mae": 137.42611417217572,
+   "bias": 137.0632775351644,
+   "relativeBias": 3.1789398771000994,
+   "aggregateMae": 108935.0375,
+   "aggregateRelativeBias": 3.1789398771000994,
+   "observedMean": 43.11603327968461
+  },
+  "ratio_global": {
+   "cellMonths": 190747,
+   "skipped": 0,
+   "mae": 12.255039495076236,
+   "bias": 1.1637122175386316,
+   "relativeBias": 0.0269902430492591,
+   "aggregateMae": 4620.351455769544,
+   "aggregateRelativeBias": 0.026990243049270647,
+   "observedMean": 43.11603327968461
+  },
+  "ratio_domain": {
+   "cellMonths": 169406,
+   "skipped": 21341,
+   "mae": 12.788091058003118,
+   "bias": 0.8752027349871374,
+   "relativeBias": 0.0185098490822679,
+   "aggregateMae": 4879.016245676631,
+   "aggregateRelativeBias": 0.018509849082268316,
+   "observedMean": 47.283083243804825
+  },
+  "affine_global": {
+   "cellMonths": 190747,
+   "skipped": 0,
+   "mae": 12.312629288258076,
+   "bias": 1.3544887007750332,
+   "relativeBias": 0.0314149655648689,
+   "aggregateMae": 4636.442778235439,
+   "aggregateRelativeBias": 0.03141496556486358,
+   "observedMean": 43.11603327968461
+  },
+  "eqm_global": {
+   "cellMonths": 190747,
+   "skipped": 0,
+   "mae": 21.119760843366763,
+   "bias": 18.955880638381164,
+   "relativeBias": 0.43964806584637245,
+   "aggregateMae": 15065.739017205397,
+   "aggregateRelativeBias": 0.43964806584637284,
+   "observedMean": 43.11603327968461
+  }
+ },
+ "test": {
+  "raw_alignment": {
+   "overall": {
+    "cellMonths": 473017,
+    "skipped": 0,
+    "mae": 130.638074318682,
+    "bias": 130.11441872068022,
+    "relativeBias": 3.1645987656352323,
+    "aggregateMae": 102577.22,
+    "aggregateRelativeBias": 3.1645987656352323,
+    "observedMean": 41.11561318092161
+   },
+   "byViirsCountBin": {
+    "0": {
+     "cellMonths": 15216,
+     "skipped": 0,
+     "mae": 2.2430993690851735,
+     "bias": -2.2430993690851735,
+     "relativeBias": -1.0,
+     "aggregateMae": 57.36302521008403,
+     "aggregateRelativeBias": -1.0,
+     "observedMean": 2.2430993690851735
+    },
+    "1-2": {
+     "cellMonths": 96432,
+     "skipped": 0,
+     "mae": 1.3665795586527294,
+     "bias": 0.8562095569935291,
+     "relativeBias": 1.619830495173821,
+     "aggregateMae": 144.25666666666666,
+     "aggregateRelativeBias": 1.619830495173821,
+     "observedMean": 0.5285797245727559
+    },
+    "10-49": {
+     "cellMonths": 125426,
+     "skipped": 0,
+     "mae": 17.870274105847272,
+     "bias": 17.50066971760241,
+     "relativeBias": 3.105267401920563,
+     "aggregateMae": 3658.3983333333335,
+     "aggregateRelativeBias": 3.105267401920563,
+     "observedMean": 5.635801189546027
+    },
+    "3-9": {
+     "cellMonths": 110370,
+     "skipped": 0,
+     "mae": 4.390278155295823,
+     "bias": 3.806568813989309,
+     "relativeBias": 2.502537496574975,
+     "aggregateMae": 703.305,
+     "aggregateRelativeBias": 2.502537496574975,
+     "observedMean": 1.5210836277974087
+    },
+    "50+": {
+     "cellMonths": 125573,
+     "skipped": 0,
+     "mae": 469.0671163387034,
+     "bias": 468.91232191633554,
+     "relativeBias": 3.1848259052386174,
+     "aggregateMae": 98137.87833333333,
+     "aggregateRelativeBias": 3.1848259052386174,
+     "observedMean": 147.23326670542235
+    }
+   },
+   "bySeason": {
+    "DJF": {
+     "cellMonths": 100202,
+     "skipped": 0,
+     "mae": 133.95577932576197,
+     "bias": 133.67540568052533,
+     "relativeBias": 3.231215791547025,
+     "aggregateMae": 89296.95333333334,
+     "aggregateRelativeBias": 3.231215791547025,
+     "observedMean": 41.37000259475859
+    },
+    "JJA": {
+     "cellMonths": 127261,
+     "skipped": 0,
+     "mae": 150.4135438193948,
+     "bias": 149.43871256708653,
+     "relativeBias": 2.743901805594191,
+     "aggregateMae": 126784.8,
+     "aggregateRelativeBias": 2.743901805594191,
+     "observedMean": 54.46212115259192
+    },
+    "MAM": {
+     "cellMonths": 123706,
+     "skipped": 0,
+     "mae": 100.14380870774255,
+     "bias": 99.6674858131376,
+     "relativeBias": 3.5696629779516718,
+     "aggregateMae": 82196.44,
+     "aggregateRelativeBias": 3.5696629779516718,
+     "observedMean": 27.920699076843484
+    },
+    "SON": {
+     "cellMonths": 121848,
+     "skipped": 0,
+     "mae": 138.2150302015626,
+     "bias": 137.91447541198872,
+     "relativeBias": 3.41684408717479,
+     "aggregateMae": 112030.68666666666,
+     "aggregateRelativeBias": 3.41684408717479,
+     "observedMean": 40.36311634167159
+    }
+   }
+  },
+  "ratio_global": {
+   "overall": {
+    "cellMonths": 473017,
+    "skipped": 0,
+    "mae": 12.527906757106656,
+    "bias": 0.9648132553605856,
+    "relativeBias": 0.023465860793930135,
+    "aggregateMae": 4898.805686763943,
+    "aggregateRelativeBias": 0.02346586079395091,
+    "observedMean": 41.11561318092161
+   },
+   "byViirsCountBin": {
+    "0": {
+     "cellMonths": 15216,
+     "skipped": 0,
+     "mae": 2.2430993690851735,
+     "bias": -2.2430993690851735,
+     "relativeBias": -1.0,
+     "aggregateMae": 57.36302521008403,
+     "aggregateRelativeBias": -1.0,
+     "observedMean": 2.2430993690851735
+    },
+    "1-2": {
+     "cellMonths": 96432,
+     "skipped": 0,
+     "mae": 0.7075024982724787,
+     "bias": -0.18826253344932922,
+     "relativeBias": -0.35616677049332407,
+     "aggregateMae": 41.454867318193955,
+     "aggregateRelativeBias": -0.35616677049359385,
+     "observedMean": 0.5285797245727559
+    },
+    "10-49": {
+     "cellMonths": 125426,
+     "skipped": 0,
+     "mae": 3.869315349757473,
+     "bias": 0.05007383594565763,
+     "relativeBias": 0.008884954288050598,
+     "aggregateMae": 250.4313891317202,
+     "aggregateRelativeBias": 0.008884954288052544,
+     "observedMean": 5.635801189546027
+    },
+    "3-9": {
+     "cellMonths": 110370,
+     "skipped": 0,
+     "mae": 1.5849938936780636,
+     "bias": -0.21179293757800233,
+     "relativeBias": -0.13923819421072015,
+     "aggregateMae": 88.83010433791627,
+     "aggregateRelativeBias": -0.13923819421090974,
+     "observedMean": 1.5210836277974087
+    },
+    "50+": {
+     "cellMonths": 125573,
+     "skipped": 0,
+     "mae": 41.117974934905725,
+     "bias": 4.1868365796000235,
+     "relativeBias": 0.02843675667386269,
+     "aggregateMae": 4695.396298654679,
+     "aggregateRelativeBias": 0.028436756673862827,
+     "observedMean": 147.23326670542235
+    }
+   },
+   "bySeason": {
+    "DJF": {
+     "cellMonths": 100202,
+     "skipped": 0,
+     "mae": 10.684599706726662,
+     "bias": 1.648066981786556,
+     "relativeBias": 0.039837246275526206,
+     "aggregateMae": 2434.7404417260673,
+     "aggregateRelativeBias": 0.03983724627553307,
+     "observedMean": 41.37000259475859
+    },
+    "JJA": {
+     "cellMonths": 127261,
+     "skipped": 0,
+     "mae": 16.243777146265828,
+     "bias": -4.3527218938920775,
+     "relativeBias": -0.07992200453773414,
+     "aggregateMae": 8283.503076616289,
+     "aggregateRelativeBias": -0.07992200453768661,
+     "observedMean": 54.46212115259192
+    },
+    "MAM": {
+     "cellMonths": 123706,
+     "skipped": 0,
+     "mae": 10.940295544913496,
+     "bias": 3.434578784033429,
+     "relativeBias": 0.12301191938571325,
+     "aggregateMae": 4225.585245403177,
+     "aggregateRelativeBias": 0.12301191938575214,
+     "observedMean": 27.920699076843484
+    },
+    "SON": {
+     "cellMonths": 121848,
+     "skipped": 0,
+     "mae": 11.774629756860804,
+     "bias": 3.449274520572041,
+     "relativeBias": 0.08545610035097685,
+     "aggregateMae": 4651.393983310241,
+     "aggregateRelativeBias": 0.08545610035100364,
+     "observedMean": 40.36311634167159
+    }
+   }
+  },
+  "ratio_domain": {
+   "overall": {
+    "cellMonths": 421656,
+    "skipped": 51361,
+    "mae": 13.310178406115476,
+    "bias": 0.6462091276709191,
+    "relativeBias": 0.014331644566300346,
+    "aggregateMae": 5640.937169738627,
+    "aggregateRelativeBias": 0.014331644566300589,
+    "observedMean": 45.08967025252813
+   },
+   "byViirsCountBin": {
+    "0": {
+     "cellMonths": 12989,
+     "skipped": 2227,
+     "mae": 2.2417430133189624,
+     "bias": -2.2417430133189624,
+     "relativeBias": -1.0,
+     "aggregateMae": 54.42616822429907,
+     "aggregateRelativeBias": -1.0,
+     "observedMean": 2.2417430133189624
+    },
+    "1-2": {
+     "cellMonths": 83381,
+     "skipped": 13051,
+     "mae": 0.6636441150462475,
+     "bias": -0.17024387702518776,
+     "relativeBias": -0.34700918449744983,
+     "aggregateMae": 38.78296988118,
+     "aggregateRelativeBias": -0.34700918449746526,
+     "observedMean": 0.4906033748695746
+    },
+    "10-49": {
+     "cellMonths": 110455,
+     "skipped": 14971,
+     "mae": 3.8231132712693614,
+     "bias": -0.2857491194706774,
+     "relativeBias": -0.05117356006941572,
+     "aggregateMae": 327.81447417892196,
+     "aggregateRelativeBias": -0.05117356006941923,
+     "observedMean": 5.583921053822824
+    },
+    "3-9": {
+     "cellMonths": 95349,
+     "skipped": 15021,
+     "mae": 1.4806873550067159,
+     "bias": -0.18249567915583512,
+     "relativeBias": -0.12972297568049115,
+     "aggregateMae": 85.91112467505589,
+     "aggregateRelativeBias": -0.12972297568051006,
+     "observedMean": 1.406810768859663
+    },
+    "50+": {
+     "cellMonths": 119482,
+     "skipped": 6091,
+     "mae": 41.54934836261655,
+     "bias": 3.052796740516691,
+     "relativeBias": 0.02005092298586311,
+     "aggregateMae": 5277.4899688181795,
+     "aggregateRelativeBias": 0.020050922985863102,
+     "observedMean": 152.25218024472306
+    }
+   },
+   "bySeason": {
+    "DJF": {
+     "cellMonths": 90809,
+     "skipped": 9393,
+     "mae": 12.00249333545529,
+     "bias": 4.218791401080248,
+     "relativeBias": 0.0935125164891664,
+     "aggregateMae": 4223.906762048909,
+     "aggregateRelativeBias": 0.093512516489168,
+     "observedMean": 45.11472431146692
+    },
+    "JJA": {
+     "cellMonths": 113599,
+     "skipped": 13662,
+     "mae": 16.100580296438356,
+     "bias": -5.874485305501312,
+     "relativeBias": -0.09732585592658344,
+     "aggregateMae": 7565.97778004743,
+     "aggregateRelativeBias": -0.09732585592658374,
+     "observedMean": 60.35893801882059
+    },
+    "MAM": {
+     "cellMonths": 108799,
+     "skipped": 14907,
+     "mae": 11.372907260280998,
+     "bias": 1.1061835928841601,
+     "relativeBias": 0.03739022888101272,
+     "aggregateMae": 4627.678454989075,
+     "aggregateRelativeBias": 0.03739022888101523,
+     "observedMean": 29.584830742929622
+    },
+    "SON": {
+     "cellMonths": 108449,
+     "skipped": 13399,
+     "mae": 13.425770736509984,
+     "bias": 4.023621380499762,
+     "relativeBias": 0.09015670172467613,
+     "aggregateMae": 6146.185681869094,
+     "aggregateRelativeBias": 0.09015670172470219,
+     "observedMean": 44.629198978321604
+    }
+   }
+  },
+  "affine_global": {
+   "overall": {
+    "cellMonths": 473017,
+    "skipped": 0,
+    "mae": 12.582106907903235,
+    "bias": 1.1562649037460981,
+    "relativeBias": 0.02812228285780804,
+    "aggregateMae": 4923.8373455183255,
+    "aggregateRelativeBias": 0.028122282857793248,
+    "observedMean": 41.11561318092161
+   },
+   "byViirsCountBin": {
+    "0": {
+     "cellMonths": 15216,
+     "skipped": 0,
+     "mae": 2.038729523489636,
+     "bias": -2.038729523489636,
+     "relativeBias": -0.9088895265130909,
+     "aggregateMae": 52.13665282256924,
+     "aggregateRelativeBias": -0.9088895265133954,
+     "observedMean": 2.2430993690851735
+    },
+    "1-2": {
+     "cellMonths": 96432,
+     "skipped": 0,
+     "mae": 0.8217931270078491,
+     "bias": 0.016002838760429603,
+     "relativeBias": 0.030275165725216734,
+     "aggregateMae": 42.72690977242804,
+     "aggregateRelativeBias": 0.030275165725252264,
+     "observedMean": 0.5285797245727559
+    },
+    "10-49": {
+     "cellMonths": 125426,
+     "skipped": 0,
+     "mae": 3.920246166199066,
+     "bias": 0.25269818461663,
+     "relativeBias": 0.0448380232229209,
+     "aggregateMae": 254.6383886773181,
+     "aggregateRelativeBias": 0.044838023222941656,
+     "observedMean": 5.635801189546027
+    },
+    "3-9": {
+     "cellMonths": 110370,
+     "skipped": 0,
+     "mae": 1.6571348166386919,
+     "bias": -0.00782502886417139,
+     "relativeBias": -0.005144377811430626,
+     "aggregateMae": 92.28088617085129,
+     "aggregateRelativeBias": -0.005144377811444244,
+     "observedMean": 1.5210836277974087
+    },
+    "50+": {
+     "cellMonths": 125573,
+     "skipped": 0,
+     "mae": 41.144857848819356,
+     "bias": 4.344722230009939,
+     "relativeBias": 0.02950910706004142,
+     "aggregateMae": 4702.670409721026,
+     "aggregateRelativeBias": 0.029509107060041815,
+     "observedMean": 147.23326670542235
+    }
+   },
+   "bySeason": {
+    "DJF": {
+     "cellMonths": 100202,
+     "skipped": 0,
+     "mae": 10.756835146261466,
+     "bias": 1.83923078472771,
+     "relativeBias": 0.044458077577223386,
+     "aggregateMae": 2462.3404787109585,
+     "aggregateRelativeBias": 0.044458077577228056,
+     "observedMean": 41.37000259475859
+    },
+    "JJA": {
+     "cellMonths": 127261,
+     "skipped": 0,
+     "mae": 16.277394510255426,
+     "bias": -4.163735045962815,
+     "relativeBias": -0.0764519441741328,
+     "aggregateMae": 8268.31479546043,
+     "aggregateRelativeBias": -0.07645194417413118,
+     "observedMean": 54.46212115259192
+    },
+    "MAM": {
+     "cellMonths": 123706,
+     "skipped": 0,
+     "mae": 10.997953888559696,
+     "bias": 3.6293229271999685,
+     "relativeBias": 0.12998682150512522,
+     "aggregateMae": 4264.413902316091,
+     "aggregateRelativeBias": 0.12998682150509913,
+     "observedMean": 27.920699076843484
+    },
+    "SON": {
+     "cellMonths": 121848,
+     "skipped": 0,
+     "mae": 11.831984779596823,
+     "bias": 3.6401944761990785,
+     "relativeBias": 0.09018616019102761,
+     "aggregateMae": 4700.280205585824,
+     "aggregateRelativeBias": 0.09018616019101199,
+     "observedMean": 40.36311634167159
+    }
+   }
+  },
+  "eqm_global": {
+   "overall": {
+    "cellMonths": 473017,
+    "skipped": 0,
+    "mae": 21.38436566665773,
+    "bias": 18.01811760029601,
+    "relativeBias": 0.4382305456812873,
+    "aggregateMae": 14890.664973792871,
+    "aggregateRelativeBias": 0.4382305456812866,
+    "observedMean": 41.11561318092161
+   },
+   "byViirsCountBin": {
+    "0": {
+     "cellMonths": 15216,
+     "skipped": 0,
+     "mae": 2.2430993690851735,
+     "bias": -2.2430993690851735,
+     "relativeBias": -1.0,
+     "aggregateMae": 57.36302521008403,
+     "aggregateRelativeBias": -1.0,
+     "observedMean": 2.2430993690851735
+    },
+    "1-2": {
+     "cellMonths": 96432,
+     "skipped": 0,
+     "mae": 1.3665795586527294,
+     "bias": 0.8562095569935291,
+     "relativeBias": 1.619830495173821,
+     "aggregateMae": 144.25666666666666,
+     "aggregateRelativeBias": 1.619830495173821,
+     "observedMean": 0.5285797245727559
+    },
+    "10-49": {
+     "cellMonths": 125426,
+     "skipped": 0,
+     "mae": 7.4817741138201015,
+     "bias": 6.310135059716486,
+     "relativeBias": 1.1196518201212093,
+     "aggregateMae": 1321.045,
+     "aggregateRelativeBias": 1.1196518201212093,
+     "observedMean": 5.635801189546027
+    },
+    "3-9": {
+     "cellMonths": 110370,
+     "skipped": 0,
+     "mae": 2.7602971822053095,
+     "bias": 1.8497961402555043,
+     "relativeBias": 1.2161041684039982,
+     "aggregateMae": 354.2866666666667,
+     "aggregateRelativeBias": 1.2161041684039982,
+     "observedMean": 1.5210836277974087
+    },
+    "50+": {
+     "cellMonths": 125573,
+     "skipped": 0,
+     "mae": 69.33172333658852,
+     "bias": 59.55757951899858,
+     "relativeBias": 0.4045117034464683,
+     "aggregateMae": 13141.201640459538,
+     "aggregateRelativeBias": 0.404511703446468,
+     "observedMean": 147.23326670542235
+    }
+   },
+   "bySeason": {
+    "DJF": {
+     "cellMonths": 100202,
+     "skipped": 0,
+     "mae": 20.59913096559269,
+     "bias": 19.04366371695115,
+     "relativeBias": 0.4603254175131211,
+     "aggregateMae": 12721.421278439608,
+     "aggregateRelativeBias": 0.4603254175131216,
+     "observedMean": 41.37000259475859
+    },
+    "JJA": {
+     "cellMonths": 127261,
+     "skipped": 0,
+     "mae": 21.314954818170516,
+     "bias": 13.536363492942597,
+     "relativeBias": 0.24854638795680445,
+     "aggregateMae": 14227.828038745938,
+     "aggregateRelativeBias": 0.24854638795680487,
+     "observedMean": 54.46212115259192
+    },
+    "MAM": {
+     "cellMonths": 123706,
+     "skipped": 0,
+     "mae": 20.228555719880813,
+     "bias": 18.414430073152538,
+     "relativeBias": 0.6595261108066189,
+     "aggregateMae": 15186.503244196056,
+     "aggregateRelativeBias": 0.659526110806619,
+     "observedMean": 27.920699076843484
+    },
+    "SON": {
+     "cellMonths": 121848,
+     "skipped": 0,
+     "mae": 23.276034030368397,
+     "bias": 21.45325405479352,
+     "relativeBias": 0.5315063850172739,
+     "aggregateMae": 17426.907333789884,
+     "aggregateRelativeBias": 0.5315063850172742,
+     "observedMean": 40.36311634167159
+    }
+   }
+  }
+ },
+ "domains": {
+  "africa_north_of_equator": {
+   "testCellMonths": 64131,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 215.4776785018166,
+     "bias": 215.21166050739893,
+     "relativeBias": 3.291820832072224,
+     "aggregateMae": 230028.98333333334,
+     "aggregateRelativeBias": 3.291820832072224,
+     "observedMean": 65.3776956542078
+    },
+    "ratio_global": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 15.836865567203976,
+     "bias": 3.5781973607954742,
+     "relativeBias": 0.05473116366353877,
+     "aggregateMae": 6762.323830265899,
+     "aggregateRelativeBias": 0.05473116366354059,
+     "observedMean": 65.3776956542078
+    },
+    "ratio_domain": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 18.06584781410596,
+     "bias": 11.733704881398452,
+     "relativeBias": 0.17947565701091295,
+     "aggregateMae": 12558.034121051813,
+     "aggregateRelativeBias": 0.17947565701093526,
+     "observedMean": 65.3776956542078
+    },
+    "affine_global": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 15.938499200803967,
+     "bias": 3.7613985562543837,
+     "relativeBias": 0.057533360859779635,
+     "aggregateMae": 6891.184270859059,
+     "aggregateRelativeBias": 0.05753336085978263,
+     "observedMean": 65.3776956542078
+    },
+    "eqm_global": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 30.755110956166998,
+     "bias": 28.82693273211189,
+     "relativeBias": 0.4409291646585673,
+     "aggregateMae": 30811.6670507178,
+     "aggregateRelativeBias": 0.4409291646585674,
+     "observedMean": 65.3776956542078
+    }
+   },
+   "support": {
+    "positiveRows": 62660,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.9265034518781005,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 64131,
+     "skipped": 0,
+     "mae": 15.769758786205811,
+     "bias": 0.2842165897819344,
+     "relativeBias": 0.004347302041436235,
+     "aggregateMae": 6526.703045775356,
+     "aggregateRelativeBias": 0.0043473020414410745,
+     "observedMean": 65.3776956542078
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.926814884512166,
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "validated": true,
+   "reason": "meets every threshold"
+  },
+  "africa_south_of_equator": {
+   "testCellMonths": 45898,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 403.09649657937166,
+     "bias": 402.95518323238485,
+     "relativeBias": 2.924080740438472,
+     "aggregateMae": 308247.2833333333,
+     "aggregateRelativeBias": 2.924080740438472,
+     "observedMean": 137.80576495707874
+    },
+    "ratio_global": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 36.47634240322918,
+     "bias": -4.91172150459675,
+     "relativeBias": -0.03564235143665118,
+     "aggregateMae": 18291.677544359798,
+     "aggregateRelativeBias": -0.03564235143664844,
+     "observedMean": 137.80576495707874
+    },
+    "ratio_domain": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 37.01644725390387,
+     "bias": 5.645779076288493,
+     "relativeBias": 0.040969106612099564,
+     "aggregateMae": 19633.29858707646,
+     "aggregateRelativeBias": 0.04096910661209887,
+     "observedMean": 137.80576495707874
+    },
+    "affine_global": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 36.54636518151638,
+     "bias": -4.74814857117305,
+     "relativeBias": -0.03445536964764803,
+     "aggregateMae": 18352.577582296715,
+     "aggregateRelativeBias": -0.034455369647649156,
+     "observedMean": 137.80576495707874
+    },
+    "eqm_global": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 53.48724965524783,
+     "bias": 39.017635419830135,
+     "relativeBias": 0.2831350011516764,
+     "aggregateMae": 35893.189473594175,
+     "aggregateRelativeBias": 0.2831350011516765,
+     "observedMean": 137.80576495707874
+    }
+   },
+   "support": {
+    "positiveRows": 45334,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.9095096516274316,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 45898,
+     "skipped": 0,
+     "mae": 37.13078236954057,
+     "bias": -11.075770042679157,
+     "relativeBias": -0.08037232728346914,
+     "aggregateMae": 18811.71354825831,
+     "aggregateRelativeBias": -0.08037232728345535,
+     "observedMean": 137.80576495707874
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.9078861198630405,
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "validated": true,
+   "reason": "meets every threshold"
+  },
+  "australia": {
+   "testCellMonths": 24159,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 160.38693654538682,
+     "bias": 160.06689018585206,
+     "relativeBias": 3.4762647460439746,
+     "aggregateMae": 64450.933333333334,
+     "aggregateRelativeBias": 3.4762647460439746,
+     "observedMean": 46.045655863239375
+    },
+    "ratio_global": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 13.004083146870155,
+     "bias": 4.607280045795151,
+     "relativeBias": 0.1000589514780564,
+     "aggregateMae": 2430.583297687068,
+     "aggregateRelativeBias": 0.10005895147806045,
+     "observedMean": 46.045655863239375
+    },
+    "ratio_domain": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 11.780977980983273,
+     "bias": -2.0932443689184606,
+     "relativeBias": -0.04546019227385152,
+     "aggregateMae": 1698.9001485933552,
+     "aggregateRelativeBias": -0.045460192273851285,
+     "observedMean": 46.045655863239375
+    },
+    "affine_global": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 13.055781718850605,
+     "bias": 4.7961000343472335,
+     "relativeBias": 0.10415966380394655,
+     "aggregateMae": 2482.672754072182,
+     "aggregateRelativeBias": 0.10415966380395036,
+     "observedMean": 46.045655863239375
+    },
+    "eqm_global": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 28.493005856335724,
+     "bias": 26.834243820938894,
+     "relativeBias": 0.5827747117043903,
+     "aggregateMae": 10804.808274501043,
+     "aggregateRelativeBias": 0.5827747117043902,
+     "observedMean": 46.045655863239375
+    }
+   },
+   "support": {
+    "positiveRows": 23525,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.9189205590743968,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 24159,
+     "skipped": 0,
+     "mae": 13.101952046305422,
+     "bias": 4.857725013568083,
+     "relativeBias": 0.10549800893261367,
+     "aggregateMae": 2499.6127745585527,
+     "aggregateRelativeBias": 0.10549800893261639,
+     "observedMean": 46.045655863239375
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.9183103541440996,
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "validated": true,
+   "reason": "meets every threshold"
+  },
+  "boreal_eurasia": {
+   "testCellMonths": 42595,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 73.23432327737997,
+     "bias": 72.24387838948233,
+     "relativeBias": 3.12897816995285,
+     "aggregateMae": 51287.13333333333,
+     "aggregateRelativeBias": 3.12897816995285,
+     "observedMean": 23.08864890245334
+    },
+    "ratio_global": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 8.124864536629232,
+     "bias": 0.33967939452777096,
+     "relativeBias": 0.014711964999029352,
+     "aggregateMae": 2440.1716921810375,
+     "aggregateRelativeBias": 0.014711964999022414,
+     "observedMean": 23.08864890245334
+    },
+    "ratio_domain": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 7.898414697178289,
+     "bias": -3.635956069435083,
+     "relativeBias": -0.1574780787215633,
+     "aggregateMae": 3135.620022043484,
+     "aggregateRelativeBias": -0.157478078721486,
+     "observedMean": 23.08864890245334
+    },
+    "affine_global": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 8.176973094195526,
+     "bias": 0.5368570182061678,
+     "relativeBias": 0.02325198934222274,
+     "aggregateMae": 2472.819697636284,
+     "aggregateRelativeBias": 0.02325198934222414,
+     "observedMean": 23.08864890245334
+    },
+    "eqm_global": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 13.392018681410107,
+     "bias": 10.01592548633094,
+     "relativeBias": 0.4338030141411468,
+     "aggregateMae": 7544.225831341228,
+     "aggregateRelativeBias": 0.4338030141411468,
+     "observedMean": 23.08864890245334
+    }
+   },
+   "support": {
+    "positiveRows": 40535,
+    "aboveTrainMax": 2,
+    "share": 4.934007647711854e-05
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.8890566038842777,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 42595,
+     "skipped": 0,
+     "mae": 8.21738160883582,
+     "bias": 0.6156973356341552,
+     "relativeBias": 0.026666668033950347,
+     "aggregateMae": 2528.4431208447886,
+     "aggregateRelativeBias": 0.026666668033958472,
+     "observedMean": 23.08864890245334
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.8877933018140697,
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "validated": true,
+   "reason": "meets every threshold"
+  },
+  "europe_mediterranean": {
+   "testCellMonths": 32542,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 17.942228504701617,
+     "bias": 17.386392969086103,
+     "relativeBias": 2.3686914146721314,
+     "aggregateMae": 9429.8,
+     "aggregateRelativeBias": 2.3686914146721314,
+     "observedMean": 7.34008358429107
+    },
+    "ratio_global": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 3.2335561680778926,
+     "bias": -1.2634586717243492,
+     "relativeBias": -0.17213137387540778,
+     "aggregateMae": 758.4730801856931,
+     "aggregateRelativeBias": -0.17213137387540728,
+     "observedMean": 7.34008358429107
+    },
+    "ratio_domain": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 3.3465352378633497,
+     "bias": 0.6270907455425072,
+     "relativeBias": 0.08543373360006142,
+     "aggregateMae": 631.0827265657862,
+     "aggregateRelativeBias": 0.08543373360005864,
+     "observedMean": 7.34008358429107
+    },
+    "affine_global": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 3.2772431928340495,
+     "bias": -1.0609542786841704,
+     "relativeBias": -0.1445425336783329,
+     "aggregateMae": 701.232116387256,
+     "aggregateRelativeBias": -0.14454253367833203,
+     "observedMean": 7.34008358429107
+    },
+    "eqm_global": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 5.141553845702837,
+     "bias": 3.7185067028182535,
+     "relativeBias": 0.5066027736763709,
+     "aggregateMae": 2041.66075205186,
+     "aggregateRelativeBias": 0.5066027736763709,
+     "observedMean": 7.34008358429107
+    }
+   },
+   "support": {
+    "positiveRows": 31076,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.8197795682275162,
+    "maeReduction": true,
+    "aggregateBias": false
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 32542,
+     "skipped": 0,
+     "mae": 3.234381635555993,
+     "bias": -1.2674691319788223,
+     "relativeBias": -0.17267775188437975,
+     "aggregateMae": 760.0631144734148,
+     "aggregateRelativeBias": -0.17267775188436157,
+     "observedMean": 7.34008358429107
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.8197335612625573,
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "validated": false,
+   "reason": "fails: aggregate bias, transfer"
+  },
+  "maritime_southeast_asia": {
+   "testCellMonths": 20843,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 33.269442978457995,
+     "bias": 32.956244302643576,
+     "relativeBias": 4.099322058174093,
+     "aggregateMae": 11448.45,
+     "aggregateRelativeBias": 4.099322058174093,
+     "observedMean": 8.03943770090678
+    },
+    "ratio_global": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 4.110484348568468,
+     "bias": 2.035405839080343,
+     "relativeBias": 0.253177636895024,
+     "aggregateMae": 796.5202169705008,
+     "aggregateRelativeBias": 0.253177636895035,
+     "observedMean": 8.03943770090678
+    },
+    "ratio_domain": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 3.5276042241233037,
+     "bias": -1.483310237661451,
+     "relativeBias": -0.18450422689315032,
+     "aggregateMae": 566.494909481756,
+     "aggregateRelativeBias": -0.18450422689314105,
+     "observedMean": 8.03943770090678
+    },
+    "affine_global": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 4.20702118415902,
+     "bias": 2.2366828259107256,
+     "relativeBias": 0.27821383896767393,
+     "aggregateMae": 858.9816259386572,
+     "aggregateRelativeBias": 0.27821383896767693,
+     "observedMean": 8.03943770090678
+    },
+    "eqm_global": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 9.690472930858142,
+     "bias": 9.08604938338417,
+     "relativeBias": 1.1301846872150452,
+     "aggregateMae": 3156.342121631271,
+     "aggregateRelativeBias": 1.1301846872150452,
+     "observedMean": 8.03943770090678
+    }
+   },
+   "support": {
+    "positiveRows": 20244,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.8764486573691657,
+    "maeReduction": true,
+    "aggregateBias": false
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 20843,
+     "skipped": 0,
+     "mae": 4.180288457970859,
+     "bias": 2.1544678953702894,
+     "relativeBias": 0.2679873861236942,
+     "aggregateMae": 833.1354134857318,
+     "aggregateRelativeBias": 0.2679873861236903,
+     "observedMean": 8.03943770090678
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.8743505125505827,
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "validated": false,
+   "reason": "fails: aggregate bias, transfer"
+  },
+  "north_america": {
+   "testCellMonths": 70778,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 83.43584164570912,
+     "bias": 82.98329989544774,
+     "relativeBias": 3.5945707427712517,
+     "aggregateMae": 97889.86666666667,
+     "aggregateRelativeBias": 3.5945707427712517,
+     "observedMean": 23.0857328548419
+    },
+    "ratio_global": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 9.917367429907882,
+     "bias": 2.981132170220578,
+     "relativeBias": 0.12913309657377106,
+     "aggregateMae": 5915.609497368626,
+     "aggregateRelativeBias": 0.1291330965737894,
+     "observedMean": 23.0857328548419
+    },
+    "ratio_domain": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 9.082092375078316,
+     "bias": -4.728387783414072,
+     "relativeBias": -0.20481861299986243,
+     "aggregateMae": 6096.202613782847,
+     "aggregateRelativeBias": -0.20481861299993334,
+     "observedMean": 23.0857328548419
+    },
+    "affine_global": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 9.950444956568964,
+     "bias": 3.177499794080916,
+     "relativeBias": 0.13763911304268953,
+     "aggregateMae": 5908.305523867158,
+     "aggregateRelativeBias": 0.13763911304266868,
+     "observedMean": 23.0857328548419
+    },
+    "eqm_global": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 16.08153669186608,
+     "bias": 14.276290409677436,
+     "relativeBias": 0.6184031713198652,
+     "aggregateMae": 16840.788043602497,
+     "aggregateRelativeBias": 0.6184031713198653,
+     "observedMean": 23.0857328548419
+    }
+   },
+   "support": {
+    "positiveRows": 68434,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.881137803199497,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 70778,
+     "skipped": 0,
+     "mae": 10.136767142570845,
+     "bias": 3.5009710600736774,
+     "relativeBias": 0.15165085215561608,
+     "aggregateMae": 6162.405162949866,
+     "aggregateRelativeBias": 0.15165085215564486,
+     "observedMean": 23.0857328548419
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.8785082412710083,
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "validated": false,
+   "reason": "fails: transfer"
+  },
+  "other": {
+   "testCellMonths": 51361,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 51361,
+     "skipped": 0,
+     "mae": 28.21668191818695,
+     "bias": 27.052724830124024,
+     "relativeBias": 3.186428745063685,
+     "aggregateMae": 23157.583333333332,
+     "aggregateRelativeBias": 3.186428745063685,
+     "observedMean": 8.489982671676954
+    },
+    "ratio_global": {
+     "cellMonths": 51361,
+     "skipped": 0,
+     "mae": 4.95747653994082,
+     "bias": 0.24477180898189776,
+     "relativeBias": 0.02883066060882196,
+     "aggregateMae": 1170.9936571833684,
+     "aggregateRelativeBias": 0.028830660608815638,
+     "observedMean": 8.489982671676954
+    },
+    "ratio_domain": {
+     "cellMonths": 0,
+     "skipped": 51361,
+     "mae": null,
+     "bias": null,
+     "relativeBias": null,
+     "aggregateMae": null,
+     "aggregateRelativeBias": null,
+     "observedMean": null
+    },
+    "affine_global": {
+     "cellMonths": 51361,
+     "skipped": 0,
+     "mae": 5.008550530703305,
+     "bias": 0.4464601874309614,
+     "relativeBias": 0.05258670184573839,
+     "aggregateMae": 1180.722961338307,
+     "aggregateRelativeBias": 0.05258670184573117,
+     "observedMean": 8.489982671676954
+    },
+    "eqm_global": {
+     "cellMonths": 51361,
+     "skipped": 0,
+     "mae": 8.556650091359208,
+     "bias": 6.528068875845765,
+     "relativeBias": 0.7689142755996146,
+     "aggregateMae": 5600.769092205239,
+     "aggregateRelativeBias": 0.7689142755996146,
+     "observedMean": 8.489982671676954
+    }
+   },
+   "support": {
+    "positiveRows": 49134,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.8243068921315834,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": null,
+   "validated": false,
+   "reason": "domain 'other' is never validated"
+  },
+  "south_america": {
+   "testCellMonths": 77625,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 111.35908534621578,
+     "bias": 110.88099194847021,
+     "relativeBias": 2.7839252948271307,
+     "aggregateMae": 143452.28333333333,
+     "aggregateRelativeBias": 2.7839252948271307,
+     "observedMean": 39.829011272141706
+    },
+    "ratio_global": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 10.478003569986324,
+     "bias": -2.79145931173971,
+     "relativeBias": -0.0700860810394304,
+     "aggregateMae": 4925.513906679736,
+     "aggregateRelativeBias": -0.07008608103941913,
+     "observedMean": 39.829011272141706
+    },
+    "ratio_domain": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 10.470246496265446,
+     "bias": -2.3866511693325014,
+     "relativeBias": -0.05992243073836578,
+     "aggregateMae": 4674.774276622096,
+     "aggregateRelativeBias": -0.05992243073836363,
+     "observedMean": 39.829011272141706
+    },
+    "affine_global": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 10.495536722589188,
+     "bias": -2.598459560056156,
+     "relativeBias": -0.06524037321191656,
+     "aggregateMae": 4794.300713046846,
+     "aggregateRelativeBias": -0.06524037321191975,
+     "observedMean": 39.829011272141706
+    },
+    "eqm_global": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 17.477895799235306,
+     "bias": 14.448145268719328,
+     "relativeBias": 0.3627543041427454,
+     "aggregateMae": 19033.753101906095,
+     "aggregateRelativeBias": 0.3627543041427458,
+     "observedMean": 39.829011272141706
+    }
+   },
+   "support": {
+    "positiveRows": 75908,
+    "aboveTrainMax": 2,
+    "share": 2.634768403857301e-05
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.9059079594861059,
+    "maeReduction": true,
+    "aggregateBias": true
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 77625,
+     "skipped": 0,
+     "mae": 10.478839337144352,
+     "bias": -2.814424785900738,
+     "relativeBias": -0.0706626827030798,
+     "aggregateMae": 4939.8417605834875,
+     "aggregateRelativeBias": -0.07066268270307745,
+     "observedMean": 39.829011272141706
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.9059004543314485,
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "validated": true,
+   "reason": "meets every threshold"
+  },
+  "south_and_mainland_southeast_asia": {
+   "testCellMonths": 43085,
+   "candidates": {
+    "raw_alignment": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 120.77254264825345,
+     "bias": 120.29228269699432,
+     "relativeBias": 4.091926353437182,
+     "aggregateMae": 86379.88333333333,
+     "aggregateRelativeBias": 4.091926353437182,
+     "observedMean": 29.397470117210165
+    },
+    "ratio_global": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 14.274917251486173,
+     "bias": 7.389351456140529,
+     "relativeBias": 0.2513601145499449,
+     "aggregateMae": 5496.190144757711,
+     "aggregateRelativeBias": 0.25136011454997514,
+     "observedMean": 29.397470117210165
+    },
+    "ratio_domain": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 11.505423227676012,
+     "bias": -0.07572297952792573,
+     "relativeBias": -0.0025758332001363346,
+     "aggregateMae": 1774.0271224300457,
+     "aggregateRelativeBias": -0.002575833200134479,
+     "observedMean": 29.397470117210165
+    },
+    "affine_global": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 14.337075939638408,
+     "bias": 7.582428179111968,
+     "relativeBias": 0.25792791518726593,
+     "aggregateMae": 5595.576209740795,
+     "aggregateRelativeBias": 0.257927915187252,
+     "observedMean": 29.397470117210165
+    },
+    "eqm_global": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 26.11919186820137,
+     "bias": 23.924028311074622,
+     "relativeBias": 0.8138124884790264,
+     "aggregateMae": 17179.44599637751,
+     "aggregateRelativeBias": 0.8138124884790269,
+     "observedMean": 29.397470117210165
+    }
+   },
+   "support": {
+    "positiveRows": 40951,
+    "aboveTrainMax": 0,
+    "share": 0.0
+   },
+   "selectedChecks": {
+    "enoughCellMonths": true,
+    "reduction": 0.8818032895683793,
+    "maeReduction": true,
+    "aggregateBias": false
+   },
+   "transfer": {
+    "modelFamily": "ratio_global without the domain",
+    "score": {
+     "cellMonths": 43085,
+     "skipped": 0,
+     "mae": 14.626797570443243,
+     "bias": 8.030048099823233,
+     "relativeBias": 0.27315439280342024,
+     "aggregateMae": 5939.914071729001,
+     "aggregateRelativeBias": 0.2731543928034476,
+     "observedMean": 29.397470117210165
+    },
+    "checks": {
+     "enoughCellMonths": true,
+     "reduction": 0.8788897107760382,
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "validated": false,
+   "reason": "fails: aggregate bias, transfer"
+  }
+ },
+ "decisions": {
+  "raw_alignment": {
+   "decision": "baseline",
+   "reason": "comparison baseline, not a method"
+  },
+  "ratio_global": {
+   "decision": "selected",
+   "reason": "lowest validation MAE among additive candidates",
+   "validationMae": 12.255039495076236
+  },
+  "ratio_domain": {
+   "decision": "not-selected",
+   "reason": "higher validation MAE than the selected additive candidate",
+   "validationMae": 12.788091058003118
+  },
+  "affine_global": {
+   "decision": "rejected-for-publication",
+   "reason": "not additive: cannot be applied to clipped polygons or allocated to days; reported for comparison",
+   "validationMae": 12.312629288258076
+  },
+  "eqm_global": {
+   "decision": "rejected-for-publication",
+   "reason": "not additive: cannot be applied to clipped polygons or allocated to days; reported for comparison",
+   "validationMae": 21.119760843366763
+  }
+ },
+ "validatedDomains": [
+  "africa_north_of_equator",
+  "africa_south_of_equator",
+  "australia",
+  "boreal_eurasia",
+  "south_america"
+ ],
+ "unvalidatedDomains": [
+  "europe_mediterranean",
+  "maritime_southeast_asia",
+  "north_america",
+  "other",
+  "south_and_mainland_southeast_asia"
+ ],
+ "trainRows": 571940,
+ "validationRows": 190747,
+ "testRows": 473017
+}

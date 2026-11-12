@@ -2,7 +2,7 @@
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Bagas.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; menunggu review Bagas dan integrasi worker sebelum dicentang. Estimasi tervalidasi hanya untuk lima domain; Asia Tenggara maritim (Kalteng/Papua) ditolak oleh evaluasi. Bukti: [catatan harmonisasi](../../docs/data/harmonization.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
@@ -18,6 +18,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [ ] **Selesai dan direview** — estimasi 6 poin.
 
+*Implementasi selesai, menunggu review Bagas:* konfigurasi beku `harmonization-config-1` (satelit, sel 1°, bulan UTC, split latih 2013–2018 / validasi 2019–2020 / uji 2021–2025), 156 bulan berpasangan, manifest pasangan dengan checksum arsip, aturan overlap dan pengaruh lintasan, tes kebocoran split. Titik asli tidak diubah. Lihat [harmonization.md](../../docs/data/harmonization.md).
+
 **Pekerjaan:** Bekukan konfigurasi satelit, resolusi/agregasi, pasangan ruang/waktu, dan split latih/uji. Gunakan setara MODIS sebagai hipotesis awal, bukan ground truth atau pengali resolusi tetap.
 
 **Kriteria selesai:** Manifest menjelaskan pairing, domain, revisi arsip, aturan overlap dan pengaruh jumlah lintasan; data uji tidak dipakai melatih/tuning. Titik asli tetap terpelihara.
@@ -27,6 +29,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 ### R2-P1-N2 — Evaluasi count mentah, baseline, dan EQM
 
 - [ ] **Selesai dan direview** — estimasi 6 poin.
+
+*Implementasi selesai, menunggu review Bagas:* raw_alignment, regresi (rasio global/domain, affine) dan EQM dievaluasi pada sampel yang sama dengan MAE, bias, dukungan, musim, kelompok hitungan dan domain. Terpilih rasio global (MAE uji 12,53 melawan 130,64 untuk VIIRS apa adanya). Estimasi hanya terbit di lima domain tervalidasi; **Asia Tenggara maritim (Kalteng/Papua), Asia Selatan/daratan, Eropa dan Amerika Utara ditolak dan estimasinya `null`**. Keputusan tercatat di `pipeline/models/evaluation-*.json`.
 
 **Pekerjaan:** Bandingkan count yang disejajarkan tanpa koreksi, regresi sederhana, dan EQM pada sampel yang sama. Laporkan MAE, bias, dukungan distribusi, musim serta domain wilayah.
 
@@ -38,6 +42,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [ ] **Selesai dan direview** — estimasi 5 poin.
 
+*Implementasi selesai, menunggu review Bagas:* referensi median Y−10..Y−1 pada rentang bulan-hari yang sama, minimum tahun valid 4 (dipilih lewat backtest MODIS 2000–2025 dengan aturan beku), tahun target/mendatang tidak masuk, tahun tanpa data hilang (bukan nol), 29 Februari diskalakan, baseline nol/datar tanpa skor, `insufficient_history` eksplisit. Teruji di `test_harmonization.py`.
+
 **Pekerjaan:** Implementasikan bulan yang sama pada Y-10 sampai Y-1, panjang dapat diubah. Bekukan versi minimum kelengkapan, statistik pembanding, dan definisi score; tangani rentang harian, musim, kabisat dan periode berjalan.
 
 **Kriteria selesai:** Target/tahun masa depan tidak masuk acuan. Data awal/missing tidak diisi nol; insufficient_history ditampilkan. Baseline nol/variasi nol tidak menghasilkan infinity atau label normal palsu.
@@ -47,6 +53,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 ### R2-P1-N4 — Kalender, detail dan perbandingan konsisten
 
 - [ ] **Selesai dan direview** — estimasi 3 poin.
+
+*Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan research-2 bulanan (semua bulan termasuk `no_data`), detail harian aditif, raw per sumber, ringkasan dua periode dengan laju per hari dan persen perubahan `null` bila pembanding nol, ekspor CSV (`research_export.py`), serta dua contoh nyata lolos kontrak di `docs/data/examples/`. Integrasi ke `research_worker.py` Bagas belum dipasang (lihat handoff di dokumen).
 
 **Pekerjaan:** Hasilkan research-2 bulanan, detail harian, raw per sumber, ringkasan dua periode serta data ekspor untuk polygon yang sama. Tetapkan aturan agregasi sehingga count antarlevel tetap dapat dijelaskan.
 

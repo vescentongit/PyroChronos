@@ -17,6 +17,15 @@ const run = spawnSync(
     encoding: "utf8",
   },
 );
+const harmonized = spawnSync(
+  python,
+  ["-m", "unittest", "test_harmonization.DumpTests.test_dump_outputs_for_schema_validation"],
+  {
+    cwd: new URL("../pipeline/", import.meta.url),
+    env: { ...process.env, ADAPTER_OUT: out },
+    encoding: "utf8",
+  },
+);
 const read = (name) => JSON.parse(readFileSync(path.join(out, name), "utf8"));
 
 test("python adapter produced the synthetic fixture outputs", () => {
@@ -40,5 +49,24 @@ test("area, daily page and detections page pass the schema", () => {
   schemas["daily-page"].parse(read("daily-page.json"));
   const page = schemas["detections-page"].parse(read("detections-page.json"));
   assert(page.observations.length <= 1000);
+});
+test("harmonized producer output passes the research-2 schema and respects validation", () => {
+  assert.equal(harmonized.status, 0, harmonized.stderr);
+  const result = schemas.result.parse(read("result-harmonized.json"));
+  assert.equal(result.method.validation, "validated");
+  assert(result.months.every((m) => m.metric.harmonizedCount !== null));
+  assert(result.months.some((m) => m.anomaly.status === "assessed"));
+  const short = schemas.result.parse(read("result-short-history.json"));
+  assert.equal(short.months[0].anomaly.status, "insufficient_history");
+  assert.equal(short.months[0].anomaly.baselineValue, null);
+  const unsupported = schemas.result.parse(read("result-unvalidated-domain.json"));
+  assert.equal(unsupported.method.validation, "unsupported");
+  assert.equal(unsupported.primary.metric.harmonizedCount, null);
+  assert.notEqual(unsupported.primary.metric.status, "available");
+  const uncovered = schemas.result.parse(read("result-uncovered.json"));
+  assert.equal(uncovered.months[0].metric.status, "no_data");
+  assert.equal(uncovered.months[0].metric.harmonizedCount, null);
+  const page = schemas["daily-page"].parse(read("daily-page-harmonized.json"));
+  assert(page.days.every((d) => d.metric.harmonizedCount !== null));
 });
 test("cleanup", () => rmSync(out, { recursive: true, force: true }));
