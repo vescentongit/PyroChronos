@@ -63,6 +63,8 @@ beforeEach(async () => {
 	await applyResearchMigrations(db);
 	database = pgliteDatabase(db);
 	({ request, fixture } = publicationFixture());
+	fixture.attempt.leaseToken = request.claim.leaseToken =
+		"abcdefab-abcd-4abc-8abc-abcdefabcdef";
 	await seedPublication(database, fixture);
 	storage = new storageModule.FileResearchArtifactStorage(
 		path.join(root, String(sequence)),
@@ -346,6 +348,55 @@ test("the claim lease token is automatically rejected from metadata and artifact
 	await fails(() => publish(), "UNSAFE_METADATA");
 	assert.equal((await rows("AnalysisResult")).length, 0);
 	assert.ok(!JSON.stringify(events).includes(request.claim.leaseToken));
+});
+
+test("mixed-case lease tokens cannot leak into manifests or artifacts", async () => {
+	const token = "abcdefab-abcd-4abc-8abc-abcdefabcdef";
+	const snapshot = request.producer.manifest.sourceSnapshots[0];
+	const original = snapshot.archiveRevision;
+	for (const claim of [token, token.toUpperCase()]) {
+		request.claim.leaseToken = claim;
+		const variant = "aBcDeFaB-AbCd-4aBc-8AbC-aBcDeFaBcDeF";
+		snapshot.archiveRevision = variant;
+		await fails(() => publish(), "UNSAFE_METADATA");
+		snapshot.archiveRevision = original;
+		request.artifacts[0] = artifact(
+			"observations",
+			Buffer.from(JSON.stringify({ lease: variant })),
+		);
+		await fails(() => publish(), "UNSAFE_METADATA");
+		request.artifacts[0] = artifact();
+	}
+	assert.equal((await rows("AnalysisResult")).length, 0);
+	assert.equal((await rows("AnalysisManifest")).length, 0);
+	assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+	assert.deepEqual(
+		events,
+		Array(4).fill({ status: "failed", code: "UNSAFE_METADATA" }),
+	);
+	await publish();
+});
+
+test("DSN passwords cannot be published as archive revisions", async () => {
+	const previous = process.env.DATABASE_URL;
+	const password = "publication/DSN-password-sentinel";
+	process.env.DATABASE_URL = `postgresql://publication-user:${encodeURIComponent(password)}@127.0.0.1/research_worker_test`;
+	try {
+		for (const variant of [password, encodeURIComponent(password)]) {
+			request.producer.manifest.sourceSnapshots[0].archiveRevision = variant;
+			await fails(() => publish(), "UNSAFE_METADATA");
+		}
+		assert.equal((await rows("AnalysisResult")).length, 0);
+		assert.equal((await rows("AnalysisManifest")).length, 0);
+		assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+		assert.deepEqual(
+			events,
+			Array(2).fill({ status: "failed", code: "UNSAFE_METADATA" }),
+		);
+	} finally {
+		if (previous === undefined) delete process.env.DATABASE_URL;
+		else process.env.DATABASE_URL = previous;
+	}
 });
 
 test("untrusted dependency error codes cannot leak through returned errors or logs", async () => {

@@ -97,7 +97,7 @@ native(
 		assert.equal(Number(first.reused) + Number(second.reused), 1);
 		assert.equal((await client.analysisResult.findMany()).length, 1);
 		assert.equal(
-			(await client.analysisJob.findUnique({ where: { id: fixture.job.id } }))
+			(await client.p1AnalysisJob.findUnique({ where: { id: fixture.job.id } }))
 				.status,
 			"succeeded",
 		);
@@ -133,7 +133,7 @@ native(
 		assert.equal((await client.analysisManifest.findMany()).length, 0);
 		assert.equal(
 			(
-				await client.analysisJobAttempt.findUnique({
+				await client.p1AnalysisJobAttempt.findUnique({
 					where: { id: fixture.attempt.id },
 				})
 			).status,

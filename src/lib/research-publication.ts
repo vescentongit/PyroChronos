@@ -45,7 +45,7 @@ const requestSchema = z
 				jobId: z.string().min(1).max(200),
 				workspaceId: z.string().min(1).max(200),
 				attemptId: z.string().min(1).max(200),
-				leaseToken: z.string().uuid(),
+				leaseToken: z.string().uuid().toLowerCase(),
 			})
 			.strict(),
 		producer: z.unknown(),

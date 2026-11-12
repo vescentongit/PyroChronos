@@ -66,6 +66,27 @@ export function publicationChecksum(bytes: Uint8Array | string): string {
 	return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 }
 
+const uuidPattern = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
+
+function decodedCredential(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
+function dsnCredentials(value: string): string[] {
+	try {
+		const url = new URL(value);
+		return [url.username, url.password]
+			.filter((credential) => credential.length > 0)
+			.flatMap((credential) => [credential, decodedCredential(credential)]);
+	} catch {
+		return [];
+	}
+}
+
 export function publicationSecrets(
 	extra: readonly string[] = [],
 ): readonly string[] {
@@ -75,13 +96,18 @@ export function publicationSecrets(
 		process.env.COORDINATOR_TOKEN,
 		process.env.AUTH_SECRET,
 		process.env.AWS_SECRET_ACCESS_KEY,
+		...Object.entries(process.env)
+			.filter(([name]) => /(?:^|_)(?:URL|DSN|CONNECTION_STRING)$/i.test(name))
+			.flatMap(([, value]) => (value ? dsnCredentials(value) : [])),
 		...extra,
 	];
 	return [
 		...new Set(
 			configured
 				.filter((v): v is string => typeof v === "string" && v.length > 0)
-				.flatMap((v) => [v, encodeURIComponent(v)]),
+				.flatMap((value) => [value, ...dsnCredentials(value)])
+				.map((value) => (uuidPattern.test(value) ? value.toLowerCase() : value))
+				.flatMap((value) => [value, encodeURIComponent(value)]),
 		),
 	];
 }
@@ -92,9 +118,17 @@ export function assertPublicationSafe(
 ): void {
 	const bytes =
 		typeof value === "string" ? Buffer.from(value, "utf8") : Buffer.from(value);
-	if (secrets.some((secret) => bytes.includes(Buffer.from(secret))))
-		throw new PublicationFailure("UNSAFE_METADATA");
 	const text = bytes.toString("utf8");
+	const lowercaseText = text.toLowerCase();
+	if (
+		secrets.some(
+			(secret) =>
+				bytes.includes(Buffer.from(secret)) ||
+				(uuidPattern.test(secret) &&
+					lowercaseText.includes(secret.toLowerCase())),
+		)
+	)
+		throw new PublicationFailure("UNSAFE_METADATA");
 	if (
 		/(?:postgres(?:ql)?:\/\/|https?:\/\/[^\s/]+:[^\s/]+@|[?&](?:x-amz-signature|access_token|api_key)=|\/api\/area\/csv\/)/i.test(
 			text,
