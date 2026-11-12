@@ -118,6 +118,13 @@ model Membership {
   role        String
   active      Boolean @default(true)
   revision    Int     @default(1)
+  inspectionAssignments InspectionAssignment[] @relation("InspectionAssignee")
+  assignedInspections InspectionAssignment[] @relation("InspectionAssigner")
+  recordedInspections P1InspectionReport[] @relation("InspectionRecorder")
+  performedInspections P1InspectionReport[] @relation("InspectionInspector")
+  inspectionCorrections P1InspectionReportRevision[] @relation("InspectionCorrector")
+  revisedInspections P1InspectionReportRevision[] @relation("InspectionRevisionInspector")
+  inspectionAuditEvents InspectionAuditEvent[] @relation("InspectionAuditActor")
   @@id([workspaceId, userId])
   @@index([userId, active])
 }
@@ -353,10 +360,122 @@ model MonitoringLocation {
   createdAt         DateTime                     @default(now()) @db.Timestamptz(3)
   initialAnalysis   AnalysisResult               @relation(fields: [initialAnalysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
   analyses          MonitoringLocationAnalysis[]
+  assignments       InspectionAssignment[]
 
   @@unique([id, workspaceId])
   @@unique([workspaceId, createdById, requestId])
   @@index([workspaceId, createdAt, id])
+}
+
+enum P1InspectionAssignmentStatus {
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+enum P1InspectionOutcome {
+  fire_or_smoke_found
+  no_sign_at_inspection
+  inconclusive
+}
+
+enum P1InspectionAuditAction {
+  assignment_created
+  assignment_status_changed
+  report_created
+  report_corrected
+}
+
+model InspectionAssignment {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  requestId String @db.Uuid
+  assigneeUserId String
+  assignee Json @db.JsonB
+  assignedById String
+  assignedBy Json @db.JsonB
+  status P1InspectionAssignmentStatus @default(assigned)
+  revision Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+  location MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_location_fkey")
+  assigneeMembership Membership @relation("InspectionAssignee", fields: [workspaceId, assigneeUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_assignee_fkey")
+  assignerMembership Membership @relation("InspectionAssigner", fields: [workspaceId, assignedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_assigner_fkey")
+  reports P1InspectionReport[]
+  auditEvents InspectionAuditEvent[]
+  @@unique([id, locationId, workspaceId], map: "InspectionAssignment_scope_key")
+  @@unique([locationId, assignedById, requestId], map: "InspectionAssignment_request_key")
+  @@index([workspaceId, locationId, createdAt, id], map: "InspectionAssignment_list_idx")
+}
+
+model P1InspectionReport {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  assignmentId String
+  requestId String @db.Uuid
+  inspectorUserId String
+  inspector Json @db.JsonB
+  observedAt DateTime @db.Timestamptz(3)
+  outcome P1InspectionOutcome
+  notes String @db.Text
+  recordedById String
+  recordedBy Json @db.JsonB
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  assignment InspectionAssignment @relation(fields: [assignmentId, locationId, workspaceId], references: [id, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_assignment_fkey")
+  inspectorMembership Membership @relation("InspectionInspector", fields: [workspaceId, inspectorUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_inspector_fkey")
+  recorderMembership Membership @relation("InspectionRecorder", fields: [workspaceId, recordedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_recorder_fkey")
+  revisions P1InspectionReportRevision[]
+  auditEvents InspectionAuditEvent[]
+  @@unique([id, workspaceId], map: "P1InspectionReport_identity_key")
+  @@unique([id, assignmentId, locationId, workspaceId], map: "P1InspectionReport_scope_key")
+  @@unique([assignmentId, recordedById, requestId], map: "P1InspectionReport_request_key")
+  @@index([workspaceId, locationId, createdAt, id], map: "P1InspectionReport_list_idx")
+}
+
+model P1InspectionReportRevision {
+  id String @id @default(cuid())
+  workspaceId String
+  reportId String
+  revision Int
+  requestId String @db.Uuid
+  reason String
+  inspectorUserId String
+  inspector Json @db.JsonB
+  observedAt DateTime @db.Timestamptz(3)
+  outcome P1InspectionOutcome
+  notes String @db.Text
+  correctedById String
+  correctedBy Json @db.JsonB
+  correctedAt DateTime @default(now()) @db.Timestamptz(3)
+  report P1InspectionReport @relation(fields: [reportId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_report_fkey")
+  inspectorMembership Membership @relation("InspectionRevisionInspector", fields: [workspaceId, inspectorUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_inspector_fkey")
+  correctorMembership Membership @relation("InspectionCorrector", fields: [workspaceId, correctedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_corrector_fkey")
+  @@unique([reportId, revision], map: "P1InspectionReportRevision_sequence_key")
+  @@unique([reportId, correctedById, requestId], map: "P1InspectionReportRevision_request_key")
+}
+
+model InspectionAuditEvent {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  assignmentId String
+  reportId String?
+  action P1InspectionAuditAction
+  requestId String @db.Uuid
+  actorId String
+  actor Json @db.JsonB
+  occurredAt DateTime @default(now()) @db.Timestamptz(3)
+  fromRevision Int?
+  toRevision Int
+  fromStatus P1InspectionAssignmentStatus?
+  toStatus P1InspectionAssignmentStatus?
+  assignment InspectionAssignment @relation(fields: [assignmentId, locationId, workspaceId], references: [id, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_assignment_fkey")
+  report P1InspectionReport? @relation(fields: [reportId, assignmentId, locationId, workspaceId], references: [id, assignmentId, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_report_fkey")
+  actorMembership Membership @relation("InspectionAuditActor", fields: [workspaceId, actorId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_actor_fkey")
+  @@index([workspaceId, locationId, occurredAt, id], map: "InspectionAuditEvent_list_idx")
 }
 
 model MonitoringLocationAnalysis {
