@@ -52,9 +52,29 @@
     padding-block: 10px;
   }
   .research-panel p,
+  .research-setup p,
   .research-results p {
     line-height: 1.7;
     overflow-wrap: anywhere;
+  }
+  .research-panel h2,
+  .research-setup h2 {
+    font-size: 20px;
+    margin: 24px 0 12px;
+  }
+  .research-setup {
+    padding-top: 12px;
+    scroll-margin-top: 80px;
+  }
+  .research-setup > p,
+  .research-setup form > p {
+    margin-block: 12px;
+    color: #c7c7c7;
+    max-width: 70ch;
+  }
+  .global-drawing-tools .global-error {
+    flex-basis: 100%;
+    margin: 0;
   }
   .research-panel .global-toolbar {
     margin-top: 18px;

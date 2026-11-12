@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import type { FeatureCollection, Point } from "geojson";
 import type { Language } from "@/lib/regions";
@@ -141,16 +141,18 @@ export default function ResearchPanel({
   onDraft,
   onOverlay,
   resultsHost,
+  setupHost,
   toolsHost,
 }: {
   language: Language;
   vertices: Vertex[];
-  setVertices: (vertices: Vertex[]) => void;
+  setVertices: Dispatch<SetStateAction<Vertex[]>>;
   drawing: boolean;
   setDrawing: (value: boolean) => void;
   onDraft: (geometry: AreaPolygon | null) => void;
   onOverlay: (overlay: ResearchOverlay) => void;
   resultsHost: HTMLDivElement | null;
+  setupHost: HTMLDivElement | null;
   toolsHost: HTMLDivElement | null;
 }) {
   const t = (id: string, en: string) => (language === "id" ? id : en);
@@ -161,7 +163,6 @@ export default function ResearchPanel({
       "The service could not process the request. Retry.",
     );
   const [polygon, setPolygon] = useState<AreaPolygon | null>(null);
-  const [revision, setRevision] = useState(0);
   const [geometryError, setGeometryError] = useState("");
   const [name, setName] = useState("");
   const [start, setStart] = useState("2026-08-01");
@@ -204,7 +205,10 @@ export default function ResearchPanel({
   const pointAbort = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const busy = ["submitting", "queued", "running"].includes(status);
+  const dirty = JSON.stringify(vertices) !== JSON.stringify(polygon?.coordinates[0].slice(0, -1) ?? []);
   const selectionKey = JSON.stringify({
+    vertices,
+    drawing,
     workspace,
     polygon,
     name,
@@ -309,15 +313,22 @@ export default function ResearchPanel({
     setError("");
   }, [selectionKey]);
 
+  useEffect(() => { setGeometryError(""); }, [vertices]);
+  function undoVertex() {
+    setVertices(current => current.slice(0, -1));
+  }
+  function clearSketch() {
+    setVertices([]);
+    setDrawing(true);
+  }
   function applyPolygon() {
     try {
       const next = polygonFromVertices(vertices);
-      if (JSON.stringify(next) !== JSON.stringify(polygon))
-        setRevision((value) => value + 1);
       setPolygon(next);
       onDraft(next);
       setDrawing(false);
       setGeometryError("");
+      setupHost?.scrollIntoView({ block: "start", behavior: "instant" });
     } catch (reason) {
       setGeometryError(
         reason instanceof Error ? reason.message : "coordinates",
@@ -347,7 +358,7 @@ export default function ResearchPanel({
     });
   }
   async function analyze() {
-    if (busy || !polygon || !workspace) return;
+    if (busy || !polygon || !workspace || drawing || dirty) return;
     const key = selectionKey;
     const run = ++generation.current;
     abort.current?.abort();
@@ -531,20 +542,26 @@ export default function ResearchPanel({
         toolsHost &&
         createPortal(
           <>
-            <button className="outline" onClick={applyPolygon}>
+            <button className="outline" disabled={vertices.length < 3} onClick={applyPolygon}>
               {t("Gunakan area ini", "Use this area")}
+            </button>
+            <button className="outline" disabled={!vertices.length} onClick={undoVertex}>
+              {t("Hapus titik terakhir", "Undo vertex")}
+            </button>
+            <button className="outline" disabled={!vertices.length} onClick={clearSketch}>
+              {t("Hapus semua titik", "Clear all vertices")}
             </button>
             <button className="outline" onClick={cancelEdit}>
               {t("Batal edit", "Cancel edit")}
             </button>
-            <span>
-              {vertices.length} {t("titik", "vertices")}
-            </span>
+            <span role="status">{vertices.length} {t("titik; minimal 3, lalu gunakan area", "vertices; at least 3, then use area")}</span>
+            {geometryError && <p className="global-error" role="alert">{geometryLabels[geometryError]?.[language === "id" ? 0 : 1] ?? geometryLabels.coordinates[language === "id" ? 0 : 1]}</p>}
           </>,
           toolsHost,
         )}
+      <h2>{t("1. Gambar area penelitian", "1. Draw your research area")}</h2>
       <p className="global-note">
-        {t("Gambar area penelitian", "Draw your research area")} ·{" "}
+        {t("Klik Gambar / edit area, tandai minimal 3 titik di peta, lalu pilih Gunakan area ini.", "Choose Draw / edit area, mark at least 3 points on the map, then choose Use this area.")} ·{" "}
         {t(
           "Navigasi peta tidak mengubah area atau menjalankan analisis.",
           "Map navigation does not change the area or run an analysis.",
@@ -570,19 +587,22 @@ export default function ResearchPanel({
         <button
           className="outline"
           disabled={vertices.length === 0}
-          onClick={() => setVertices(vertices.slice(0, -1))}
+          onClick={undoVertex}
         >
           {t("Hapus titik terakhir", "Undo vertex")}
         </button>
-        <button className="outline" onClick={applyPolygon}>
+        <button className="outline" disabled={!vertices.length} onClick={clearSketch}>
+          {t("Hapus semua titik", "Clear all vertices")}
+        </button>
+        <button className="outline" disabled={vertices.length < 3} onClick={applyPolygon}>
           {t("Gunakan area ini", "Use this area")}
         </button>
-        <button className="outline" onClick={cancelEdit}>
+        <button className="outline" disabled={!dirty && !drawing} onClick={cancelEdit}>
           {t("Batal edit", "Cancel edit")}
         </button>
         <span>
           {vertices.length} {t("titik", "vertices")} ·{" "}
-          {t("Revisi draft", "Draft revision")} {revision}
+          {dirty || drawing ? t("Perubahan belum digunakan", "Changes not applied") : polygon ? t("Area siap dianalisis", "Area ready to analyze") : t("Belum ada area", "No area yet")}
         </span>
       </div>
       {drawing && (
@@ -615,6 +635,9 @@ export default function ResearchPanel({
           language={language}
         />
       </details>
+      {setupHost && createPortal(<div className="research-setup">
+      <h2>{t("2. Pilih periode analisis", "2. Choose the analysis period")}</h2>
+      <p>{polygon && !dirty && !drawing ? t("Area sudah dipilih. Beri nama dan tentukan rentang tanggal.", "Area selected. Give it a name and choose a date range.") : t("Selesaikan area pada peta di atas terlebih dahulu. Klik Gunakan area ini untuk melanjutkan.", "Finish your area on the map above first. Click Use this area to continue.")}</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -631,7 +654,7 @@ export default function ResearchPanel({
               onChange={(event) => setName(event.target.value)}
             />
           </label>
-          <label>
+          <label hidden={workspaces.length <= 1}>
             Workspace
             <select
               value={workspace}
@@ -776,17 +799,21 @@ export default function ResearchPanel({
             )}
           </p>
         )}
+        <h2>{t("3. Jalankan analisis", "3. Run the analysis")}</h2>
+        <p id="research-submit-hint">{drawing || dirty || !polygon
+          ? t("Gunakan area ini terlebih dahulu agar analisis memakai batas terbaru.", "Use this area first so the analysis uses the latest boundary.")
+          : t("Analisis memakai arsip historis di server. Area tanpa cakupan data akan ditandai, bukan dianggap nol kebakaran.", "Analysis uses the server's historical archive. Areas without data coverage are flagged, not treated as zero fires.")}</p>
         <div className="global-toolbar">
           <button
             className="primary"
+            aria-describedby="research-submit-hint"
             disabled={
               busy ||
               !polygon ||
               !workspace ||
               !policy ||
               drawing ||
-              JSON.stringify(vertices) !==
-                JSON.stringify(polygon?.coordinates[0].slice(0, -1))
+              dirty
             }
           >
             {t("Analisis area", "Analyze area")}
@@ -827,6 +854,7 @@ export default function ResearchPanel({
           )}
         />
       )}
+      </div>, setupHost)}
       {result &&
         resultsHost &&
         createPortal(
@@ -862,8 +890,8 @@ export default function ResearchPanel({
               )}
             <p>
               {t(
-                "Outline putih: area hasil. Outline biru putus-putus: draft yang diterapkan. Titik dan garis biru: edit saat ini.",
-                "White outline: result area. Dashed blue outline: applied draft. Blue vertices and line: current edit.",
+                "Garis putih: area hasil sebelumnya. Garis biru putus-putus: area yang dipilih. Selama edit, hanya sketsa terbaru ditampilkan.",
+                "White outline: previous result area. Dashed blue outline: selected area. Only the current sketch is shown while editing.",
               )}
             </p>
             <div className="table-scroll">
@@ -994,7 +1022,7 @@ function CoordinateEditor({
   const [text, setText] = useState("");
   const [invalid, setInvalid] = useState(false);
   useEffect(
-    () => setText(vertices.map((point) => point.join(", ")).join("\n")),
+    () => { setText(vertices.map((point) => point.join(", ")).join("\n")); setInvalid(false); },
     [vertices],
   );
   return (
@@ -1011,15 +1039,17 @@ function CoordinateEditor({
       <button
         className="outline"
         onClick={() => {
+          if (!text.trim()) { onChange([]); setInvalid(false); return; }
           const rows = text
             .trim()
             .split(/\n/)
             .map((row) => row.split(",").map((value) => value.trim()));
           if (
-            rows.some(
+            rows.length > 500 || rows.some(
               (row) =>
                 row.length !== 2 ||
-                row.some((value) => !value || !Number.isFinite(Number(value))),
+                row.some((value) => !value || !Number.isFinite(Number(value))) ||
+                Math.abs(Number(row[0])) > 180 || Math.abs(Number(row[1])) > 90,
             )
           ) {
             setInvalid(true);
@@ -1036,8 +1066,8 @@ function CoordinateEditor({
       {invalid && (
         <p role="alert">
           {language === "id"
-            ? "Format: satu pasangan angka bujur, lintang per baris."
-            : "Format: one numeric longitude, latitude pair per line."}
+            ? "Maksimal 500 titik. Tiap baris: bujur (-180 hingga 180), lintang (-90 hingga 90)."
+            : "Up to 500 points. Each line: longitude (-180 to 180), latitude (-90 to 90)."}
         </p>
       )}
     </div>

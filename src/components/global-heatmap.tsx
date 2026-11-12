@@ -7,7 +7,7 @@ import { RefreshCw, Download, Globe2 } from "lucide-react";
 import type { Language } from "@/lib/regions";
 import ResearchPanel, { type ResearchOverlay } from "./research-panel";
 import {
-  unwrapVertices,
+  researchMapGeometry,
   type Vertex,
   type AreaPolygon,
 } from "@/lib/research-geometry";
@@ -115,7 +115,8 @@ function HeatSurface({
   languageRef.current = language;
   const editRef = useRef({ drawing, onAddVertex });
   editRef.current = { drawing, onAddVertex };
-  const features = research ? research.features : (data?.features ?? []);
+  const sketch = researchMapGeometry(vertices, draft, research?.geometry ?? null, drawing);
+  const features = sketch.editing ? [] : research ? research.features : (data?.features ?? []);
   useEffect(() => {
     const abort = new AbortController();
     fetch("/geo/ne_110m_land.json", { signal: abort.signal })
@@ -277,7 +278,7 @@ function HeatSurface({
         if (map.getLayer("esri-labels-layer"))
           map.moveLayer("esri-labels-layer");
         map.on("click", (event) => {
-          if (editRef.current.drawing)
+          if (editRef.current.drawing && event.originalEvent.detail < 2 && !map?.queryRenderedFeatures(event.point, { layers: ["edit-vertices"] }).length)
             editRef.current.onAddVertex([
               +event.lngLat.wrap().lng.toFixed(6),
               +event.lngLat.lat.toFixed(6),
@@ -318,7 +319,7 @@ function HeatSurface({
           | maplibregl.GeoJSONSource
           | undefined
       )?.setData({ type: "FeatureCollection", features });
-  }, [data, research, ready]);
+  }, [data, research, ready, sketch.editing]);
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
@@ -332,46 +333,8 @@ function HeatSurface({
       "visibility",
       layer === "points" ? "visible" : "none",
     );
-    const outlines: FeatureCollection = {
-      type: "FeatureCollection",
-      features: [],
-    };
-    if (draft)
-      outlines.features.push({
-        type: "Feature",
-        properties: { kind: "draft" },
-        geometry: {
-          ...draft,
-          coordinates: draft.coordinates.map(unwrapVertices),
-        },
-      });
-    if (research?.geometry)
-      outlines.features.push({
-        type: "Feature",
-        properties: { kind: "active" },
-        geometry: {
-          ...research.geometry,
-          coordinates: research.geometry.coordinates.map(unwrapVertices),
-        },
-      });
-    (map.getSource("area-outlines") as maplibregl.GeoJSONSource).setData(
-      outlines,
-    );
-    const edits: FeatureCollection = {
-      type: "FeatureCollection",
-      features: unwrapVertices(vertices).map((coordinates) => ({
-        type: "Feature",
-        properties: {},
-        geometry: { type: "Point", coordinates },
-      })),
-    };
-    if (vertices.length > 1)
-      edits.features.push({
-        type: "Feature",
-        properties: {},
-        geometry: { type: "LineString", coordinates: unwrapVertices(vertices) },
-      });
-    (map.getSource("area-edit") as maplibregl.GeoJSONSource).setData(edits);
+    (map.getSource("area-outlines") as maplibregl.GeoJSONSource).setData(sketch.outlines);
+    (map.getSource("area-edit") as maplibregl.GeoJSONSource).setData(sketch.edits);
     map.getCanvas().style.cursor = drawing ? "crosshair" : "";
     if (drawing) map.doubleClickZoom.disable();
     else map.doubleClickZoom.enable();
@@ -450,14 +413,18 @@ function HeatSurface({
         context.fillStyle = gradient;
         context.fillRect(x - r, y - r, r * 2, r * 2);
       }
-      for (const [geometry, color] of [
-        [draft, "#61c9ff"],
-        [research?.geometry, "#ffffff"],
-      ] as const) {
-        if (!geometry) continue;
-        context.strokeStyle = color;
+      for (const feature of [...sketch.outlines.features, ...sketch.edits.features]) {
+        context.strokeStyle = feature.properties?.kind === "active" ? "#ffffff" : "#61c9ff";
+        context.fillStyle = "#61c9ff";
         context.lineWidth = 2;
-        for (const ring of geometry.coordinates) {
+        if (feature.geometry.type === "Point") {
+          const [x, y] = project(feature.geometry.coordinates);
+          context.beginPath(); context.arc(x, y, 5, 0, Math.PI * 2); context.fill();
+          continue;
+        }
+        const rings = feature.geometry.type === "Polygon" ? feature.geometry.coordinates
+          : feature.geometry.type === "LineString" ? [feature.geometry.coordinates] : [];
+        for (const ring of rings) {
           context.beginPath();
           ring.forEach((coordinate, index) => {
             const [x, y] = project(coordinate);
@@ -472,7 +439,7 @@ function HeatSurface({
     const observer = new ResizeObserver(render);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [fallback, data, research, draft, layer, land, query.bbox]);
+  }, [fallback, data, research, draft, vertices, drawing, layer, land, query.bbox]);
   return (
     <div className="global-surface">
       <div ref={toolsHostRef} className="global-drawing-tools" />
@@ -496,8 +463,8 @@ function HeatSurface({
           />
           <p className="global-fallback" role="status">
             {t(
-              "WebGL tidak tersedia. Tampilan Canvas aktif; pindah area melalui kontrol koordinat.",
-              "WebGL unavailable. Canvas view active; navigate using coordinate controls.",
+              "WebGL tidak tersedia. Tampilan Canvas aktif; gunakan editor koordinat untuk menggambar area.",
+              "WebGL unavailable. Canvas view active; use the coordinate editor to draw your area.",
             )}
           </p>
         </>
@@ -511,13 +478,19 @@ function HeatSurface({
         </p>
       )}
       <div className="global-map-tag">
-        {research
+        {sketch.editing
+          ? t("Sketsa area — perubahan belum digunakan", "Area sketch — changes not applied")
+          : research
           ? research.label
           : `NASA FIRMS · ${data?.source || query.source} · ${data?.hours ?? query.hours}h`}
       </div>
       <div className="global-map-legend">
-        <span />
-        {layer === "points"
+        {!research && <span />}
+        {sketch.editing
+          ? t("Titik biru: sketsa terbaru. Gunakan area ini untuk melanjutkan.", "Blue points: current sketch. Use this area to continue.")
+          : research && features.length === 0
+            ? t("Batas area; titik hasil belum dimuat.", "Area boundaries; result points not loaded.")
+            : layer === "points"
           ? t(
               "Deteksi mentah; agregat ditunjukkan dengan jumlah",
               "Raw detections; aggregates show counts",
@@ -544,6 +517,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     error: string;
   }>({ key: "", data: null, loading: false, failed: false, error: "" });
   const [resultsHost, setResultsHost] = useState<HTMLDivElement | null>(null);
+  const [setupHost, setSetupHost] = useState<HTMLDivElement | null>(null);
   const [toolsHost, setToolsHost] = useState<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<"nrt" | "research">("nrt");
   const [layer, setLayer] = useState<"heatmap" | "points">("heatmap");
@@ -715,8 +689,8 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </h1>
           <p>
             {t(
-              "Geser atau zoom peta untuk melihat hotspot. Data menyesuaikan otomatis; pilih wilayah di bawah untuk mulai.",
-              "Pan or zoom to explore hotspots. Data updates automatically; choose a region below to get started.",
+              mode === "nrt" ? "Geser atau zoom peta untuk melihat hotspot. Data menyesuaikan otomatis; pilih wilayah di bawah untuk mulai." : "Analisis aktivitas pada area dan periode pilihan. Ikuti tiga langkah di bawah; tidak perlu login.",
+              mode === "nrt" ? "Pan or zoom to explore hotspots. Data updates automatically; choose a region below to get started." : "Analyze activity in your chosen area and period. Follow the three steps below; no sign-in needed.",
             )}
           </p>
         </div>
@@ -746,9 +720,6 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
         </button>
       </div>
       <div hidden={mode !== "research"}>
-        <p className="global-note">
-          {t("Untuk melihat perubahan dari waktu ke waktu: gambar area di peta, tentukan periode, lalu jalankan analisis. Hasil tersimpan di browser ini tanpa login.", "To explore changes over time: draw an area on the map, choose a period, then run an analysis. Results stay in this browser without signing in.")}
-        </p>
         <ResearchPanel
           language={language}
           vertices={vertices}
@@ -757,6 +728,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           setDrawing={setDrawing}
           onDraft={setDraftPolygon}
           onOverlay={setResearchOverlay}
+          setupHost={setupHost}
           resultsHost={resultsHost}
           toolsHost={toolsHost}
         />
@@ -829,6 +801,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
         className="global-toolbar"
         role="group"
         aria-label={t("Lapisan peta", "Map layers")}
+        hidden={mode === "research" && researchOverlay.features.length === 0}
       >
         <button
           className="outline"
@@ -910,6 +883,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           {t("Unduh data JSON", "Download JSON")}
         </button>
       </div>
+      <div ref={setSetupHost} hidden={mode !== "research"} />
       <div ref={setResultsHost} hidden={mode !== "research"} />
       <details className="region-metadata">
         <summary>

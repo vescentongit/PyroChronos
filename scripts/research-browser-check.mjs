@@ -164,7 +164,7 @@ await desktop.until(
 );
 await click(desktop, "Kalimantan");
 await click(desktop, "Analisis historis");
-await desktop.until('document.querySelector(".research-panel select").value');
+await desktop.until('document.querySelector(".research-setup select").value');
 await desktop.evaluate(
   `document.querySelector('.research-panel details').open=true`,
 );
@@ -176,7 +176,7 @@ await change(
 await click(desktop, "Gunakan koordinat sebagai draft");
 await click(desktop, "Gunakan area ini");
 await desktop.until(
-  `document.querySelector('.research-panel .global-toolbar').textContent.includes('1')`,
+  `document.querySelector('.research-panel .global-toolbar').textContent.includes('Area siap dianalisis')`,
 );
 assert.equal(
   await desktop.evaluate("window.researchCalls.filter(c=>c.body).length"),
@@ -210,26 +210,26 @@ await desktop.until(
 );
 await change(desktop, ".research-fields input[maxlength]", "Synthetic polygon");
 await desktop.evaluate(
-  `document.querySelectorAll('.research-panel details')[1].open=true`,
+  `document.querySelector('.research-setup details').open=true`,
 );
 await change(
   desktop,
-  '.research-panel details .research-fields input:not([type="number"])',
+  '.research-setup details .research-fields input:not([type="number"])',
   "synthetic-quality-1",
 );
 await desktop.until(
-  `!document.querySelector('.research-panel button.primary').disabled`,
+  `!document.querySelector('.research-setup button.primary').disabled`,
 );
 await desktop.evaluate("window.analysisFailure=true");
 await click(desktop, "Analisis area");
 await desktop.until(
-  `document.querySelector('.research-panel').textContent.includes('Analisis gagal')`,
+  `document.querySelector('.research-setup').textContent.includes('Analisis gagal')`,
 );
 const failedRequest = await desktop.evaluate("window.lastAnalysis.requestId");
 await desktop.evaluate("window.analysisFailure=false");
 await click(desktop, "Analisis area");
 await desktop.until(
-  `document.querySelector('.research-panel').textContent.includes('Analisis dalam antrean')`,
+  `document.querySelector('.research-setup').textContent.includes('Analisis dalam antrean')`,
 );
 assert.equal(
   await desktop.evaluate("window.lastAnalysis.requestId"),
@@ -237,7 +237,7 @@ assert.equal(
 );
 await desktop.evaluate('window.jobState="running"');
 await desktop.until(
-  `document.querySelector('.research-panel').textContent.includes('Analisis sedang diproses')`,
+  `document.querySelector('.research-setup').textContent.includes('Analisis sedang diproses')`,
 );
 await desktop.evaluate('window.jobState="succeeded"');
 await desktop.until('document.querySelector(".research-results")');
@@ -274,7 +274,7 @@ assert.equal(
 await desktop.evaluate('window.jobState="queued"');
 await click(desktop, "Analisis area");
 await desktop.until(
-  `document.querySelector('.research-panel').textContent.includes('Analisis dalam antrean')`,
+  `document.querySelector('.research-setup').textContent.includes('Analisis dalam antrean')`,
 );
 await change(desktop, '.research-fields input[type="date"]', "2026-06-01");
 await desktop.evaluate('window.jobState="succeeded"');
@@ -314,7 +314,7 @@ await mobile.go("/simulation");
 await mobile.until('document.querySelector(".global-heatmap")');
 await click(mobile, "Historical research");
 await mobile.until(
-  `['Research v2 service is unavailable', 'Sign in with an individual account'].some(text => document.querySelector('.research-panel').textContent.includes(text))`,
+  `['Research v2 service is unavailable', 'Sign in with an individual account'].some(text => document.querySelector('.research-setup').textContent.includes(text))`,
 );
 await click(mobile, "Preview synthetic example");
 await mobile.until('document.querySelector(".research-results")');
@@ -354,10 +354,10 @@ await onboarding.send("Page.addScriptToEvaluateOnNewDocument", {
 await onboarding.go("/simulation");
 await onboarding.until('document.querySelector(".global-heatmap")');
 await click(onboarding, "Analisis historis");
-await onboarding.until(`document.querySelector('.research-panel').textContent.includes('Buat workspace untuk menyimpan area')`);
-await onboarding.evaluate(`(() => { const field=[...document.querySelectorAll('.research-panel label')].find(label => label.textContent.includes('Nama workspace')).querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(field,'QA Workspace'); field.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+await onboarding.until(`document.querySelector('.research-setup').textContent.includes('Buat workspace untuk menyimpan area')`);
+await onboarding.evaluate(`(() => { const field=[...document.querySelectorAll('.research-setup label')].find(label => label.textContent.includes('Nama workspace')).querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(field,'QA Workspace'); field.dispatchEvent(new Event('input',{bubbles:true})); })()`);
 await click(onboarding, "Buat workspace");
-await onboarding.until(`Array.from(document.querySelectorAll('.research-panel select option')).some(option => option.textContent==='QA Workspace')`);
+await onboarding.until(`Array.from(document.querySelectorAll('.research-setup select option')).some(option => option.textContent==='QA Workspace')`);
 assert.equal(await onboarding.evaluate(`document.documentElement.scrollWidth <= innerWidth`), true);
 assert.deepEqual(onboarding.errors, []);
 writeFileSync(
