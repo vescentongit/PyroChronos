@@ -108,6 +108,10 @@ Keluaran di `data/processed/research/{hash geometri}/`: `result.json`, `manifest
 - ID area/workspace/job/analisis berupa placeholder lokal; layanan persistensi menggantinya. `generatedAt` = `publishedAt` hingga ada publikasi.
 - Handoff untuk Bagas: validasi payload, simpan hasil dan manifest, dan publikasi atomik. Untuk Orkhan: kalender tetap menampilkan bulan `no_data`/`partial` secara eksplisit.
 
+## Harmonisasi (Sprint 2)
+
+Pairing, evaluasi, referensi bergerak, dan estimasi skala MODIS dijelaskan di [harmonization.md](harmonization.md). Adapter di atas memakainya bila model tersedia; tanpa model atau di luar domain tervalidasi, estimasi tetap `null`.
+
 ## Pemrosesan arsip: batas dan kecepatan
 
 Unduhan arsip dibatasi jaringan (±0,5 MB/s pada uji ini): MODIS ≈ 65-80 MB per tahun, VIIRS S-NPP ≈ 370 MB per tahun, dan pembacaan ±4 menit per tahun MODIS. Tahun yang belum diproses **tidak tersedia** di hasil; adapter menandainya `no_data`. Ruang disk: store ≈ 10 byte/deteksi.

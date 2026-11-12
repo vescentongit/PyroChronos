@@ -1,0 +1,31 @@
+{
+ "policyVersion": "reference-policy-1",
+ "kind": "rolling-same-calendar-period",
+ "windowYears": 10,
+ "minimumValidYears": 4,
+ "statistic": "median",
+ "scoreKind": "percentile",
+ "selection": {
+  "schema": "minimum-years-1",
+  "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+  "rule": {
+   "rule": "smallest k in 3..windowYears whose backtest MAE of the median forecast is within tolerance of the k=windowYears MAE",
+   "tolerance": 0.1,
+   "backtestSeries": "native MODIS cell-month counts per domain, 2000-2025",
+   "targetYears": "validation split only"
+  },
+  "relativeMaeByYears": {
+   "3": 0.27402,
+   "4": 0.25637,
+   "5": 0.25568,
+   "6": 0.24465,
+   "7": 0.24295,
+   "8": 0.24134,
+   "9": 0.24339,
+   "10": 0.23852
+  },
+  "windowYears": 10,
+  "minimumValidYears": 4,
+  "series": "native MODIS domain-month counts; the same rule is applied to the harmonized series because the harmonized series is a fixed multiple of VIIRS and a shorter VIIRS record only reduces the usable years"
+ }
+}

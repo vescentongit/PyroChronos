@@ -1,0 +1,660 @@
+{
+ "schemaVersion": "research-2",
+ "analysisId": "analysis-local",
+ "periodRole": "primary",
+ "month": "2024-08",
+ "days": [
+  {
+   "date": "2024-08-01",
+   "metric": {
+    "rawCount": 4,
+    "harmonizedCount": 0.983015,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 4
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-02",
+   "metric": {
+    "rawCount": 2,
+    "harmonizedCount": 0.491508,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 2
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-03",
+   "metric": {
+    "rawCount": 9,
+    "harmonizedCount": 2.211784,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 9
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-04",
+   "metric": {
+    "rawCount": 16,
+    "harmonizedCount": 2.211784,
+    "rawCountsBySource": {
+     "MODIS_SP": 7,
+     "VIIRS_SNPP_SP": 9
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-05",
+   "metric": {
+    "rawCount": 23,
+    "harmonizedCount": 5.160829,
+    "rawCountsBySource": {
+     "MODIS_SP": 2,
+     "VIIRS_SNPP_SP": 21
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-06",
+   "metric": {
+    "rawCount": 9,
+    "harmonizedCount": 2.211784,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 9
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-07",
+   "metric": {
+    "rawCount": 2,
+    "harmonizedCount": 0.491508,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 2
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-08",
+   "metric": {
+    "rawCount": 8,
+    "harmonizedCount": 1.96603,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 8
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-09",
+   "metric": {
+    "rawCount": 17,
+    "harmonizedCount": 3.93206,
+    "rawCountsBySource": {
+     "MODIS_SP": 1,
+     "VIIRS_SNPP_SP": 16
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-10",
+   "metric": {
+    "rawCount": 23,
+    "harmonizedCount": 5.160829,
+    "rawCountsBySource": {
+     "MODIS_SP": 2,
+     "VIIRS_SNPP_SP": 21
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-11",
+   "metric": {
+    "rawCount": 19,
+    "harmonizedCount": 3.93206,
+    "rawCountsBySource": {
+     "MODIS_SP": 3,
+     "VIIRS_SNPP_SP": 16
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-12",
+   "metric": {
+    "rawCount": 15,
+    "harmonizedCount": 2.703292,
+    "rawCountsBySource": {
+     "MODIS_SP": 4,
+     "VIIRS_SNPP_SP": 11
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-13",
+   "metric": {
+    "rawCount": 16,
+    "harmonizedCount": 3.93206,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 16
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-14",
+   "metric": {
+    "rawCount": 43,
+    "harmonizedCount": 7.864121,
+    "rawCountsBySource": {
+     "MODIS_SP": 11,
+     "VIIRS_SNPP_SP": 32
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-15",
+   "metric": {
+    "rawCount": 52,
+    "harmonizedCount": 12.533442,
+    "rawCountsBySource": {
+     "MODIS_SP": 1,
+     "VIIRS_SNPP_SP": 51
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-16",
+   "metric": {
+    "rawCount": 13,
+    "harmonizedCount": 2.457538,
+    "rawCountsBySource": {
+     "MODIS_SP": 3,
+     "VIIRS_SNPP_SP": 10
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-17",
+   "metric": {
+    "rawCount": 4,
+    "harmonizedCount": 0.983015,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 4
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-18",
+   "metric": {
+    "rawCount": 5,
+    "harmonizedCount": 1.228769,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 5
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-19",
+   "metric": {
+    "rawCount": 25,
+    "harmonizedCount": 4.915075,
+    "rawCountsBySource": {
+     "MODIS_SP": 5,
+     "VIIRS_SNPP_SP": 20
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-20",
+   "metric": {
+    "rawCount": 77,
+    "harmonizedCount": 18.923041,
+    "rawCountsBySource": {
+     "MODIS_SP": 0,
+     "VIIRS_SNPP_SP": 77
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-21",
+   "metric": {
+    "rawCount": 122,
+    "harmonizedCount": 23.838116,
+    "rawCountsBySource": {
+     "MODIS_SP": 25,
+     "VIIRS_SNPP_SP": 97
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-22",
+   "metric": {
+    "rawCount": 63,
+    "harmonizedCount": 10.567412,
+    "rawCountsBySource": {
+     "MODIS_SP": 20,
+     "VIIRS_SNPP_SP": 43
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-23",
+   "metric": {
+    "rawCount": 24,
+    "harmonizedCount": 5.160829,
+    "rawCountsBySource": {
+     "MODIS_SP": 3,
+     "VIIRS_SNPP_SP": 21
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-24",
+   "metric": {
+    "rawCount": 37,
+    "harmonizedCount": 6.881106,
+    "rawCountsBySource": {
+     "MODIS_SP": 9,
+     "VIIRS_SNPP_SP": 28
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-25",
+   "metric": {
+    "rawCount": 170,
+    "harmonizedCount": 40.795126,
+    "rawCountsBySource": {
+     "MODIS_SP": 4,
+     "VIIRS_SNPP_SP": 166
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-26",
+   "metric": {
+    "rawCount": 389,
+    "harmonizedCount": 76.675177,
+    "rawCountsBySource": {
+     "MODIS_SP": 77,
+     "VIIRS_SNPP_SP": 312
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-27",
+   "metric": {
+    "rawCount": 109,
+    "harmonizedCount": 21.134825,
+    "rawCountsBySource": {
+     "MODIS_SP": 23,
+     "VIIRS_SNPP_SP": 86
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-28",
+   "metric": {
+    "rawCount": 38,
+    "harmonizedCount": 5.406583,
+    "rawCountsBySource": {
+     "MODIS_SP": 16,
+     "VIIRS_SNPP_SP": 22
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-29",
+   "metric": {
+    "rawCount": 145,
+    "harmonizedCount": 27.524423,
+    "rawCountsBySource": {
+     "MODIS_SP": 33,
+     "VIIRS_SNPP_SP": 112
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-30",
+   "metric": {
+    "rawCount": 301,
+    "harmonizedCount": 66.845026,
+    "rawCountsBySource": {
+     "MODIS_SP": 29,
+     "VIIRS_SNPP_SP": 272
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  },
+  {
+   "date": "2024-08-31",
+   "metric": {
+    "rawCount": 586,
+    "harmonizedCount": 110.834952,
+    "rawCountsBySource": {
+     "MODIS_SP": 135,
+     "VIIRS_SNPP_SP": 451
+    },
+    "status": "available"
+   },
+   "anomaly": {
+    "status": "method_unsupported",
+    "referenceYears": [],
+    "baselineStatistic": null,
+    "baselineValue": null,
+    "delta": null,
+    "scoreKind": null,
+    "score": null
+   }
+  }
+ ],
+ "nextCursor": null
+}

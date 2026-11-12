@@ -2,7 +2,7 @@
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Bagas.\
-**Status:** implementasi R2-P0-N1 sampai N4 selesai dengan tes; menunggu review Bagas dan integrasi sebelum dicentang. Pemrosesan arsip MODIS/VIIRS penuh masih berjalan bertahap.
+**Status:** R2-P0-N1 sampai N4 selesai dan direview (PR #7 dimerge ke dev). Integrasi dengan Bagas dan Orkhan serta checklist sprint di bawah masih terbuka.
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
@@ -16,7 +16,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-N1 — Arsip global yang mempertahankan tanggal dan posisi asli
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [x] **Selesai dan direview** — estimasi 5 poin.
 
 *Implementasi selesai, menunggu review Bagas:* store deteksi asli `pcd1` per sumber/bulan (`detection_store.py`, `firms_archive.py`), manifest dengan checksum dan cakupan per tahun, grid lama diberi label `coarse-aggregate`. Pemrosesan arsip nyata berjalan bertahap; tahun yang belum diproses tercatat `no_data`. Lihat [catatan data](../../docs/data/firms-sources.md).
 
@@ -28,7 +28,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-N2 — Kueri polygon bebas dan irisan waktu
 
-- [ ] **Selesai dan direview** — estimasi 8 poin.
+- [x] **Selesai dan direview** — estimasi 8 poin.
 
 *Implementasi selesai, menunggu review Bagas:* `area_query.py` (polygon dengan lubang, antimeridian, validasi, batas luas/titik, tanggal inklusif UTC); 11 tes termasuk hasil berbeda dari bbox.
 
@@ -40,7 +40,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-N3 — Count per sumber dan manifest analisis
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** — estimasi 4 poin.
 
 *Implementasi selesai, menunggu review Bagas:* `area_counts.py` (count per sumber/hari/bulan, kebijakan `quality-policy-1`, cakupan observed/partial/no_data, manifest reproducible).
 
@@ -52,7 +52,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ### R2-P0-N4 — Adapter producer ke research-2
 
-- [ ] **Selesai dan direview** — estimasi 3 poin.
+- [x] **Selesai dan direview** — estimasi 3 poin.
 
 *Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan result/daily/detections `research-2` tanpa estimasi (harmonizedCount null, validation unsupported); `tests/research-adapter.test.mjs` memvalidasi dengan schema zod.
 

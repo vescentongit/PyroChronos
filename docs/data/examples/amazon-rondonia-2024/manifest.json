@@ -1,0 +1,239 @@
+{
+ "id": "manifest-99ec8aab9fe25895",
+ "contentSha256": "99ec8aab9fe25895800394504624ff53002d2b629c9b187efea372c87410dac4",
+ "generatedAt": "2026-11-12T14:48:01Z",
+ "schema": "analysis-manifest-1",
+ "storeFormat": "pcd1",
+ "satelliteConfigVersion": "satellite-config-1",
+ "qualityPolicy": {
+  "version": "quality-policy-1",
+  "fireTypes": [
+   "vegetation",
+   "unknown"
+  ],
+  "confidenceClasses": [
+   "nominal",
+   "high"
+  ],
+  "note": "Archive type 0 (vegetation) and feeds without a type column are counted; low confidence, volcano, static and offshore detections are excluded and reported."
+ },
+ "countDefinition": "detections accepted by the quality policy within the polygon and inclusive UTC period; not cell-days, fire events or burned area",
+ "dedupRule": "one record per source, latitude/longitude (1e-5 deg), acquisition minute and satellite; duplicates removed when the archive is stored",
+ "overlapRule": "sources are counted separately; an added satellite is not treated as an equivalent series without a validated calibration",
+ "geometryHash": "sha256:36199cf84a7e078fca555f51e6e1f9d84033c864d0ca91363d1dc58dcd086132",
+ "areaKm2": 12115.974,
+ "period": {
+  "start": "2024-08-01",
+  "end": "2024-09-30"
+ },
+ "sources": {
+  "MODIS_SP": {
+   "sensor": "MODIS",
+   "processing": "standard",
+   "nominalResolutionM": 1000,
+   "archiveYears": [
+    {
+     "year": 2024,
+     "sha256": "034f357da2022202fec7c4a2916e4128f29536cc1578aef9b04bbf7fd6901389",
+     "firstObserved": "2024-01-01T00:35:00Z",
+     "lastObserved": "2024-12-31T23:50:00Z",
+     "detections": 4848247
+    }
+   ],
+   "archiveChecksum": "sha256:f06f7992b37bbdbe1be833d1e63e4156957137d10a1a5163f80392d4f901941c",
+   "monthsNoData": [],
+   "monthsPartial": [],
+   "satellitesByMonth": {
+    "2024-08": [
+     "Terra",
+     "Aqua"
+    ],
+    "2024-09": [
+     "Terra",
+     "Aqua"
+    ]
+   },
+   "excluded": {
+    "lowConfidence": 132,
+    "nonVegetationType": 0
+   },
+   "rawCount": 1253
+  },
+  "VIIRS_SNPP_SP": {
+   "sensor": "VIIRS",
+   "processing": "standard",
+   "nominalResolutionM": 375,
+   "archiveYears": [
+    {
+     "year": 2024,
+     "sha256": "a38653b029d03b48868272ab2cade671d8e2df4cbcbda205ba9fdeae023e66ae",
+     "firstObserved": "2024-01-01T00:38:00Z",
+     "lastObserved": "2024-12-31T23:59:00Z",
+     "detections": 20976947
+    }
+   ],
+   "archiveChecksum": "sha256:cc272288e2fa529766a765a79fa78fd37995b2d949f8cad734dd39c77312e41f",
+   "monthsNoData": [],
+   "monthsPartial": [],
+   "satellitesByMonth": {
+    "2024-08": [
+     "Suomi NPP"
+    ],
+    "2024-09": [
+     "Suomi NPP"
+    ]
+   },
+   "excluded": {
+    "lowConfidence": 241,
+    "nonVegetationType": 0
+   },
+   "rawCount": 5222
+  }
+ },
+ "comparison": {
+  "period": {
+   "start": "2023-08-01",
+   "end": "2023-09-30"
+  },
+  "sources": {
+   "MODIS_SP": {
+    "sensor": "MODIS",
+    "processing": "standard",
+    "nominalResolutionM": 1000,
+    "archiveYears": [
+     {
+      "year": 2023,
+      "sha256": "1fdd2cb87c6303dd609e2aa197e5d0ec5057921e240db51fed2f24b6d971a2e4",
+      "firstObserved": "2023-01-01T01:28:00Z",
+      "lastObserved": "2023-12-31T23:17:00Z",
+      "detections": 4664302
+     }
+    ],
+    "archiveChecksum": "sha256:c380dea3fac5e9961e2b91740af039a13ea0409211b421a5bf7336dc1f2af616",
+    "monthsNoData": [],
+    "monthsPartial": [],
+    "satellitesByMonth": {
+     "2023-08": [
+      "Terra",
+      "Aqua"
+     ],
+     "2023-09": [
+      "Terra",
+      "Aqua"
+     ]
+    },
+    "excluded": {
+     "lowConfidence": 5,
+     "nonVegetationType": 0
+    },
+    "rawCount": 72
+   },
+   "VIIRS_SNPP_SP": {
+    "sensor": "VIIRS",
+    "processing": "standard",
+    "nominalResolutionM": 375,
+    "archiveYears": [
+     {
+      "year": 2023,
+      "sha256": "782a022159bf01fcb1310077b25b46da1d58a09045ab9fe31f2e2b98c762ae15",
+      "firstObserved": "2023-01-01T00:00:00Z",
+      "lastObserved": "2023-12-31T23:30:00Z",
+      "detections": 21750293
+     }
+    ],
+    "archiveChecksum": "sha256:69575aa36c8395de79da4708d0c9af4d0ca2c51fb121fcc0df5b1bd73a98d4ae",
+    "monthsNoData": [],
+    "monthsPartial": [],
+    "satellitesByMonth": {
+     "2023-08": [
+      "Suomi NPP"
+     ],
+     "2023-09": [
+      "Suomi NPP"
+     ]
+    },
+    "excluded": {
+     "lowConfidence": 14,
+     "nonVegetationType": 0
+    },
+    "rawCount": 180
+   }
+  }
+ },
+ "harmonization": {
+  "schema": "harmonization-manifest-1",
+  "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+  "evaluationId": "evaluation-275ac4d8b7c6096b",
+  "pairsSha256": "e194422b2197a112c5b98bde604b0610318f9f21c8260a97b15da5b432d89a7e",
+  "model": {
+   "family": "ratio_global",
+   "ratio": 0.24575377326604025,
+   "ratios": null
+  },
+  "split": {
+   "train": {
+    "start": "2013-01",
+    "end": "2018-12"
+   },
+   "validation": {
+    "start": "2019-01",
+    "end": "2020-12"
+   },
+   "test": {
+    "start": "2021-01",
+    "end": "2025-12"
+   }
+  },
+  "decisionRuleVersion": "decision-rule-1",
+  "validatedDomains": [
+   "africa_north_of_equator",
+   "africa_south_of_equator",
+   "australia",
+   "boreal_eurasia",
+   "south_america"
+  ],
+  "unvalidatedDomains": [
+   "europe_mediterranean",
+   "maritime_southeast_asia",
+   "north_america",
+   "other",
+   "south_and_mainland_southeast_asia"
+  ],
+  "polygonDomains": [
+   "south_america"
+  ],
+  "polygonSupported": true,
+  "referenceSource": "MODIS_SP",
+  "inputSource": "VIIRS_SNPP_SP",
+  "aggregation": "estimate = multiplier x accepted VIIRS detections inside the polygon; additive, so day, month, period and calendar totals agree; days are rounded to 6 decimals for display only",
+  "baseline": {
+   "policyVersion": "reference-policy-1",
+   "kind": "rolling-same-calendar-period",
+   "windowYears": 10,
+   "minimumValidYears": 4,
+   "statistic": "median",
+   "scoreKind": "percentile"
+  },
+  "comparisonSummary": {
+   "primaryDays": 61,
+   "comparisonDays": 61,
+   "sameDuration": true,
+   "rawCount": {
+    "primary": 6475,
+    "comparison": 252,
+    "perDayPrimary": 106.147541,
+    "perDayComparison": 4.131148,
+    "percentChange": 2469.444,
+    "percentChangeReason": null
+   },
+   "harmonizedCount": {
+    "primary": 1283.326204,
+    "comparison": 44.23568,
+    "perDayPrimary": 21.038134,
+    "perDayComparison": 0.725175,
+    "percentChange": 2801.111,
+    "percentChangeReason": null
+   }
+  }
+ }
+}
