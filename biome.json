@@ -1,10 +1,23 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
-  "files": {
-    "includes": ["src/lib/firms-proxy.ts", "src/app/api/firms/route.ts", "tests/firms-proxy.test.mjs", "tests/helpers/postgres-bridge.mjs", "scripts/smoke.mjs", "src/lib/research-publication*.ts", "tests/research-publication*.test.mjs", "tests/helpers/research-publication-fixtures.mjs"]
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {"preset": "recommended"}
-  }
+	"$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+	"files": {
+		"includes": [
+			"src/lib/firms-proxy.ts",
+			"src/app/api/firms/route.ts",
+			"tests/firms-proxy.test.mjs",
+			"tests/helpers/postgres-bridge.mjs",
+			"scripts/smoke.mjs",
+			"src/lib/research-publication*.ts",
+			"tests/research-publication*.test.mjs",
+			"tests/helpers/research-publication-fixtures.mjs",
+			"src/lib/monitoring-location*.ts",
+			"src/app/api/v2/workspaces/**/route.ts",
+			"tests/monitoring-location*.test.mjs",
+			"tests/helpers/monitoring-location-fixtures.mjs"
+		]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": { "preset": "recommended" }
+	}
 }

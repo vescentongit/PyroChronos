@@ -100,6 +100,27 @@ export class FileResearchArtifactStorage
 	}
 
 	async verify(key: string, checksum: string, bytes: number): Promise<void> {
+		await this.inspect(key, checksum, bytes);
+	}
+
+	async read(
+		key: string,
+		checksum: string,
+		bytes: number,
+	): Promise<Uint8Array> {
+		const chunks: Buffer[] = [];
+		await this.inspect(key, checksum, bytes, (chunk) => {
+			chunks.push(Buffer.from(chunk));
+		});
+		return Buffer.concat(chunks);
+	}
+
+	private async inspect(
+		key: string,
+		checksum: string,
+		bytes: number,
+		onChunk?: (chunk: Uint8Array) => void,
+	): Promise<void> {
 		try {
 			const target = await this.target(key, false);
 			const info = await lstat(target);
@@ -126,6 +147,7 @@ export class FileResearchArtifactStorage
 					read += chunk.byteLength;
 					if (read > bytes) throw new PublicationFailure("ARTIFACT_MISMATCH");
 					hash.update(chunk);
+					onChunk?.(chunk);
 				}
 				if (read !== bytes || `sha256:${hash.digest("hex")}` !== checksum)
 					throw new PublicationFailure("ARTIFACT_MISMATCH");

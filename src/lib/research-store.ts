@@ -34,7 +34,7 @@ export async function workspaceLock(db: Sql, workspace: string) {
 }
 export async function idempotent(db: Sql, scope: string, requestId: string, body: unknown, action: () => Promise<{ value: any; status: number }>) {
   // Serialize even the first request, before a request record exists.
-  await db.query("SELECT pg_advisory_xact_lock(hashtext($1))", [scope]);
+  await db.query("SELECT pg_advisory_xact_lock(hashtext($1))::text", [scope]);
   const [old] = await db.query('SELECT * FROM "ResearchRequest" WHERE scope=$1 AND "requestId"=$2', [scope, requestId]);
   const digest = hash(body);
   if (old) {
