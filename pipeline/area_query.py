@@ -13,7 +13,7 @@ import json
 from datetime import date
 from math import cos, radians, sin
 
-from detection_store import RECORD, SCALE, decode, day_start_minute, iter_tiles, month_path, tiles_for_bbox
+from detection_store import RECORD, SCALE, StoreError, decode, day_start_minute, iter_tiles, month_path, source_coverage, tiles_for_bbox
 
 EARTH_RADIUS_KM = 6371.0088
 MAX_VERTICES = 10000
@@ -216,9 +216,12 @@ def query(store_dir, source_id, polygon, start, end, include=None):
     """
     start_minute, end_minute = period_minutes(start, end)
     rows = []
+    expected = {item["month"] for year in source_coverage(store_dir, source_id).values() for item in year["months"]}
     for month in months_between(start_minute, end_minute):
         path = month_path(store_dir, source_id, month)
         if not path.exists():
+            if month in expected:
+                raise StoreError("MISSING_PARTITION")
             continue
         for west, south, east, north in polygon.bbox_pieces():
             tiles = tiles_for_bbox(west, south, east, north)

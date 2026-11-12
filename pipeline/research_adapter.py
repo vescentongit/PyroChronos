@@ -107,7 +107,7 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
     period = {"start": start, "end": end}
     counts = count_area(store_dir, polygon, start, end, sources)
     comparison_counts = count_area(store_dir, polygon, comparison["start"], comparison["end"], sources) if comparison else None
-    manifest = build_manifest(counts, polygon, now_text)
+    manifest = build_manifest(counts, polygon, now_text, comparison_counts)
     months = []
     for month in months_between(*period_minutes(start, end)):
         per_source = {sid: (data["months"][month]["count"], data["months"][month]["status"]) for sid, data in counts["sources"].items()}
@@ -119,9 +119,15 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
     for sid in sources:
         source = get_source(sid)
         data = counts["sources"][sid]
-        statuses = {v["status"] for v in data["months"].values()}
+        selected_months = dict(data["months"])
+        if comparison_counts is not None:
+            selected_months.update(comparison_counts["sources"][sid]["months"])
+        statuses = {v["status"] for v in selected_months.values()}
         info = manifest["sources"][sid]
-        years = info["archiveYears"]
+        years = {year["year"]: year for year in info["archiveYears"]}
+        if comparison_counts is not None:
+            years.update({year["year"]: year for year in manifest["comparison"]["sources"][sid]["archiveYears"]})
+        years = list(years.values())
         sources_out.append({
             "id": sid,
             "product": PRODUCTS[source.sensor],
@@ -130,7 +136,7 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
             "status": "unavailable" if statuses == {"no_data"} else "available" if statuses == {"observed"} else "partial",
             "observedFrom": min((y["firstObserved"] for y in years), default=None),
             "observedTo": max((y["lastObserved"] for y in years), default=None),
-            "checksum": info["archiveChecksum"],
+            "checksum": archive_checksum(data["coverage"], selected_months),
         })
     data_version = "firms-detections-" + hashlib.sha256("|".join(f"{s['id']}:{s['checksum']}" for s in sources_out).encode()).hexdigest()[:12]
     geometry = polygon.geometry
@@ -170,7 +176,7 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
         "publishedAt": now_text,
         "months": months,
     }
-    return {"result": result, "manifest": manifest, "counts": counts}
+    return {"result": result, "manifest": manifest, "counts": counts, "comparisonCounts": comparison_counts}
 
 
 def daily_page(counts, analysis_id, month, role="primary"):

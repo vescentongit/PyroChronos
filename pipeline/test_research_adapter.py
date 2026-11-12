@@ -7,6 +7,7 @@ from pathlib import Path
 
 from area_counts import QUALITY_POLICY, build_manifest, count_area, month_status, source_coverage
 from area_query import Polygon
+from detection_store import StoreError, month_path
 from firms_archive import process_year
 from research_adapter import build_result, daily_page, detections_page, polygon_from_area
 from synthetic import MODIS_HEADER, VIIRS_HEADER, make_archive, modis_row, viirs_row
@@ -117,6 +118,26 @@ class AdapterTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def test_missing_committed_partition_fails_counts_and_details(self):
+        month_path(self.store, "MODIS_SP", "2019-09").unlink()
+        with self.assertRaisesRegex(StoreError, "MISSING_PARTITION"):
+            build_result(self.store, KALTENG, "2019-09-01", "2019-09-30", now=NOW)
+        with self.assertRaisesRegex(StoreError, "MISSING_PARTITION"):
+            detections_page(self.store, KALTENG, "analysis-local", "2019-09-01", "2019-09-30")
+
+    def test_comparison_archive_revision_changes_manifest_and_data_version(self):
+        comparison = {"start": "2018-09-01", "end": "2018-09-30"}
+        first = build_result(self.store, KALTENG, "2019-09-01", "2019-09-30", comparison, now=NOW)
+        self.assertEqual(first["manifest"]["comparison"]["sources"]["MODIS_SP"]["archiveYears"][0]["year"], 2018)
+        manifest = self.store / "MODIS_SP" / "manifest.jsonl"
+        entries = [json.loads(line) for line in manifest.read_text().splitlines()]
+        entries[0]["sha256"] = "a" * 64
+        manifest.write_text("".join(json.dumps(entry) + "\n" for entry in entries))
+        second = build_result(self.store, KALTENG, "2019-09-01", "2019-09-30", comparison, now=NOW)
+        self.assertNotEqual(first["manifest"]["id"], second["manifest"]["id"])
+        self.assertNotEqual(first["result"]["dataVersion"], second["result"]["dataVersion"])
+        self.assertEqual(first["result"]["primary"], second["result"]["primary"])
+
     def test_result_has_null_estimates_and_explicit_gaps(self):
         built = build_result(self.store, KALTENG, "2019-09-01", "2019-11-30", {"start": "2018-09-01", "end": "2018-09-30"}, now=NOW)
         result = built["result"]
@@ -136,7 +157,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual((primary["days"], primary["metric"]["rawCount"]), (91, 6))
         self.assertEqual(result["comparison"]["metric"]["rawCountsBySource"], {"MODIS_SP": 1, "VIIRS_SNPP_SP": None})
         self.assertEqual(result["method"]["manifestId"], built["manifest"]["id"])
-        self.assertEqual({s["id"]: s["status"] for s in result["sources"]}, {"MODIS_SP": "partial", "VIIRS_SNPP_SP": "available"})
+        self.assertEqual({s["id"]: s["status"] for s in result["sources"]}, {"MODIS_SP": "partial", "VIIRS_SNPP_SP": "partial"})
 
     def test_period_without_any_archive_is_no_data_not_zero(self):
         result = build_result(self.store, KALTENG, "2005-01-01", "2005-02-28", now=NOW)["result"]

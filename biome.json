@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
   "files": {
-    "includes": ["src/lib/firms-proxy.ts", "src/app/api/firms/route.ts", "tests/firms-proxy.test.mjs", "tests/helpers/postgres-bridge.mjs", "scripts/smoke.mjs"]
+    "includes": ["src/lib/firms-proxy.ts", "src/app/api/firms/route.ts", "tests/firms-proxy.test.mjs", "tests/helpers/postgres-bridge.mjs", "scripts/smoke.mjs", "src/lib/research-publication*.ts", "tests/research-publication*.test.mjs", "tests/helpers/research-publication-fixtures.mjs"]
   },
   "linter": {
     "enabled": true,

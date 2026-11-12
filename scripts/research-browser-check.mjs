@@ -332,7 +332,7 @@ await mobile.go("/simulation");
 await mobile.until('document.querySelector(".global-heatmap")');
 await click(mobile, "Historical research");
 await mobile.until(
-  `document.querySelector('.research-panel').textContent.includes('Research v2 service is unavailable')`,
+  `['Research v2 service is unavailable', 'Sign in with an individual account'].some(text => document.querySelector('.research-panel').textContent.includes(text))`,
 );
 await click(mobile, "Preview synthetic example");
 await mobile.until('document.querySelector(".research-results")');
@@ -362,6 +362,22 @@ assert.equal(
 );
 assert.deepEqual(desktop.errors, []);
 assert.deepEqual(mobile.errors, []);
+const onboarding = await session(390, 844, true);
+await onboarding.send("Page.addScriptToEvaluateOnNewDocument", {
+  source: mockSource.replace(
+    "if (url === '/api/v2/workspaces') return Response.json({items:[fixtures.workspace],nextCursor:null});",
+    "if (url === '/api/v2/workspaces') return body ? Response.json({...fixtures.workspace,name:body.name}) : Response.json({items:[],nextCursor:null});",
+  ),
+});
+await onboarding.go("/simulation");
+await onboarding.until('document.querySelector(".global-heatmap")');
+await click(onboarding, "Riset historis");
+await onboarding.until(`document.querySelector('.research-panel').textContent.includes('Buat workspace untuk menyimpan area')`);
+await onboarding.evaluate(`(() => { const field=[...document.querySelectorAll('.research-panel label')].find(label => label.textContent.includes('Nama workspace')).querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(field,'QA Workspace'); field.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+await click(onboarding, "Buat workspace");
+await onboarding.until(`Array.from(document.querySelectorAll('.research-panel select option')).some(option => option.textContent==='QA Workspace')`);
+assert.equal(await onboarding.evaluate(`document.documentElement.scrollWidth <= innerWidth`), true);
+assert.deepEqual(onboarding.errors, []);
 writeFileSync(
   out + "/results.json",
   JSON.stringify(
@@ -381,9 +397,10 @@ writeFileSync(
         "390px overflow",
         "keyboard focus",
         "Plus Jakarta Sans",
+        "workspace creation empty state on mobile",
       ],
       limitations: [
-        "v2 responses mocked on desktop; real missing-backend state on mobile",
+      "v2 responses mocked on desktop; unauthenticated or unavailable state on mobile",
         "external imagery may be unavailable in sandbox",
       ],
     },
@@ -396,3 +413,4 @@ console.log(
 );
 desktop.close();
 mobile.close();
+onboarding.close();

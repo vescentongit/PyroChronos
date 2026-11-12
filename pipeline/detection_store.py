@@ -202,6 +202,18 @@ class StoreError(RuntimeError):
     pass
 
 
+def source_coverage(store_dir, source_id):
+    """Latest committed archive manifest entry per year."""
+    manifest = Path(store_dir) / source_id / "manifest.jsonl"
+    years = {}
+    if manifest.exists():
+        for line in manifest.read_text(encoding="utf-8").splitlines():
+            entry = json.loads(line)
+            if entry.get("detections_format") == FORMAT_VERSION:
+                years[entry["year"]] = entry
+    return dict(sorted(years.items()))
+
+
 def read_header(path):
     with Path(path).open("rb") as handle:
         if handle.read(4) != MAGIC:
