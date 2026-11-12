@@ -90,7 +90,7 @@ def count_area(store_dir, polygon, start, end, sources=DEFAULT_SOURCES, policy=Q
     return {"period": {"start": start, "end": end}, "sources": per_source, "policy": policy}
 
 
-def build_manifest(result, polygon, generated_at, comparison=None):
+def build_manifest(result, polygon, generated_at, comparison=None, harmonization=None):
     """Reproducible manifest of the rules and archive versions behind a count result."""
     start_minute, end_minute = period_minutes(result["period"]["start"], result["period"]["end"])
     months = months_between(start_minute, end_minute)
@@ -130,5 +130,7 @@ def build_manifest(result, polygon, generated_at, comparison=None):
     if comparison is not None:
         compared = build_manifest(comparison, polygon, generated_at)
         content["comparison"] = {"period": compared["period"], "sources": compared["sources"]}
+    if harmonization is not None:
+        content["harmonization"] = harmonization
     digest = hashlib.sha256(json.dumps(content, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return {"id": f"manifest-{digest[:16]}", "contentSha256": digest, "generatedAt": generated_at, **content}
