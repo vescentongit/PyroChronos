@@ -27,7 +27,8 @@ const hook = registerHooks({
 });
 let publishResearchResult,
 	prismaPublicationDatabase,
-	FileResearchArtifactStorage;
+	FileResearchArtifactStorage,
+	observationReader;
 try {
 	({ publishResearchResult } = await import(
 		"../src/lib/research-publication.ts"
@@ -38,6 +39,7 @@ try {
 	({ FileResearchArtifactStorage } = await import(
 		"../src/lib/research-publication-storage.ts"
 	));
+	observationReader = await import("../src/lib/research-observations.ts");
 } finally {
 	hook.deregister();
 }
@@ -97,7 +99,7 @@ native(
 		assert.equal(Number(first.reused) + Number(second.reused), 1);
 		assert.equal((await client.analysisResult.findMany()).length, 1);
 		assert.equal(
-			(await client.analysisJob.findUnique({ where: { id: fixture.job.id } }))
+			(await client.p1AnalysisJob.findUnique({ where: { id: fixture.job.id } }))
 				.status,
 			"succeeded",
 		);
@@ -112,7 +114,7 @@ native(
 			put: (...args) => storage.put(...args),
 			verify: async (...args) => {
 				await storage.verify(...args);
-				if (++verifies === 2) {
+				if (++verifies === request.artifacts.length + 1) {
 					await new Promise((resolve) =>
 						setTimeout(
 							resolve,
@@ -133,11 +135,46 @@ native(
 		assert.equal((await client.analysisManifest.findMany()).length, 0);
 		assert.equal(
 			(
-				await client.analysisJobAttempt.findUnique({
+				await client.p1AnalysisJobAttempt.findUnique({
 					where: { id: fixture.attempt.id },
 				})
 			).status,
 			"running",
+		);
+	},
+);
+
+native(
+	"PostgreSQL rejects empty publication and exposes rebound observations to P1 readers",
+	async () => {
+		await assert.rejects(
+			() =>
+				publishResearchResult(
+					{ database, storage },
+					{ ...request, artifacts: [] },
+				),
+			(error) => error.code === "INVALID_OUTPUT",
+		);
+		assert.equal(await client.analysisResult.count(), 0);
+		const receipt = await publishResearchResult({ database, storage }, request);
+		const sql = { query: database.query };
+		const result = await observationReader.readPublishedAnalysis(
+			sql,
+			fixture.job.workspaceId,
+			receipt.resultId,
+		);
+		const observations = [];
+		for await (const observation of observationReader.iterateResearchObservations(
+			sql,
+			storage,
+			result,
+			{ periodRole: "primary" },
+		))
+			observations.push(observation);
+		assert.equal(observations.length, result.primary.metric.rawCount);
+		assert.deepEqual(
+			observations.find((item) => item.id === fixture.location.anchor.id),
+			fixture.location.anchor,
 		);
 	},
 );

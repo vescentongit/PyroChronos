@@ -30,6 +30,10 @@ export function publicationScope(context: PublicationContext): string {
 	).slice(7);
 }
 
+export function publicationResultId(context: PublicationContext): string {
+	return `result-${publicationScope(context)}`;
+}
+
 export function bindResearchProducer(
 	producer: unknown,
 	context: PublicationContext,
@@ -40,6 +44,17 @@ export function bindResearchProducer(
 	const parsed = publicationProducerSchema.safeParse(producer);
 	if (!parsed.success) throw new PublicationFailure("INVALID_OUTPUT");
 	const { result, manifest } = parsed.data;
+	for (const role of result.comparison
+		? ["primary", "comparison"]
+		: ["primary"]) {
+		if (
+			!artifacts.some(
+				(artifact) =>
+					artifact.kind === "observations" && artifact.periodRole === role,
+			)
+		)
+			throw new PublicationFailure("INVALID_OUTPUT");
+	}
 	const area = context.job.input.area;
 	if (
 		result.method.manifestId !== manifest.id ||
@@ -51,7 +66,7 @@ export function bindResearchProducer(
 	const manifestId = `manifest-${scope}`;
 	const payload = {
 		...result,
-		id: `result-${scope}`,
+		id: publicationResultId(context),
 		jobId: context.job.id,
 		workspaceId: context.job.workspaceId,
 		area,

@@ -155,7 +155,7 @@ export async function watchResearch(
     await delay(wait, signal);
     try {
       const next = await researchRequest(
-        `${root(workspace)}/jobs/${encodeURIComponent(job.id)}`,
+        `${root(workspace)}/jobs/${encodeURIComponent(job.id)}?requestId=${encodeURIComponent(body.requestId)}`,
         researchJobSchema,
         signal,
       );

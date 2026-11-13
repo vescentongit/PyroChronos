@@ -78,11 +78,7 @@ async function handle(req: NextRequest, context: Context) {
         }
       } else if (resource === "analyses" && method === "POST" && !id) {
         const input = parse(createResearchAnalysisSchema);
-        ({ value, status } = await db.transaction(async tx => {
-          await workspaceLock(tx, workspace); await member(tx, workspace, user);
-          const submitted = await idempotent(tx, `analysis:${workspace}:${user}`, input.requestId, input, async () => ({ value: await submitAnalysis(tx, workspace, user, input), status: 202 }));
-          return { ...submitted, value: jobWire(await getJobRow(tx, workspace, submitted.value.id)) };
-        }));
+        ({ value, status } = await submitAnalysis(db, workspace, user, input));
       } else if (resource === "jobs" && id && method === "GET") value = jobWire(await getJobRow(db, workspace, id));
       else if (resource === "analyses" && id && method === "GET") {
         const { job, artifact } = await getArtifact(db, workspace, id);

@@ -153,8 +153,11 @@ Satu lokasi dapat mempunyai beberapa assignment dan laporan. Status selesai dipe
 | POST .../exports | export-create → 202 export; 200 jika artefak identik sudah siap |
 | GET .../exports/:id | 200 export |
 | GET .../exports/:id/download | File CSV setelah pemeriksaan akses ulang |
+| GET .../exports/:id/manifest | JSON privat research-export-manifest-1 setelah pemeriksaan akses ulang |
 
 Ekspor menyebut analysisId, periodRole, kind raw-hotspots-csv/harmonized-aggregates-csv, requestId. Resource export berstatus queued/running/ready/failed; hanya ready mempunyai downloadPath aplikasi /api/v2/..., hanya failed mempunyai error. Ekspor besar memakai pekerjaan terpisah/streaming, bukan menahan request analisis. analysisId menunjuk versi hasil yang diunduh, tidak diam-diam memakai latest yang berbeda.
+
+Manifest ekspor mengikuti [export-manifest.schema.json](v2/export-manifest.schema.json), dengan [contoh sintetis](research-export-manifest.examples.json). Manifest mengikat checksum CSV, provenance ilmiah dan snapshot pemeriksaan yang dibekukan saat ekspor dibuat; koreksi berikutnya tidak mengubah ekspor lama. Endpoint manifest dan CSV memeriksa ulang membership aktif, memakai private/no-store, dan tidak mengungkap path storage atau kredensial. Detail operasional tersedia di [research-exports.md](../research-exports.md).
 
 Raw CSV menyimpan observasi asli dalam polygon/periode. CSV agregat menyimpan count estimasi beserta raw per sumber, bucket/status, AOI/revisi, unit/model, baseline dan dataVersion. Jangan mengulang titik centroid untuk membuat jumlah row sama dengan count estimasi. Lindungi CSV terhadap formula injection dan lakukan escaping yang benar.
 

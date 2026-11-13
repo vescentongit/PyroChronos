@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { researchProducerConfigSchema, producerMetadataSchema } from "./research-producer-contracts.ts";
 import {
   createResearchAnalysisSchema,
   researchAreaSchema,
@@ -6,7 +7,7 @@ import {
   researchPeriodSchema,
   researchAnalysisResultSchema,
   monitoringLocationSchema,
-} from "./research-contracts";
+} from "./research-contracts.ts";
 
 // Internal persistence/handoff contracts. They do not replace research-2 API DTOs.
 // P0 identities remain opaque references until workspace/auth integration exists.
@@ -33,12 +34,14 @@ export const analysisJobInputSchema = z.object({
   area: researchAreaSchema,
   request: createResearchAnalysisSchema,
   versions,
+  producer: researchProducerConfigSchema.optional(),
   baselinePolicy: z.object({ version: id, minimumValidYears: z.number().int().positive() }).strict(),
 }).strict().superRefine((value, context) => {
   if (value.area.id !== value.request.areaId || value.area.revision !== value.request.areaRevision)
     reject(context, "Input AOI must match the requested revision");
   if (value.baselinePolicy.minimumValidYears > value.request.baseline.windowYears)
     reject(context, "Minimum history exceeds the reference window");
+  if (value.producer && (value.producer.modelVersion !== value.versions.modelVersion || value.producer.satelliteConfigVersion !== value.versions.satelliteConfigVersion || value.producer.aggregationVersion !== value.versions.aggregationVersion || value.producer.qualityPolicyVersion !== value.request.qualityPolicyVersion || value.producer.baselinePolicyVersion !== value.baselinePolicy.version)) reject(context, "Producer configuration differs from frozen versions");
 });
 
 export const analysisJobRecordSchema = researchJobSchema.safeExtend({
@@ -99,6 +102,7 @@ export const analysisManifestSchema = z.object({
     checksum: checksum.nullable(), batchIds: z.array(id), archiveRevision: id.nullable(),
     ingestedAt: instant.nullable(),
   }).strict()).min(1),
+  producerMetadata: producerMetadataSchema.optional(),
 }).strict().superRefine((value, context) => {
   if (value.trainPeriod && value.testPeriod && value.trainPeriod.end >= value.testPeriod.start)
     reject(context, "Training must precede the inclusive held-out period");
@@ -187,6 +191,7 @@ export const analysisPublicationSchema = z.object({
   if (artifacts.some((a) => a.resultId !== result.id || a.workspaceId !== job.workspaceId ||
       (a.periodRole === "comparison" && p.comparison === null)))
     reject(context, "Artifact scope differs from the result");
+  if (input.producer && (!manifest.producerMetadata || manifest.producerVersion !== input.producer.producerVersion || manifest.buildCommit !== input.producer.buildCommit || manifest.producerMetadata.archiveFingerprint !== input.producer.fingerprint || manifest.producerMetadata.modelChecksum !== input.producer.modelChecksum || manifest.producerMetadata.baselineChecksum !== input.producer.baselineChecksum || manifest.producerMetadata.policyChecksum !== input.producer.policyChecksum)) reject(context, "Producer provenance differs from frozen configuration");
 });
 
 export const monitoringLocationRecordSchema = monitoringLocationSchema.safeExtend({

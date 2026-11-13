@@ -2,11 +2,11 @@
 
 # R2-P1 Step 3: producer validation and atomic publication
 
-The checkout was audited after merge `0f3ce41`. Nathan's `f624709` adds the
-original-detection store, polygon queries, per-source counts and P0 raw
-`research-2` adapter. R2-P1-N4 remains open. No producer, public contract,
-Prisma model, migration, worker, location or report implementation is changed
-by this step.
+Stage 7B connects Nathan's research-2 producer (including available harmonization
+and reference policy), the P1 leased supervisor and this publisher. New API
+submissions enter P1; existing P0 data and legacy reads are retained. Native
+end-to-end tests use explicitly synthetic archives/model snapshots, not a hidden
+production fallback or proof of scientific validity on new domains.
 
 ## Integration boundary
 
@@ -27,26 +27,66 @@ input. A changed archive/model needs a new job; the publisher does not rewrite
 are assigned from database time for the normalized persistence package, rather
 than trusting producer placeholder publication timestamps.
 
-Nathan's P0 `analysis-manifest-1` is not the persistence envelope and is not
-silently relabelled. A complete producer handoff must supply the internal
-envelope with real build/policy/source provenance. The integration test invokes
-Nathan's real raw adapter over synthetic archives, supplies an explicitly
-synthetic envelope with its actual output versions, and verifies that raw counts,
-unsupported status and missing months survive publication. It does not claim
-R2-P1-N4 or scientific validation is complete. Synthetic output stays demo/replay;
-the publisher never promotes a method or substitutes zero for unknown values.
+Observation evidence is mandatory for each published primary/comparison period,
+including an empty research-2 page for a no_data period. Arbitrary JSON, missing
+pages, foreign analysis IDs, unsupported observation formats, invalid source/time/
+polygon references and conflicting duplicate detections fail before storage.
+The publisher uses the same verified observation iterator as locations and exports;
+unique per-period/per-source totals must match the published raw metrics. Unknown
+counts remain null and require no observations, rather than being rewritten as zero.
 
-This module is a server/worker library, not a public route. A deployment wrapper
-must supply its own authenticated worker process and private runtime configuration.
-Membership/resource authorization remains P0 work. The queue supervisor's
-processor hook must call publication before returning; this step does not
-automatically install a production producer or expose a publication endpoint.
+The producer page ID may be its own result ID or the final publication ID. After
+verifying the supplied checksum/size, publication binds every observation page to
+the final result ID, canonicalizes its JSON and recomputes checksum/size/object keys
+before staging. Both single pages and arrays of pages are supported. Caller buffers
+remain unchanged; an identical replay produces identical final metadata even after
+the original lease expires. The shared reader's 128-artifact/64-MiB evidence limits
+also apply at publication, so a successful publication is readable by B2/B4.
+
+`pipeline/research_p1_producer.py` explicitly converts Nathan's
+analysis-manifest-1 into research-manifest-1. It retains the native manifest hash,
+actual source versions/checksums, archive-year checksums, model/baseline/policy
+content hashes and harmonization metadata, with real producer/build provenance.
+Model train/test months become explicit inclusive dates. Model/baseline JSON is
+frozen at registration and forwarded to build_result; daily estimates use the
+same published additive model. Unsupported domains and missing coverage retain
+raw/null behavior. The adapter never promotes method validation. Explicit demo
+registration remains demo throughout publication and export.
+
+This module remains a private worker library with no public publication endpoint.
+The runtime supervisor is pipeline/research_p1_worker.py, launched by
+`npm run research:worker` (or `-- --once`). Its processor runs Nathan's producer
+in a bounded cancellable subprocess, then invokes scripts/research-p1-publish.mjs
+over private stdin. The Node bridge validates the bundle, rebinds daily pages,
+constructs private artifacts and calls this publisher; the supervisor confirms
+the committed result through PostgreSQL before reporting success. The producer
+and publisher use separate processes/connections so heartbeats are not blocked.
+
+Supply private DATABASE_URL, RESEARCH_DATA_DIR and RESEARCH_ARTIFACT_ROOT to both
+worker/server, and RESEARCH_PYTHON/PYTHON where necessary. Registration also accepts
+RESEARCH_MODELS_DIR and RESEARCH_PRODUCER_MODE (research/replay/demo). Apply the
+additive migrations separately. A queued job requires its matching frozen archive
+fingerprint; changed archives fail instead of substituting current data. Model
+file changes do not replace frozen JSON. Re-register to activate new snapshots.
+The private protocol is bounded to 100 MiB, producer observations to 100,000 and
+publication evidence to the reader limits below; failure never truncates data.
+These engineering guards are not measured capacity promises.
+
+P1AnalysisLocationRequest tracks follow-up requests for shared work. Under the
+workspace-before-job lock order, publication commits every pending location link
+with the result. Failure rolls back links, manifests, artifacts and success
+together; no anchor or initial evidence is rewritten. Cached successful results
+can be linked by the authorized submission service without rerunning the producer.
 
 ## Storage and transaction ordering
 
 1. Parse the input, clone producer data/artifact buffers and reject configured
    secrets, the current claim token, or credential-bearing URLs. JSON artifacts are also scanned after
    decoding, so JSON escaping cannot hide secret values.
+   B1, B3 and B4 share the configured secret list, including OAuth/provider secrets,
+   named token/API/private-key/password variables, private-root variants and DSN
+   credentials. Percent-encoded and decoded forms are scanned as well as UUID
+   casing variants. No service keeps a separate, narrower environment allowlist.
 2. Read the actual latest attempt and verify its token, scope and live lease.
    Validate the complete prepared package before storing anything.
 3. Derive result/manifest IDs and artifact key namespaces from the job/workspace/

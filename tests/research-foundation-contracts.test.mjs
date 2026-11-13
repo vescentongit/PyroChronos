@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { foundationFixture } from './helpers/research-foundation-fixtures.mjs';
 
 const hook = registerHooks({ resolve(specifier, context, next) {
-  return next(context.parentURL?.endsWith('/research-foundation-contracts.ts') && specifier.startsWith('./')
+  return next(context.parentURL?.endsWith('/research-foundation-contracts.ts') && specifier.startsWith('./') && !specifier.endsWith('.ts')
     ? `${specifier}.ts` : specifier, context);
 } });
 let contracts;

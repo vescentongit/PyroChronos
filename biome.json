@@ -1,10 +1,44 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
-  "files": {
-    "includes": ["src/lib/firms-proxy.ts", "src/app/api/firms/route.ts", "tests/firms-proxy.test.mjs", "tests/helpers/postgres-bridge.mjs", "scripts/smoke.mjs", "src/lib/research-publication*.ts", "tests/research-publication*.test.mjs", "tests/helpers/research-publication-fixtures.mjs"]
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {"preset": "recommended"}
-  }
+	"$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+	"files": {
+		"includes": [
+			"src/lib/firms-proxy.ts",
+			"src/app/api/firms/route.ts",
+			"tests/firms-proxy.test.mjs",
+			"tests/helpers/postgres-bridge.mjs",
+			"scripts/smoke.mjs",
+			"src/lib/research-publication*.ts",
+			"tests/research-publication*.test.mjs",
+			"tests/helpers/research-publication-fixtures.mjs",
+			"src/lib/monitoring-location*.ts",
+			"src/app/api/v2/workspaces/**/route.ts",
+			"tests/monitoring-location*.test.mjs",
+			"tests/helpers/monitoring-location-fixtures.mjs",
+			"src/lib/research-inspection*.ts",
+			"src/lib/inspection-assignments.ts",
+			"src/lib/research-reports.ts",
+			"src/lib/research-audit.ts",
+			"src/lib/research-http.ts",
+			"tests/research-inspections*.test.mjs",
+			"tests/inspection-transitions.test.mjs",
+			"tests/helpers/research-inspection-fixtures.mjs",
+			"src/lib/research-export*.ts",
+			"src/lib/research-producer*.ts",
+			"src/lib/research-analys*.ts",
+			"scripts/research-worker.mjs",
+			"scripts/research-p1-publish.mjs",
+			"tests/research-p1*.test.mjs",
+			"tests/research-producer-contracts.test.mjs",
+			"tests/research-analyses-api.test.mjs",
+			"src/lib/research-observations.ts",
+			"src/lib/research-report-projection.ts",
+			"scripts/research-export-worker.mjs",
+			"tests/research-export*.test.mjs",
+			"tests/helpers/research-export-fixtures.mjs"
+		]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": { "preset": "recommended" }
+	}
 }

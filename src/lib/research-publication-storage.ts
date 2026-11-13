@@ -63,15 +63,34 @@ export class FileResearchArtifactStorage
 	}
 
 	async put(key: string, content: Uint8Array): Promise<void> {
+		const copy = Uint8Array.from(content);
+		await this.putStream(
+			key,
+			(async function* () {
+				yield copy;
+			})(),
+		);
+	}
+
+	async putStream(
+		key: string,
+		source: AsyncIterable<Uint8Array>,
+	): Promise<{ checksum: string; bytes: number }> {
 		let temporary: string | undefined;
 		try {
-			if (content.byteLength > this.maxBytes)
-				throw new PublicationFailure("STORAGE_FAILED");
+			const hash = createHash("sha256");
+			let bytes = 0;
 			const target = await this.target(key, true);
 			temporary = join(dirname(target), `.publication-${randomUUID()}`);
 			const handle = await open(temporary, "wx", 0o600);
 			try {
-				await handle.writeFile(content);
+				for await (const chunk of source) {
+					bytes += chunk.byteLength;
+					if (bytes > this.maxBytes)
+						throw new PublicationFailure("STORAGE_FAILED");
+					hash.update(chunk);
+					await handle.writeFile(chunk);
+				}
 				await handle.sync();
 			} finally {
 				await handle.close();
@@ -87,11 +106,9 @@ export class FileResearchArtifactStorage
 				)
 					throw error;
 			});
-			await this.verify(
-				key,
-				`sha256:${createHash("sha256").update(content).digest("hex")}`,
-				content.byteLength,
-			);
+			const checksum = `sha256:${hash.digest("hex")}`;
+			await this.verify(key, checksum, bytes);
+			return { checksum, bytes };
 		} catch (error: unknown) {
 			throw publicationFailure(error, "STORAGE_FAILED");
 		} finally {
@@ -100,6 +117,27 @@ export class FileResearchArtifactStorage
 	}
 
 	async verify(key: string, checksum: string, bytes: number): Promise<void> {
+		await this.inspect(key, checksum, bytes);
+	}
+
+	async read(
+		key: string,
+		checksum: string,
+		bytes: number,
+	): Promise<Uint8Array> {
+		const chunks: Buffer[] = [];
+		await this.inspect(key, checksum, bytes, (chunk) => {
+			chunks.push(Buffer.from(chunk));
+		});
+		return Buffer.concat(chunks);
+	}
+
+	private async inspect(
+		key: string,
+		checksum: string,
+		bytes: number,
+		onChunk?: (chunk: Uint8Array) => void,
+	): Promise<void> {
 		try {
 			const target = await this.target(key, false);
 			const info = await lstat(target);
@@ -126,6 +164,7 @@ export class FileResearchArtifactStorage
 					read += chunk.byteLength;
 					if (read > bytes) throw new PublicationFailure("ARTIFACT_MISMATCH");
 					hash.update(chunk);
+					onChunk?.(chunk);
 				}
 				if (read !== bytes || `sha256:${hash.digest("hex")}` !== checksum)
 					throw new PublicationFailure("ARTIFACT_MISMATCH");

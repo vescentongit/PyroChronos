@@ -13,7 +13,17 @@ import {
 	pgliteDatabase,
 	publicationFixture,
 	seedPublication,
+	sha256,
+	observationArtifacts,
 } from "./helpers/research-publication-fixtures.mjs";
+import { loadInspectionModule } from "./helpers/research-inspection-fixtures.mjs";
+const observationReader = await loadInspectionModule("research-observations");
+const evidenceReader = await loadInspectionModule(
+	"monitoring-location-evidence",
+);
+const locationService = await loadInspectionModule("monitoring-locations");
+const exportService = await loadInspectionModule("research-exports");
+const exportWorker = await loadInspectionModule("research-export-worker");
 
 const hook = registerHooks({
 	resolve(specifier, context, next) {
@@ -63,6 +73,8 @@ beforeEach(async () => {
 	await applyResearchMigrations(db);
 	database = pgliteDatabase(db);
 	({ request, fixture } = publicationFixture());
+	fixture.attempt.leaseToken = request.claim.leaseToken =
+		"abcdefab-abcd-4abc-8abc-abcdefabcdef";
 	await seedPublication(database, fixture);
 	storage = new storageModule.FileResearchArtifactStorage(
 		path.join(root, String(sequence)),
@@ -81,6 +93,218 @@ const fails = (run, code) =>
 		(error) => error.code === code && !error.message.includes("sentinel"),
 	);
 
+test("publication rejects absent, malformed and foreign observation pages before storage", async () => {
+	const page = {
+		schemaVersion: "research-2",
+		analysisId: request.producer.result.id,
+		periodRole: "primary",
+		observations: [fixture.location.anchor],
+		nextCursor: null,
+	};
+	for (const artifacts of [
+		[],
+		[artifact("daily")],
+		[artifact("observations", Buffer.from('{"synthetic":true}'))],
+		[artifact("observations", Buffer.from("[]"))],
+		[
+			artifact(
+				"observations",
+				Buffer.from(
+					JSON.stringify({ ...page, analysisId: "foreign-analysis" }),
+				),
+			),
+		],
+		[
+			artifact(
+				"observations",
+				Buffer.from(
+					JSON.stringify({
+						...page,
+						observations: [{ ...fixture.location.anchor, coordinates: [0, 0] }],
+					}),
+				),
+			),
+		],
+	]) {
+		request.artifacts = artifacts;
+		await fails(() => publish(), "INVALID_OUTPUT");
+	}
+	assert.equal((await rows("AnalysisResult")).length, 0);
+	assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+	assert.equal((await rows("P1AnalysisJob"))[0].status, "running");
+});
+
+test("publication rejects incomplete evidence and source totals before staging", async () => {
+	request.artifacts = observationArtifacts(request.producer.result, []);
+	await fails(() => publish(), "INVALID_OUTPUT");
+	assert.equal((await rows("AnalysisResult")).length, 0);
+});
+
+test("B1 publication rebinds producer pages for B2 marking and B4 raw exports", async () => {
+	makeRawResult(request);
+	const result = request.producer.result;
+	const metric = (count) => ({
+		rawCount: count,
+		harmonizedCount: null,
+		rawCountsBySource: Object.fromEntries(
+			result.sources.map((s) => [
+				s.id,
+				s.id === fixture.location.anchor.sourceId ? count : 0,
+			]),
+		),
+		status: "method_unsupported",
+	});
+	result.primary.metric = metric(1);
+	result.comparison.metric = metric(0);
+	for (const month of result.months) month.metric = metric(1);
+	const pages = [
+		{
+			schemaVersion: "research-2",
+			analysisId: result.id,
+			periodRole: "primary",
+			observations: [fixture.location.anchor],
+			nextCursor: null,
+		},
+		{
+			schemaVersion: "research-2",
+			analysisId: result.id,
+			periodRole: "comparison",
+			observations: [],
+			nextCursor: null,
+		},
+	];
+	request.artifacts = pages.map((page, index) => ({
+		...artifact(
+			"observations",
+			Buffer.from(JSON.stringify(index === 0 ? [page] : page, null, 2)),
+		),
+		periodRole: page.periodRole,
+	}));
+	const original = request.artifacts.map((a) => Buffer.from(a.content));
+	const receipt = await publish();
+	const published = await observationReader.readPublishedAnalysis(
+		database,
+		fixture.job.workspaceId,
+		receipt.resultId,
+	);
+	assert.notEqual(published.id, result.id);
+	assert.deepEqual(
+		await evidenceReader.findOriginalObservation(
+			database,
+			storage,
+			published,
+			fixture.location.anchor.id,
+		),
+		fixture.location.anchor,
+	);
+	for (const role of ["primary", "comparison"]) {
+		const values = [];
+		for await (const value of observationReader.iterateResearchObservations(
+			database,
+			storage,
+			published,
+			{ periodRole: role },
+		))
+			values.push(value);
+		assert.deepEqual(
+			values,
+			role === "primary" ? [fixture.location.anchor] : [],
+		);
+	}
+	const metadata = await rows("P1AnalysisArtifact");
+	for (const item of metadata) {
+		const bytes = await storage.read(
+			item.objectKey,
+			item.checksum,
+			Number(item.bytes),
+		);
+		const document = JSON.parse(Buffer.from(bytes).toString("utf8"));
+		for (const page of Array.isArray(document) ? document : [document])
+			assert.equal(page.analysisId, receipt.resultId);
+	}
+	assert.deepEqual(
+		request.artifacts.map((a) => Buffer.from(a.content)),
+		original,
+	);
+	assert.equal((await publish()).reused, true);
+	const workspace = fixture.job.workspaceId,
+		user = fixture.job.requestedById;
+	await database.query('INSERT INTO "User" (id,name) VALUES ($1,$2)', [
+		user,
+		"Synthetic publisher integration",
+	]);
+	await database.query(
+		'INSERT INTO "Workspace" (id,name,"createdById") VALUES ($1,$2,$3)',
+		[workspace, "Synthetic integration workspace", user],
+	);
+	await database.query(
+		'INSERT INTO "Membership" ("workspaceId","userId",role) VALUES ($1,$2,\'owner\')',
+		[workspace, user],
+	);
+	const location = await locationService.createMonitoringLocation(
+		{ database, artifacts: storage },
+		workspace,
+		user,
+		{
+			requestId: "99999999-9999-4999-8999-999999999999",
+			analysisId: receipt.resultId,
+			anchorDetectionId: fixture.location.anchor.id,
+			name: "Published anchor",
+		},
+	);
+	assert.deepEqual(location.anchor, fixture.location.anchor);
+	const dependencies = { database, storage };
+	const queued = await exportService.createResearchExport(
+		dependencies,
+		workspace,
+		user,
+		{
+			requestId: "99999999-9999-4999-8999-999999999998",
+			analysisId: receipt.resultId,
+			periodRole: "primary",
+			kind: "raw-hotspots-csv",
+		},
+	);
+	assert.equal(
+		(await exportWorker.runResearchExportOnce(dependencies)).status,
+		"ready",
+	);
+	const download = await exportService.getResearchExportDownload(
+		dependencies,
+		workspace,
+		user,
+		queued.value.id,
+	);
+	const chunks = [];
+	for await (const chunk of download.content) chunks.push(chunk);
+	assert.match(Buffer.concat(chunks).toString("utf8"), /detection-demo/);
+});
+
+test("OAuth secrets cannot enter producer metadata or observations", async () => {
+	const previous = process.env.AUTH_GOOGLE_SECRET;
+	process.env.AUTH_GOOGLE_SECRET = 'synthetic-google/private:"sentinel';
+	try {
+		for (const variant of [
+			process.env.AUTH_GOOGLE_SECRET,
+			encodeURIComponent(process.env.AUTH_GOOGLE_SECRET),
+		]) {
+			request.producer.manifest.sourceSnapshots[0].archiveRevision = variant;
+			await fails(() => publish(), "UNSAFE_METADATA");
+			request.producer.manifest.sourceSnapshots[0].archiveRevision =
+				"synthetic-archive-1";
+			request.artifacts = observationArtifacts(request.producer.result, [
+				{ ...fixture.location.anchor, confidence: variant },
+			]);
+			await fails(() => publish(), "UNSAFE_METADATA");
+		}
+		assert.equal((await rows("AnalysisManifest")).length, 0);
+		assert.equal((await rows("AnalysisResult")).length, 0);
+	} finally {
+		if (previous === undefined) delete process.env.AUTH_GOOGLE_SECRET;
+		else process.env.AUTH_GOOGLE_SECRET = previous;
+	}
+});
+
 test("raw unsupported output publishes one immutable result with verified private artifacts", async () => {
 	makeRawResult(request);
 	const result = await publish();
@@ -92,14 +316,17 @@ test("raw unsupported output publishes one immutable result with verified privat
 	const [stored] = await rows("AnalysisResult");
 	assert.equal(stored.payload.primary.metric.harmonizedCount, null);
 	assert.equal(stored.payload.method.validation, "unsupported");
-	const [metadata] = await rows("P1AnalysisArtifact");
-	assert.equal(metadata.checksum, request.artifacts[0].checksum);
-	assert.equal(Number(metadata.bytes), request.artifacts[0].bytes);
-	assert.match(metadata.objectKey, /^research\/[a-f0-9]{64}\//);
-	assert.deepEqual(
-		await readFile(path.join(storage.root, metadata.objectKey)),
-		request.artifacts[0].content,
+	const metadata = (await rows("P1AnalysisArtifact")).find(
+		(item) => item.periodRole === "primary",
 	);
+	const bytes = await readFile(path.join(storage.root, metadata.objectKey));
+	assert.equal(metadata.checksum, sha256(bytes));
+	assert.equal(Number(metadata.bytes), bytes.byteLength);
+	assert.match(metadata.objectKey, /^research\/[a-f0-9]{64}\//);
+	assert.deepEqual(JSON.parse(bytes.toString("utf8")), {
+		...JSON.parse(Buffer.from(request.artifacts[0].content).toString("utf8")),
+		analysisId: result.resultId,
+	});
 	assert.equal((await rows("AnalysisManifest")).length, 1);
 });
 
@@ -120,6 +347,7 @@ test("missing counts stay null after publication", async () => {
 			status: "no_data",
 		};
 	}
+	request.artifacts = observationArtifacts(request.producer.result);
 	await publish();
 	assert.equal(
 		(await rows("AnalysisResult"))[0].payload.primary.metric.rawCount,
@@ -206,6 +434,15 @@ test("Nathan raw producer output passes publication without promoting its scient
 			})),
 		},
 	};
+	request.artifacts = await Promise.all(
+		["primary", "comparison"].map(async (role) => ({
+			...artifact(
+				"observations",
+				await readFile(path.join(output, `publication-${role}.json`)),
+			),
+			periodRole: role,
+		})),
+	);
 	await seedPublication(database, fixture);
 	const receipt = await publish();
 	const stored = (await rows("AnalysisResult")).find(
@@ -287,7 +524,8 @@ test("unavailable artifact is rejected by the final verification inside the tran
 	const unavailable = {
 		put: (...args) => storage.put(...args),
 		verify: async (...args) => {
-			if (++verifies === 2) throw new Error("not available");
+			if (++verifies === request.artifacts.length + 1)
+				throw new Error("not available");
 			return storage.verify(...args);
 		},
 	};
@@ -348,6 +586,55 @@ test("the claim lease token is automatically rejected from metadata and artifact
 	assert.ok(!JSON.stringify(events).includes(request.claim.leaseToken));
 });
 
+test("mixed-case lease tokens cannot leak into manifests or artifacts", async () => {
+	const token = "abcdefab-abcd-4abc-8abc-abcdefabcdef";
+	const snapshot = request.producer.manifest.sourceSnapshots[0];
+	const original = snapshot.archiveRevision;
+	for (const claim of [token, token.toUpperCase()]) {
+		request.claim.leaseToken = claim;
+		const variant = "aBcDeFaB-AbCd-4aBc-8AbC-aBcDeFaBcDeF";
+		snapshot.archiveRevision = variant;
+		await fails(() => publish(), "UNSAFE_METADATA");
+		snapshot.archiveRevision = original;
+		request.artifacts[0] = artifact(
+			"observations",
+			Buffer.from(JSON.stringify({ lease: variant })),
+		);
+		await fails(() => publish(), "UNSAFE_METADATA");
+		request.artifacts[0] = artifact();
+	}
+	assert.equal((await rows("AnalysisResult")).length, 0);
+	assert.equal((await rows("AnalysisManifest")).length, 0);
+	assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+	assert.deepEqual(
+		events,
+		Array(4).fill({ status: "failed", code: "UNSAFE_METADATA" }),
+	);
+	await publish();
+});
+
+test("DSN passwords cannot be published as archive revisions", async () => {
+	const previous = process.env.DATABASE_URL;
+	const password = "publication/DSN-password-sentinel";
+	process.env.DATABASE_URL = `postgresql://publication-user:${encodeURIComponent(password)}@127.0.0.1/research_worker_test`;
+	try {
+		for (const variant of [password, encodeURIComponent(password)]) {
+			request.producer.manifest.sourceSnapshots[0].archiveRevision = variant;
+			await fails(() => publish(), "UNSAFE_METADATA");
+		}
+		assert.equal((await rows("AnalysisResult")).length, 0);
+		assert.equal((await rows("AnalysisManifest")).length, 0);
+		assert.equal((await rows("P1AnalysisArtifact")).length, 0);
+		assert.deepEqual(
+			events,
+			Array(2).fill({ status: "failed", code: "UNSAFE_METADATA" }),
+		);
+	} finally {
+		if (previous === undefined) delete process.env.DATABASE_URL;
+		else process.env.DATABASE_URL = previous;
+	}
+});
+
 test("untrusted dependency error codes cannot leak through returned errors or logs", async () => {
 	const secret = "private-adapter-error-sentinel";
 	for (const forged of [
@@ -397,7 +684,23 @@ test("retry after an ambiguous committed response reuses the same result without
 	assert.equal(recovered.resultId, original.id);
 	assert.equal(recovered.reused, true);
 	assert.equal((await rows("AnalysisResult")).length, 1);
-	assert.equal((await rows("P1AnalysisArtifact")).length, 1);
+	assert.equal(
+		(await rows("P1AnalysisArtifact")).length,
+		request.artifacts.length,
+	);
+});
+
+test("a committed publication remains replayable after its original lease deadline", async () => {
+	const original = await publish();
+	const future = async (sql, params) =>
+		(await database.query(sql, params)).map((row) =>
+			row.job && row.attempt
+				? { ...row, now: new Date(Date.now() + 86400000) }
+				: row,
+		);
+	const recovered = await publish({ database: { ...database, query: future } });
+	assert.equal(recovered.resultId, original.resultId);
+	assert.equal(recovered.reused, true);
 });
 
 test("a changed retry conflicts while the original result and bytes remain intact", async () => {
@@ -411,6 +714,9 @@ test("a failed new job preserves an earlier published result and its readable ar
 	const original = await publish();
 	const previous = (await rows("AnalysisResult"))[0];
 	const metadata = (await rows("P1AnalysisArtifact"))[0];
+	const previousBytes = await readFile(
+		path.join(storage.root, metadata.objectKey),
+	);
 	({ request, fixture } = publicationFixture());
 	fixture.job.id = "new-job";
 	fixture.job.requestId = fixture.job.input.request.requestId =
@@ -435,7 +741,7 @@ test("a failed new job preserves an earlier published result and its readable ar
 	);
 	assert.deepEqual(
 		await readFile(path.join(storage.root, metadata.objectKey)),
-		artifact().content,
+		previousBytes,
 	);
 });
 

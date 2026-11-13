@@ -14,7 +14,13 @@ import {
 	bindResearchProducer,
 	publicationProducerSchema,
 	publicationScope,
+	publicationResultId,
 } from "./research-publication-producer";
+import {
+	publicationArtifactInputSchema,
+	bindPublicationArtifacts,
+	validatePublicationObservations,
+} from "./research-publication-artifacts.ts";
 import type { PrivateResearchArtifactStorage } from "./research-publication-storage";
 import {
 	assertPublicationMetadataSafe,
@@ -28,16 +34,7 @@ import {
 
 export { PublicationFailure } from "./research-publication-values";
 
-const artifactInput = analysisArtifactSchema
-	.pick({
-		kind: true,
-		periodRole: true,
-		format: true,
-		checksum: true,
-		bytes: true,
-	})
-	.extend({ content: z.instanceof(Uint8Array) })
-	.strict();
+const artifactInput = publicationArtifactInputSchema;
 const requestSchema = z
 	.object({
 		claim: z
@@ -45,11 +42,11 @@ const requestSchema = z
 				jobId: z.string().min(1).max(200),
 				workspaceId: z.string().min(1).max(200),
 				attemptId: z.string().min(1).max(200),
-				leaseToken: z.string().uuid(),
+				leaseToken: z.string().uuid().toLowerCase(),
 			})
 			.strict(),
 		producer: z.unknown(),
-		artifacts: z.array(artifactInput),
+		artifacts: z.array(artifactInput).min(1),
 	})
 	.strict();
 
@@ -176,8 +173,20 @@ export async function publishResearchResult(
 		}
 		requireOwner(initial, true);
 		assertPublicationMetadataSafe(initial.job.input, secrets);
-		const metadata = metadataFor(request.artifacts, initial);
+		const artifacts = bindPublicationArtifacts(
+			request.artifacts,
+			request.producer.result.id,
+			publicationResultId(initial),
+		);
+		for (const artifact of artifacts)
+			assertPublicationSafe(artifact.content, secrets);
+		const metadata = metadataFor(artifacts, initial);
 		assertPublicationMetadataSafe(metadata, secrets);
+		await validatePublicationObservations(
+			{ ...request.producer.result, id: publicationResultId(initial) },
+			metadata,
+			artifacts,
+		);
 
 		if (initial.job.status === "running") {
 			bindResearchProducer(
@@ -191,7 +200,7 @@ export async function publishResearchResult(
 				for (let index = 0; index < metadata.length; index++) {
 					await dependencies.storage.put(
 						metadata[index].objectKey,
-						request.artifacts[index].content,
+						artifacts[index].content,
 					);
 				}
 			} catch (error: unknown) {

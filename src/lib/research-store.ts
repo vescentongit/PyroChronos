@@ -71,7 +71,8 @@ export function jobWire(row: Row) {
     // A reused computation can predate this submission; expose its lifecycle consistently.
     createdAt: iso(row.input.createdAt), startedAt: iso(row.startedAt), completedAt: iso(row.completedAt), resultId: row.status === "succeeded" ? row.id : null, error: row.error });
 }
-export async function submitAnalysis(db: Sql, workspace: string, user: string, body: Row) {
+export { submitP1Analysis as submitAnalysis } from "./research-analysis-submissions.ts";
+export async function submitLegacyAnalysis(db: Sql, workspace: string, user: string, body: Row) {
   const today = new Date().toISOString().slice(0, 10);
   if ([body.period, body.comparisonPeriod].filter(Boolean).some(p => p.end > today) || body.baseline.windowYears > 30 || body.monitoringLocationId !== null) fail("INVALID_REQUEST");
   const area = await getArea(db, workspace, body.areaId);

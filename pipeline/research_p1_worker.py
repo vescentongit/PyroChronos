@@ -102,3 +102,8 @@ class ResearchWorker:
                 await asyncio.gather(work, stopping, return_exceptions=True)
             with suppress(TimeoutError):
                 await asyncio.wait_for(stop.wait(), self.queue.policy.poll_seconds)
+
+
+if __name__ == "__main__":
+    from research_p1_runtime import run
+    raise SystemExit(run())
