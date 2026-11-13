@@ -41,7 +41,7 @@ Implementasi frontend P0 tersedia; 31 tes, typecheck, build dan browser acceptan
 
 ## P1 — Fitur inti versi pertama
 
-Pembaruan 13 November 2026: jalur analisis anonim memuat model harmonisasi beserta baseline; kalender tahun × bulan dan ringkasan perbandingan/anomali tersedia. Penggunaan web tidak memerlukan OAuth atau membership. Pekerjaan kolaborasi server pada checklist lama bukan prasyarat versi lokal. O1/O2 menunggu acceptance browser/review; O3/O4 masih perlu dilanjutkan. Lihat [status aktif](../docs/current-status.md).
+Pembaruan 13 November 2026: O1–O4 Orkhan sudah diimplementasikan pada alur lokal tanpa login, dengan kalender/perbandingan/anomali, lokasi, penugasan/pemeriksaan/koreksi dan ekspor. Acceptance sintetis desktop/mobile serta review finish otomatis lulus; review manusia Nathan dan demonstrasi dataset aktif belum dilakukan. Checklist selesai/direview tetap terbuka. Kolaborasi server bukan prasyarat versi lokal. [Bukti Sprint 2](../docs/orkhan-sprint-2-progress.md).
 
 ### Nathan
 

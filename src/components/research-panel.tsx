@@ -33,6 +33,9 @@ import {
 import { ResearchApiError } from "@/lib/research-client";
 import demo from "@/lib/fixtures/research-demo.json";
 import { ResearchSummary } from "@/components/research-summary";
+import { ResearchMonitoring } from "@/components/research-monitoring";
+import { ResearchExports } from "@/components/research-exports";
+import type { Detection, LocalLocation } from "@/lib/local-monitoring";
 
 const labels: Record<string, [string, string]> = {
   fixture_points: [
@@ -131,6 +134,7 @@ export type ResearchOverlay = {
   geometry: AreaPolygon | null;
   features: FeatureCollection<Point>["features"];
   label: string;
+  onSelect?: (id: string) => void;
 };
 
 export default function ResearchPanel({
@@ -197,6 +201,9 @@ export default function ResearchPanel({
   const [cursor, setCursor] = useState<string | null>(null);
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [points, setPoints] = useState<ResearchOverlay["features"]>([]);
+  const [observations, setObservations] = useState<Detection[]>([]);
+  const [activeDetection, setActiveDetection] = useState<{ id: string } | null>(null);
+  const selectDetection = (id: string) => setActiveDetection({ id });
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [history, setHistory] = useState<ReturnType<typeof researchHistory>>([]);
   const request = useRef<ReturnType<typeof requestIdentity> | null>(null);
@@ -350,12 +357,15 @@ export default function ResearchPanel({
     setDetailStatus("");
     setCursor(null);
     setPoints([]);
+    setObservations([]);
+    setActiveDetection(null);
     setLoadingPoints(false);
     setMapStatus("idle");
     onOverlay({
       geometry: next.area.geometry,
       features: [],
       label: `${next.mode.toUpperCase()} · ${next.area.name} · ${next.primary.period.start} → ${next.primary.period.end} UTC`,
+      onSelect: selectDetection,
     });
   }
   async function analyze() {
@@ -471,6 +481,7 @@ export default function ResearchPanel({
       if (!controller.signal.aborted) {
         setDays(page);
         setDetailStatus("");
+        onOverlay({ geometry: result.area.geometry, features: points.filter(point => String(point.properties?.observedAt).startsWith(month)), label: `${result.mode.toUpperCase()} · ${result.area.name} · ${month} UTC`, onSelect: selectDetection });
       }
     } catch (reason) {
       if (!controller.signal.aborted)
@@ -498,6 +509,7 @@ export default function ResearchPanel({
       if (page.analysisId !== result.id || page.periodRole !== "primary")
         throw new ResearchApiError("INVALID_RESPONSE");
       if (controller.signal.aborted) return;
+      setObservations(current => [...current, ...page.observations.filter(point => !current.some(item => item.id === point.id))]);
       const seen = new Set(points.map((point) => point.id));
       const next = [
         ...points,
@@ -512,6 +524,7 @@ export default function ResearchPanel({
             },
             properties: {
               count: 1,
+              observationId: point.id,
               observedAt: point.observedAt,
               source: point.sourceId,
             },
@@ -525,8 +538,9 @@ export default function ResearchPanel({
       );
       onOverlay({
         geometry: result.area.geometry,
-        features: next,
-        label: `${result.mode.toUpperCase()} · ${result.area.name} · ${result.primary.period.start} → ${result.primary.period.end} UTC`,
+        features: days ? next.filter(point => String(point.properties?.observedAt).startsWith(days.month)) : next,
+        label: `${result.mode.toUpperCase()} · ${result.area.name} · ${days ? days.month : `${result.primary.period.start} → ${result.primary.period.end}`} UTC`,
+        onSelect: selectDetection,
       });
     } catch (reason) {
       if (!controller.signal.aborted)
@@ -536,6 +550,15 @@ export default function ResearchPanel({
     } finally {
       if (!controller.signal.aborted) setLoadingPoints(false);
     }
+  }
+  function reuseLocation(location: LocalLocation) {
+    const area = location.initialAnalysis.area;
+    setVertices(area.geometry.coordinates[0].slice(0, -1) as Vertex[]);
+    setPolygon(area.geometry);
+    onDraft(area.geometry);
+    setName(area.name);
+    setDrawing(false);
+    setupHost?.scrollIntoView({ block: "start", behavior: "instant" });
   }
   return (
     <div className="research-panel">
@@ -896,6 +919,7 @@ export default function ResearchPanel({
               )}
             </p>
             <ResearchSummary result={result} english={language === "en"} onMonth={month => void loadDays(month)} />
+            <ResearchExports key={result.id} result={result} english={language === "en"} demoPoints={resultKey.current === "synthetic-fixture" ? researchDetectionsPageSchema.parse(demo["detections-page"]).observations : undefined} />
             <div className="table-scroll">
               <table>
                 <caption>
@@ -1008,6 +1032,7 @@ export default function ResearchPanel({
           </section>,
           resultsHost,
         )}
+      {resultsHost && createPortal(<ResearchMonitoring result={result} observations={days ? observations.filter(point => point.observedAt.startsWith(days.month)) : observations} activeDetection={activeDetection} english={language === "en"} onReuse={reuseLocation} />, resultsHost)}
     </div>
   );
 }

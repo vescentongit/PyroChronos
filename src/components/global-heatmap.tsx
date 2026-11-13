@@ -115,6 +115,8 @@ function HeatSurface({
   languageRef.current = language;
   const editRef = useRef({ drawing, onAddVertex });
   editRef.current = { drawing, onAddVertex };
+  const researchRef = useRef(research);
+  researchRef.current = research;
   const sketch = researchMapGeometry(vertices, draft, research?.geometry ?? null, drawing);
   const features = sketch.editing ? [] : research ? research.features : (data?.features ?? []);
   useEffect(() => {
@@ -283,11 +285,15 @@ function HeatSurface({
               +event.lngLat.wrap().lng.toFixed(6),
               +event.lngLat.lat.toFixed(6),
             ]);
+          else if (!editRef.current.drawing && researchRef.current?.features.length && map?.getLayoutProperty("density", "visibility") !== "none")
+            map?.easeTo({ center: event.lngLat, zoom: Math.min(map.getZoom() + 2, 19) });
         });
         map.on("click", "points", (event) => {
           if (editRef.current.drawing) return;
           const feature = event.features?.[0];
           if (!map || !feature || feature.geometry.type !== "Point") return;
+          const id = feature.properties.observationId;
+          if (typeof id === "string" && researchRef.current?.features.some(point => point.properties?.observationId === id)) researchRef.current.onSelect?.(id);
           new maplibregl.Popup()
             .setLngLat(feature.geometry.coordinates as [number, number])
             .setText(
@@ -884,7 +890,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
         </button>
       </div>
       <div ref={setSetupHost} hidden={mode !== "research"} />
-      <div ref={setResultsHost} hidden={mode !== "research"} />
+      <div className="research-output" ref={setResultsHost} hidden={mode !== "research"} />
       <details className="region-metadata">
         <summary>
           {t(

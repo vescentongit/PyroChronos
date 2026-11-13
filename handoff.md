@@ -12,10 +12,10 @@ Worker anonim kini memasok model dan baseline ke producer serta estimasi harian.
 
 Kalteng/Papua tidak didukung model terbitan: estimasi null merupakan hasil yang benar. Model hanya memiliki evaluasi retrospektif pada domain tertentu. Arsip lokal yang kosong menghasilkan no_data.
 
-Build lengkap, typecheck, contract checks, tes harmonisasi dan tes API anonim terkait lulus. Rincian ada di docs/current-status.md. Playwright MCP gagal memulai Chrome; QA visual perubahan baru belum selesai.
+O1–O4 lokal kini tersedia: kalender/perbandingan/anomali, heatmap zoom → titik asli, lokasi persisten, penugasan/pemeriksaan/koreksi dan ekspor CSV/JSON/PNG. CSV kosong memiliki baris recordType=metadata; bukan observasi sintetis. Build lengkap, typecheck, kontrak dan suite Node terbaru lulus (122 pass, dua skip native). Playwright MCP berhasil pada context terisolasi desktop/mobile dan alur sintetis penuh; review finish independen ship. Rincian: docs/orkhan-sprint-2-progress.md. Ini bukan review manusia Nathan atau validasi dataset aktif.
 
 ## Pekerjaan berikutnya
 
-Lanjutkan acceptance kalender/perbandingan pada desktop/mobile, detail dan penandaan lokasi lokal, pemeriksaan/koreksi lokal serta ekspor CSV/PNG. Data dan metadata semua keluaran harus menunjuk hasil/area/periode/metode yang sama. Review manusia dan checklist sprint penuh tetap terbuka. Persyaratan kolaborasi workspace server lama perlu dipetakan ke alur lokal; jangan mengarang sinkronisasi atau identitas terverifikasi.
+Siapkan review Nathan dan demonstrasi atas dataset aktif yang sudah tersedia; checklist sprint penuh tetap menunggu bukti manusia/integrasi tersebut. Berikutnya dapat mengerjakan P2 benchmark dan audit pengguna sesuai tracker. Jangan mengarang sinkronisasi lintas perangkat, identitas terverifikasi, cakupan arsip atau validasi domain. Script browser baru: scripts/research-sprint2-browser-check.mjs; screenshot/unduhan/results.json di .cache/sprint2-acceptance.
 
 Tidak ada migrasi atau penulisan database remote dalam kelanjutan ini. Jangan mencetak .env atau mengganti/menghapus dataset pengguna. Periksa git status sebelum mengedit; perubahan belum di-commit.
