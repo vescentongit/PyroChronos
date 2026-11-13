@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
+
 # PyroChronos API & payload contract v1.0
 
 > **Legacy — kompatibilitas prototype.** Pekerjaan produk baru mengikuti [API riset v2](api-v2.md) dan [rencana migrasi](migration-v1-v2.md). Aturan wilayah tetap, sel-hari dan koordinator di dokumen ini hanya berlaku bagi consumer v1; bukan scope produk terbaru. Payload/endpoint v1 tidak diubah diam-diam.

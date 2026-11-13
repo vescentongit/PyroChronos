@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
+
 # Globe geography
 
 `ne_110m_land.json`: Natural Earth land polygons, 1:110m scale, downloaded from [martynafford/natural-earth-geojson](https://github.com/martynafford/natural-earth-geojson/blob/master/110m/physical/ne_110m_land.json). Natural Earth data is [public domain](https://www.naturalearthdata.com/about/terms-of-use/). Used for the decorative geographic globe, not for study-region boundaries or fire analysis.

@@ -18,7 +18,7 @@ async function handle(req: NextRequest, context: Context) {
     const method = req.method;
     if (method !== "GET") {
       const origin = req.headers.get("origin");
-      if (origin && origin !== req.nextUrl.origin) fail("FORBIDDEN", 403);
+      if (origin && origin !== `${req.nextUrl.protocol}//${req.headers.get("host")}`) fail("FORBIDDEN", 403);
     }
     const body = method === "GET" ? null : await req.json().catch(() => fail("INVALID_REQUEST"));
     const parse = (schema: any) => { const result = schema.safeParse(body); if (!result.success) fail("INVALID_REQUEST"); return result.data; };
@@ -39,6 +39,9 @@ async function handle(req: NextRequest, context: Context) {
       if (path[0] !== "workspaces" || !path[1]) fail("NOT_FOUND", 404);
       const workspace = path[1], resource = path[2], id = path[3];
       await member(db, workspace, user);
+      if (path.length > 4 && !(method === "GET" && resource === "analyses" && id &&
+        ((path.length === 5 && ["days", "detections"].includes(path[4])) ||
+         (path.length === 9 && path[4] === "tiles" && path[5] === "raw-density")))) fail("NOT_FOUND", 404);
       if (method === "GET" && resource === "members" && !id) {
         const rows = await db.query('SELECT m.*,u.name FROM "Membership" m JOIN "User" u ON u.id=m."userId" WHERE m."workspaceId"=$1 ORDER BY m."userId" LIMIT 100', [workspace]);
         value = { items: rows.map(membershipWire), nextCursor: null };

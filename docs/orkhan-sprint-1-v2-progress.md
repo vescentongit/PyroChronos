@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](current-status.md).
+
 # Orkhan — Sprint 1 P0 riset v2
 
 Tanggal: 10 November 2026. Scope: R2-P0-O1 sampai R2-P0-O4. Implementasi frontend tersedia; penerimaan integrasi nyata dan review Nathan masih terbuka.

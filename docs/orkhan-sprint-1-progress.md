@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](current-status.md).
+
 # Orkhan — hasil implementasi Sprint 1 (P0)
 
 > **Bukti prototype v1.** Catatan ini dipertahankan sebagai riwayat pekerjaan. Kriteria aktif kini mengikuti [produk riset](../product.md), [sprint Orkhan v2](../tasks/Orkhan/SPRINT-1-P0.md) dan [API v2](contracts/api-v2.md); keberhasilan acceptance lama tidak menutup scope baru.

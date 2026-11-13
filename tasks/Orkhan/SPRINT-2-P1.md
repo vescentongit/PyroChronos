@@ -1,8 +1,18 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
+
 # Sprint 2 (P1) — Orkhan
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Nathan.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status 13 November 2026:** implementasi O1–O4 lokal tanpa login dan acceptance sintetis desktop/mobile tersedia. Review finish independen: ship. Review Nathan dan demonstrasi dataset aktif masih terbuka; sprint belum ditutup sebagai selesai/direview manusia. [Bukti Sprint 2](../../docs/orkhan-sprint-2-progress.md).
+
+- [x] O1/O2: kalender, detail harian, dua periode, anomali dan provenance.
+- [x] O3: heatmap → titik asli, lokasi persisten dan reuse AOI.
+- [x] O4 lokal: penugasan, pemeriksaan/koreksi/audit, CSV/JSON/PNG.
+- [x] Build, tes, acceptance sintetis EN/ID/desktop/mobile dan review finish otomatis.
+- [ ] Review Nathan dan acceptance dataset aktif; checkbox “Selesai dan direview” tetap menunggu bukti tersebut.
+
+Penugasan memakai nama lokal pengguna; membership server/sinkronisasi pada rincian lama digantikan keputusan tanpa login. Identitas tidak diklaim terverifikasi.
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 

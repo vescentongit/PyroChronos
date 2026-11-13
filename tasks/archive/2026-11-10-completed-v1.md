@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
+
 # Bukti checklist sebelum rebaseline riset v2
 
 Arsip status tertulis pada 10 November 2026. Checklist ini mencatat pekerjaan pada scope lama; bukan bukti bahwa seluruh scope riset v2 atau deployment sudah selesai. ID lama tidak digunakan ulang untuk task baru.

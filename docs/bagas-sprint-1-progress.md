@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](current-status.md).
+
 # Bagas Sprint 1 P0 — implementasi sementara
 
 Status: belum selesai dan belum direview. API v2 dinonaktifkan secara default; `RESEARCH_V2_EXPERIMENTAL=true` hanya untuk pengujian pada database terisolasi, bukan deployment publik.

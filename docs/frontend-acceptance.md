@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](current-status.md).
+
 # Acceptance frontend Orkhan — tanpa backend nyata
 
 Status: **12 kelompok pemeriksaan browser lulus**, tanpa exception runtime. Implementasi frontend tidak membutuhkan perubahan tambahan dari temuan ini. Pengujian dilakukan pada production build lokal di Chrome, desktop 1440×1000 dan mobile 390×844, dengan zona waktu Asia/Jakarta.

@@ -7,7 +7,7 @@ import { RefreshCw, Download, Globe2 } from "lucide-react";
 import type { Language } from "@/lib/regions";
 import ResearchPanel, { type ResearchOverlay } from "./research-panel";
 import {
-  unwrapVertices,
+  researchMapGeometry,
   type Vertex,
   type AreaPolygon,
 } from "@/lib/research-geometry";
@@ -115,7 +115,10 @@ function HeatSurface({
   languageRef.current = language;
   const editRef = useRef({ drawing, onAddVertex });
   editRef.current = { drawing, onAddVertex };
-  const features = research ? research.features : (data?.features ?? []);
+  const researchRef = useRef(research);
+  researchRef.current = research;
+  const sketch = researchMapGeometry(vertices, draft, research?.geometry ?? null, drawing);
+  const features = sketch.editing ? [] : research ? research.features : (data?.features ?? []);
   useEffect(() => {
     const abort = new AbortController();
     fetch("/geo/ne_110m_land.json", { signal: abort.signal })
@@ -277,16 +280,20 @@ function HeatSurface({
         if (map.getLayer("esri-labels-layer"))
           map.moveLayer("esri-labels-layer");
         map.on("click", (event) => {
-          if (editRef.current.drawing)
+          if (editRef.current.drawing && event.originalEvent.detail < 2 && !map?.queryRenderedFeatures(event.point, { layers: ["edit-vertices"] }).length)
             editRef.current.onAddVertex([
               +event.lngLat.wrap().lng.toFixed(6),
               +event.lngLat.lat.toFixed(6),
             ]);
+          else if (!editRef.current.drawing && researchRef.current?.features.length && map?.getLayoutProperty("density", "visibility") !== "none")
+            map?.easeTo({ center: event.lngLat, zoom: Math.min(map.getZoom() + 2, 19) });
         });
         map.on("click", "points", (event) => {
           if (editRef.current.drawing) return;
           const feature = event.features?.[0];
           if (!map || !feature || feature.geometry.type !== "Point") return;
+          const id = feature.properties.observationId;
+          if (typeof id === "string" && researchRef.current?.features.some(point => point.properties?.observationId === id)) researchRef.current.onSelect?.(id);
           new maplibregl.Popup()
             .setLngLat(feature.geometry.coordinates as [number, number])
             .setText(
@@ -318,7 +325,7 @@ function HeatSurface({
           | maplibregl.GeoJSONSource
           | undefined
       )?.setData({ type: "FeatureCollection", features });
-  }, [data, research, ready]);
+  }, [data, research, ready, sketch.editing]);
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
@@ -332,46 +339,8 @@ function HeatSurface({
       "visibility",
       layer === "points" ? "visible" : "none",
     );
-    const outlines: FeatureCollection = {
-      type: "FeatureCollection",
-      features: [],
-    };
-    if (draft)
-      outlines.features.push({
-        type: "Feature",
-        properties: { kind: "draft" },
-        geometry: {
-          ...draft,
-          coordinates: draft.coordinates.map(unwrapVertices),
-        },
-      });
-    if (research?.geometry)
-      outlines.features.push({
-        type: "Feature",
-        properties: { kind: "active" },
-        geometry: {
-          ...research.geometry,
-          coordinates: research.geometry.coordinates.map(unwrapVertices),
-        },
-      });
-    (map.getSource("area-outlines") as maplibregl.GeoJSONSource).setData(
-      outlines,
-    );
-    const edits: FeatureCollection = {
-      type: "FeatureCollection",
-      features: unwrapVertices(vertices).map((coordinates) => ({
-        type: "Feature",
-        properties: {},
-        geometry: { type: "Point", coordinates },
-      })),
-    };
-    if (vertices.length > 1)
-      edits.features.push({
-        type: "Feature",
-        properties: {},
-        geometry: { type: "LineString", coordinates: unwrapVertices(vertices) },
-      });
-    (map.getSource("area-edit") as maplibregl.GeoJSONSource).setData(edits);
+    (map.getSource("area-outlines") as maplibregl.GeoJSONSource).setData(sketch.outlines);
+    (map.getSource("area-edit") as maplibregl.GeoJSONSource).setData(sketch.edits);
     map.getCanvas().style.cursor = drawing ? "crosshair" : "";
     if (drawing) map.doubleClickZoom.disable();
     else map.doubleClickZoom.enable();
@@ -450,14 +419,18 @@ function HeatSurface({
         context.fillStyle = gradient;
         context.fillRect(x - r, y - r, r * 2, r * 2);
       }
-      for (const [geometry, color] of [
-        [draft, "#61c9ff"],
-        [research?.geometry, "#ffffff"],
-      ] as const) {
-        if (!geometry) continue;
-        context.strokeStyle = color;
+      for (const feature of [...sketch.outlines.features, ...sketch.edits.features]) {
+        context.strokeStyle = feature.properties?.kind === "active" ? "#ffffff" : "#61c9ff";
+        context.fillStyle = "#61c9ff";
         context.lineWidth = 2;
-        for (const ring of geometry.coordinates) {
+        if (feature.geometry.type === "Point") {
+          const [x, y] = project(feature.geometry.coordinates);
+          context.beginPath(); context.arc(x, y, 5, 0, Math.PI * 2); context.fill();
+          continue;
+        }
+        const rings = feature.geometry.type === "Polygon" ? feature.geometry.coordinates
+          : feature.geometry.type === "LineString" ? [feature.geometry.coordinates] : [];
+        for (const ring of rings) {
           context.beginPath();
           ring.forEach((coordinate, index) => {
             const [x, y] = project(coordinate);
@@ -472,7 +445,7 @@ function HeatSurface({
     const observer = new ResizeObserver(render);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [fallback, data, research, draft, layer, land, query.bbox]);
+  }, [fallback, data, research, draft, vertices, drawing, layer, land, query.bbox]);
   return (
     <div className="global-surface">
       <div ref={toolsHostRef} className="global-drawing-tools" />
@@ -496,8 +469,8 @@ function HeatSurface({
           />
           <p className="global-fallback" role="status">
             {t(
-              "WebGL tidak tersedia. Tampilan Canvas aktif; pindah area melalui kontrol koordinat.",
-              "WebGL unavailable. Canvas view active; navigate using coordinate controls.",
+              "WebGL tidak tersedia. Tampilan Canvas aktif; gunakan editor koordinat untuk menggambar area.",
+              "WebGL unavailable. Canvas view active; use the coordinate editor to draw your area.",
             )}
           </p>
         </>
@@ -511,13 +484,19 @@ function HeatSurface({
         </p>
       )}
       <div className="global-map-tag">
-        {research
+        {sketch.editing
+          ? t("Sketsa area — perubahan belum digunakan", "Area sketch — changes not applied")
+          : research
           ? research.label
           : `NASA FIRMS · ${data?.source || query.source} · ${data?.hours ?? query.hours}h`}
       </div>
       <div className="global-map-legend">
-        <span />
-        {layer === "points"
+        {!research && <span />}
+        {sketch.editing
+          ? t("Titik biru: sketsa terbaru. Gunakan area ini untuk melanjutkan.", "Blue points: current sketch. Use this area to continue.")
+          : research && features.length === 0
+            ? t("Batas area; titik hasil belum dimuat.", "Area boundaries; result points not loaded.")
+            : layer === "points"
           ? t(
               "Deteksi mentah; agregat ditunjukkan dengan jumlah",
               "Raw detections; aggregates show counts",
@@ -533,8 +512,6 @@ function HeatSurface({
 
 export default function GlobalHeatmap({ language }: { language: Language }) {
   const [query, setQuery] = useState<HotspotQuery>(initial),
-    [draftQuery, setDraftQuery] = useState<HotspotQuery>(initial),
-    [requested, setRequested] = useState(false),
     [refresh, setRefresh] = useState(0),
     [now, setNow] = useState(Date.now()),
     [boundsError, setBoundsError] = useState(false);
@@ -546,6 +523,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     error: string;
   }>({ key: "", data: null, loading: false, failed: false, error: "" });
   const [resultsHost, setResultsHost] = useState<HTMLDivElement | null>(null);
+  const [setupHost, setSetupHost] = useState<HTMLDivElement | null>(null);
   const [toolsHost, setToolsHost] = useState<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<"nrt" | "research">("nrt");
   const [layer, setLayer] = useState<"heatmap" | "points">("heatmap");
@@ -585,7 +563,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       now > Date.parse(data.freshUntil));
   const onViewport = useCallback(
     (bbox: Bounds, zoom: number) =>
-      setDraftQuery((previous) =>
+      setQuery((previous) =>
         JSON.stringify(previous.bbox) === JSON.stringify(bbox) &&
         previous.zoom === zoom
           ? previous
@@ -598,7 +576,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
-    if (!requested) return;
+    if (mode !== "nrt") return;
     const abort = new AbortController();
     let cancelled = false;
     const cached = cache.current.get(key);
@@ -678,7 +656,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       clearTimeout(debounce);
       abort.abort();
     };
-  }, [key, query, refresh, requested]);
+  }, [key, query, refresh, mode]);
   function area(bbox: Bounds) {
     setBoundsError(false);
     if (controller.current) controller.current.fit(bbox);
@@ -717,19 +695,12 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </h1>
           <p>
             {t(
-              "Jelajahi citra satelit, pilih area, lalu muat deteksi atau analisis riwayatnya.",
-              "Explore satellite imagery, select an area, then load detections or analyze its history.",
+              mode === "nrt" ? "Geser atau zoom peta untuk melihat hotspot. Data menyesuaikan otomatis; pilih wilayah di bawah untuk mulai." : "Analisis aktivitas pada area dan periode pilihan. Ikuti tiga langkah di bawah; tidak perlu login.",
+              mode === "nrt" ? "Pan or zoom to explore hotspots. Data updates automatically; choose a region below to get started." : "Analyze activity in your chosen area and period. Follow the three steps below; no sign-in needed.",
             )}
           </p>
         </div>
-        <button
-          className="outline"
-          disabled={!data || loading || mode !== "nrt"}
-          onClick={exportData}
-        >
-          <Download size={16} />
-          JSON
-        </button>
+
       </div>
       <div
         className="global-toolbar"
@@ -744,14 +715,14 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             setDrawing(false);
           }}
         >
-          {t("FIRMS terbaru · mentah", "Recent FIRMS · raw")}
+          {t("Hotspot terbaru", "Recent hotspots")}
         </button>
         <button
           className="outline"
           aria-pressed={mode === "research"}
           onClick={() => setMode("research")}
         >
-          {t("Riset historis", "Historical research")}
+          {t("Analisis historis", "Historical analysis")}
         </button>
       </div>
       <div hidden={mode !== "research"}>
@@ -763,6 +734,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           setDrawing={setDrawing}
           onDraft={setDraftPolygon}
           onOverlay={setResearchOverlay}
+          setupHost={setupHost}
           resultsHost={resultsHost}
           toolsHost={toolsHost}
         />
@@ -772,9 +744,9 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           <label>
             {t("Sensor / satelit", "Sensor / satellite")}
             <select
-              value={draftQuery.source}
+              value={query.source}
               onChange={(event) =>
-                setDraftQuery((previous) => ({
+                setQuery((previous) => ({
                   ...previous,
                   source: event.target.value as HotspotQuery["source"],
                 }))
@@ -788,11 +760,11 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             </select>
           </label>
           <label>
-            {t("Periode bergerak", "Rolling window")}
+            {t("Deteksi dalam", "Detections from")}
             <select
-              value={draftQuery.hours}
+              value={query.hours}
               onChange={(event) =>
-                setDraftQuery((previous) => ({
+                setQuery((previous) => ({
                   ...previous,
                   hours: Number(event.target.value) as HotspotQuery["hours"],
                 }))
@@ -807,15 +779,15 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </label>
           <button
             className="outline"
+            hidden={!state.failed && !stale}
             disabled={loading}
             onClick={() => {
-              setQuery(draftQuery);
-              setRequested(true);
+              cache.current.delete(key);
               setRefresh((value) => value + 1);
             }}
           >
             <RefreshCw size={15} />
-            {t("Muat area tampilan", "Load visible area")}
+            {t("Coba muat ulang", "Retry loading")}
           </button>
         </div>
       </div>
@@ -831,18 +803,50 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           </button>
         ))}
       </div>
+      <div
+        className="global-toolbar"
+        role="group"
+        aria-label={t("Lapisan peta", "Map layers")}
+        hidden={mode === "research" && researchOverlay.features.length === 0}
+      >
+        <button
+          className="outline"
+          aria-pressed={layer === "heatmap"}
+          onClick={() => setLayer("heatmap")}
+        >
+          {t("Kepadatan hotspot", "Hotspot density")}
+        </button>
+        <button
+          className="outline"
+          aria-pressed={layer === "points"}
+          onClick={() => setLayer("points")}
+        >
+          {t("Titik hotspot", "Hotspot points")}
+        </button>
+      </div>
+      <HeatSurface
+        query={query}
+        data={data}
+        language={language}
+        onViewport={onViewport}
+        controller={controller}
+        layer={layer}
+        vertices={mode === "research" ? vertices : []}
+        drawing={drawing && mode === "research"}
+        draft={mode === "research" ? draftPolygon : null}
+        research={mode === "research" ? researchOverlay : null}
+        onAddVertex={addVertex}
+        toolsHostRef={setToolsHost}
+      />
       <div hidden={mode !== "nrt"}>
         <div className="global-data-status" role="status">
           <strong>
             {loading
-              ? t("Memuat FIRMS…", "Loading FIRMS…")
+              ? t("Memperbarui hotspot otomatis…", "Updating hotspots automatically…")
               : !data
-                ? requested
-                  ? t("Data tidak tersedia", "Data unavailable")
-                  : t(
-                      "Klik Muat area tampilan untuk mengambil FIRMS.",
-                      "Click Load visible area to fetch FIRMS.",
-                    )
+                ? state.failed
+                  ? t("Data belum tersedia — coba muat ulang", "Data unavailable — retry loading")
+                  : t("Menunggu data FIRMS", "Waiting for FIRMS data")
                 : stale
                   ? t(
                       "Data lama — periksa waktu",
@@ -867,49 +871,26 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
             )}
           </p>
         )}
-        {data && (
+        {data && (data.source !== query.source || data.hours !== query.hours || data.bbox.some((value, index) => value !== query.bbox[index])) && (
           <p className="global-note">
-            {t("Konteks overlay tersimpan", "Retained overlay context")}:{" "}
+            {t("Masih menampilkan data area sebelumnya sampai data baru tersedia", "Showing the previous area until new data is available")}:{" "}
             {data.source} · {data.hours}h · {data.bbox.join(", ")} ·{" "}
             {date(data.observedFrom)} → {date(data.observedTo)}
           </p>
         )}
       </div>
-      <div
-        className="global-toolbar"
-        role="group"
-        aria-label={t("Lapisan peta", "Map layers")}
-      >
+      <div hidden={mode !== "nrt"}>
         <button
           className="outline"
-          aria-pressed={layer === "heatmap"}
-          onClick={() => setLayer("heatmap")}
+          disabled={!data || loading || mode !== "nrt"}
+          onClick={exportData}
         >
-          Heatmap
-        </button>
-        <button
-          className="outline"
-          aria-pressed={layer === "points"}
-          onClick={() => setLayer("points")}
-        >
-          {t("Titik / agregat mentah", "Raw points / aggregates")}
+          <Download size={16} />
+          {t("Unduh data JSON", "Download JSON")}
         </button>
       </div>
-      <HeatSurface
-        query={draftQuery}
-        data={data}
-        language={language}
-        onViewport={onViewport}
-        controller={controller}
-        layer={layer}
-        vertices={mode === "research" ? vertices : []}
-        drawing={drawing && mode === "research"}
-        draft={mode === "research" ? draftPolygon : null}
-        research={mode === "research" ? researchOverlay : null}
-        onAddVertex={addVertex}
-        toolsHostRef={setToolsHost}
-      />
-      <div ref={setResultsHost} hidden={mode !== "research"} />
+      <div ref={setSetupHost} hidden={mode !== "research"} />
+      <div className="research-output" ref={setResultsHost} hidden={mode !== "research"} />
       <details className="region-metadata">
         <summary>
           {t(
@@ -918,7 +899,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           )}
         </summary>
         <form
-          key={draftQuery.bbox.join(",")}
+          key={query.bbox.join(",")}
           className="global-bounds"
           onSubmit={(event) => {
             event.preventDefault();
@@ -947,7 +928,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
                 step="any"
                 min={index % 2 ? -90 : -180}
                 max={index % 2 ? 90 : 180}
-                defaultValue={draftQuery.bbox[index]}
+                defaultValue={query.bbox[index]}
               />
             </label>
           ))}

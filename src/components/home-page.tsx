@@ -57,7 +57,7 @@ export default function HomePage() {
           <Link href="/" aria-current="page">
             Home
           </Link>
-          <Link href="/simulation">Simulation</Link>
+          <Link href="/simulation">{t("Peta hotspot", "Hotspot map")}</Link>
           <a href="#information">{t("Tentang", "About")}</a>
         </nav>
         <div
@@ -147,7 +147,7 @@ export default function HomePage() {
             </div>
             <div className="landing-cta">
               <Link href="/simulation" className="landing-primary">
-                {t("Buka Simulation", "Open Simulation")}
+                {t("Jelajahi peta hotspot", "Explore hotspot map")}
                 <ArrowUpRight size={20} />
               </Link>
               <p>

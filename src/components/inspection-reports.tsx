@@ -67,7 +67,6 @@ export function InspectionReports({
     mode: "demo",
     reports: [],
   });
-  const [connected, setConnected] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [open, setOpen] = useState(false);
@@ -94,15 +93,12 @@ export function InspectionReports({
     setOpen(false);
     setEditing(null);
     setNotice("");
-    setConnected(false);
-    const controller = new AbortController();
-    if (mode === "demo") {
       try {
         setState({
           mode,
           reports: z
             .array(reportSchema)
-            .parse(JSON.parse(localStorage.getItem("pyro-reports") || "[]")),
+            .parse(JSON.parse(localStorage.getItem(mode === "demo" ? "pyro-reports" : "pyro-reports-operational") || "[]")),
         });
       } catch {
         setState({ mode, reports: [] });
@@ -113,30 +109,7 @@ export function InspectionReports({
           ),
         );
       }
-    } else {
-      setState({ mode, reports: [] });
-      fetch("/api/reports", { signal: controller.signal, cache: "no-store" })
-        .then(async (response) => {
-          if (response.status === 401) return;
-          if (!response.ok) throw new Error();
-          const rows = z.array(reportSchema).parse(await response.json());
-          if (!controller.signal.aborted) {
-            setState({ mode, reports: rows });
-            setConnected(true);
-          }
-        })
-        .catch(() => {
-          if (!controller.signal.aborted)
-            setNotice(
-              t(
-                "Riwayat laporan gagal dimuat. Silakan coba kembali.",
-                "Report history could not be loaded. Please retry.",
-              ),
-            );
-        });
-    }
-    return () => controller.abort();
-    // Changing language should not refetch or close an inspection form.
+    // Changing language should not close an inspection form.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
@@ -167,61 +140,6 @@ export function InspectionReports({
       document.body.style.overflow = overflow;
     };
   }, [open]);
-
-  async function connect(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setNotice("");
-    const context = contextRef.current;
-    try {
-      const response = await fetch("/api/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: new FormData(event.currentTarget).get("token"),
-        }),
-      });
-      if (!response.ok) throw new Error();
-      const loaded = await fetch("/api/reports", { cache: "no-store" });
-      if (!loaded.ok) throw new Error();
-      const rows = z.array(reportSchema).parse(await loaded.json());
-      if (contextRef.current !== context) return;
-      setState({ mode: "operational", reports: rows });
-      setConnected(true);
-      setNotice(
-        t(
-          "Penyimpanan terhubung melalui akses pengembangan; identitas individual belum tersedia.",
-          "Storage connected using development access; individual identity is not available yet.",
-        ),
-      );
-    } catch {
-      if (contextRef.current === context)
-        setNotice(
-          t(
-            "Akses ditolak atau layanan laporan belum tersedia.",
-            "Access denied or report service unavailable.",
-          ),
-        );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function disconnect() {
-    setBusy(true);
-    try {
-      const response = await fetch("/api/session", { method: "DELETE" });
-      if (!response.ok) throw new Error();
-      setConnected(false);
-      setState({ mode: "operational", reports: [] });
-    } catch {
-      setNotice(
-        t("Gagal keluar. Coba kembali.", "Sign out failed. Please retry."),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -272,42 +190,18 @@ export function InspectionReports({
     const report = parsed.data;
     setBusy(true);
     try {
-      if (mode === "demo") {
+      {
         // Read/validate again before writing to preserve other regions and prior reports.
         const stored = z
           .array(reportSchema)
-          .parse(JSON.parse(localStorage.getItem("pyro-reports") || "[]"));
+          .parse(JSON.parse(localStorage.getItem(mode === "demo" ? "pyro-reports" : "pyro-reports-operational") || "[]"));
         if (editing && !stored.some((item) => item.id === editing.id))
           throw new Error("Report changed in another tab");
         const next = editing
           ? stored.map((item) => (item.id === report.id ? report : item))
           : [report, ...stored];
-        localStorage.setItem("pyro-reports", JSON.stringify(next));
+        localStorage.setItem(mode === "demo" ? "pyro-reports" : "pyro-reports-operational", JSON.stringify(next));
         setState({ mode, reports: next });
-      } else {
-        if (!connected || editing) throw new Error();
-        const response = await fetch("/api/reports", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            requestId: report.id,
-            candidateId: report.candidateId,
-            regionId: region.id,
-            observedAt,
-            result: report.result,
-            notes: report.notes,
-          }),
-        });
-        if (!response.ok) throw new Error();
-        const saved = reportSchema.parse(await response.json());
-        if (contextRef.current !== context) return;
-        setState((previous) => ({
-          mode,
-          reports: [
-            { ...saved, regionId: region.id, name: report.name },
-            ...previous.reports.filter((item) => item.id !== saved.id),
-          ],
-        }));
       }
       if (contextRef.current === context) {
         setOpen(false);
@@ -318,8 +212,8 @@ export function InspectionReports({
       if (contextRef.current === context)
         setNotice(
           t(
-            "Laporan belum tersimpan. Periksa akses dan ketersediaan layanan, lalu coba kembali.",
-            "Report was not saved. Check access and service availability, then retry.",
+            "Laporan belum tersimpan. Periksa penyimpanan browser, lalu coba kembali.",
+            "Report was not saved. Check browser storage and retry.",
           ),
         );
     } finally {
@@ -347,8 +241,8 @@ export function InspectionReports({
                       "Demo reports are stored in this browser.",
                     )
                   : t(
-                      "Laporan satelit dan pemeriksaan manusia disimpan terpisah.",
-                      "Satellite evidence and human inspections are kept separate.",
+                      "Laporan disimpan hanya di browser ini.",
+                      "Reports are stored only in this browser.",
                     )}
               </p>
             </div>
@@ -361,42 +255,6 @@ export function InspectionReports({
               {t("Catat pemeriksaan", "Record inspection")}
             </button>
           </div>
-          {mode === "operational" && !connected && (
-            <form className="connection-form" onSubmit={connect}>
-              <label htmlFor="coordinator-token">
-                {t(
-                  "Akses koordinator pengembangan",
-                  "Development coordinator access",
-                )}
-              </label>
-              <div>
-                <input
-                  id="coordinator-token"
-                  type="password"
-                  name="token"
-                  required
-                  minLength={32}
-                  autoComplete="off"
-                />
-                <button className="outline" disabled={busy}>
-                  {busy
-                    ? t("Menghubungkan…", "Connecting…")
-                    : t("Hubungkan penyimpanan", "Connect storage")}
-                </button>
-              </div>
-              <small>
-                {t(
-                  "Identitas individual dan koreksi laporan menunggu backend Bagas.",
-                  "Individual identity and report corrections await Bagas's backend.",
-                )}
-              </small>
-            </form>
-          )}
-          {mode === "operational" && connected && (
-            <button className="outline" disabled={busy} onClick={disconnect}>
-              {t("Keluar", "Sign out")}
-            </button>
-          )}
           {!reports.length && (
             <div className="empty">
               <ClipboardList size={32} />
@@ -468,7 +326,7 @@ export function InspectionReports({
                   )}
                   <button
                     className="outline"
-                    disabled={mode !== "demo" || busy}
+                    disabled={busy}
                     onClick={() => {
                       setEditing(report);
                       setOpen(true);
@@ -476,19 +334,11 @@ export function InspectionReports({
                   >
                     {t("Koreksi", "Correct")}
                   </button>
-                  {mode === "operational" && (
-                    <small>
-                      {t(
-                        "Endpoint koreksi belum tersedia.",
-                        "Correction endpoint is not available yet.",
-                      )}
-                    </small>
-                  )}
                 </div>
                 <span className="badge">
                   {mode === "demo"
                     ? t("Laporan demo", "Demo report")
-                    : t("Tersimpan di server", "Saved on server")}
+                    : t("Tersimpan di browser", "Saved in browser")}
                 </span>
               </article>
             );
@@ -536,8 +386,8 @@ export function InspectionReports({
                 "Demo: stored only in this browser. Do not enter personal information.",
               )
             : t(
-                "Catatan dari koordinator tidak mengonfirmasi api sudah padam.",
-                "Coordinator reports do not confirm the fire is extinguished.",
+                "Tersimpan hanya di browser ini. Pemeriksaan tidak memastikan api sudah padam.",
+                "Stored only in this browser. An inspection does not confirm the fire is extinguished.",
               )}
         </div>
         {notice && <p role="alert">{notice}</p>}
@@ -583,17 +433,9 @@ export function InspectionReports({
               "An inspection does not mean the location stays safe. Entry time differs from inspection time.",
             )}
           </p>
-          {mode === "operational" && !connected && (
-            <p role="status">
-              {t(
-                "Hubungkan akses pada halaman laporan terlebih dahulu.",
-                "Connect access on the reports page first.",
-              )}
-            </p>
-          )}
           <button
             className="primary"
-            disabled={busy || (mode === "operational" && !connected)}
+            disabled={busy}
           >
             {busy
               ? t("Menyimpan…", "Saving…")

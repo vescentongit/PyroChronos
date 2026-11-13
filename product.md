@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](docs/current-status.md).
+
 # PyroChronos — Product Specification
 
 **Challenge:** Harmonization of MODIS and VIIRS Hot Spots — NASA Space Apps Challenge 2026\
@@ -28,7 +30,7 @@ Keputusan berikut menjadi acuan ketika berbeda dengan rancangan lama tentang daf
 | Acuan harmonisasi | Setara MODIS sebagai hipotesis awal; penerimaan metode bergantung pada validasi |
 | Anomali | Pembanding bergerak pada bulan yang sama dalam 10 tahun sebelumnya secara default; dapat diubah |
 | Tandai | Lokasi pemantauan persisten dengan bukti awal, konteks analisis, dan beberapa pemeriksaan terpisah |
-| Kepemilikan | Lokasi, penugasan, status, dan hasil pemeriksaan dibagikan dalam workspace tim |
+| Kepemilikan | Workspace lokal browser tanpa login; lokasi, penugasan dan pemeriksaan tersimpan pada perangkat yang sama. Kolaborasi server pada rancangan lama bukan persyaratan versi aktif |
 | Ekspor | CSV deteksi asli, hasil agregat harmonisasi, serta analisis dan visualisasi dengan provenance |
 
 ### Status repository saat pembaruan dokumen
@@ -165,7 +167,7 @@ Arsip besar ditempatkan pada object storage/Parquet yang dapat dipartisi untuk k
 | Peta | MapLibre GL JS | Citra satelit, label, polygon, heatmap/titik; rendering tambahan hanya bila benchmark membutuhkannya |
 | Grafik/kalender | Recharts dan komponen kalender | Deret waktu, tahun × bulan, detail harian, serta anomali |
 | Database aplikasi | Neon PostgreSQL dan Prisma | Workspace, keanggotaan, AOI, job, metadata hasil, lokasi, penugasan, dan laporan |
-| Autentikasi | Auth.js dengan akun individual | Identitas pengguna dan sesi; penyedia identitas mengikuti konfigurasi tim |
+| Akses dan identitas | Semua fitur UI tanpa login; penyimpanan lokal browser | Nama pemeriksa/pencatat diberikan pengguna dan tidak diverifikasi sebagai akun. Auth.js hanya untuk endpoint legacy privat |
 | Validasi/otorisasi | Zod dan pemeriksaan akses server | Batas payload, status, geometri, serta isolasi workspace |
 | Pengolahan ilmiah | Python, NumPy, SciPy, scikit-learn | Agregasi count, baseline statistik, kandidat EQM, dan evaluasi |
 | Arsip/kueri | Polars, DuckDB, Parquet, object storage | Kueri spasial/waktu dan agregasi tanpa memuat seluruh arsip di web request |

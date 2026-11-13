@@ -3,7 +3,12 @@ import json
 import sys
 
 from area_query import Polygon, months_between, period_minutes
-from research_adapter import build_result, daily_page, detections_page
+from research_adapter import (
+    build_result,
+    daily_page,
+    detections_page,
+    load_default_harmonization,
+)
 from research_p1_producer import (
     describe_producer,
     fingerprint,
@@ -20,7 +25,11 @@ def produce(root, run):
         data = {**data["request"], "area": data["area"], "dataset": config}
         model, baseline = frozen_harmonization(config, data["baseline"]["windowYears"])
     else:
-        model, baseline = None, None
+        model, baseline = (
+            load_default_harmonization(data["baseline"]["windowYears"])
+            if data["dataset"].get("producerVersion") == "research-harmonized-1"
+            else (None, None)
+        )
     if fingerprint(root) != data["dataset"]["fingerprint"]:
         raise ValueError("DATASET_CHANGED")
     area = data["area"]
@@ -40,7 +49,7 @@ def produce(root, run):
             continue
         for month in months_between(*period_minutes(selected["start"], selected["end"])):
             estimates = built["harmonized"] if role == "primary" else built["comparisonHarmonized"]
-            days.append(daily_page(counts, run["id"], month, role, estimates.get(month)))
+            days.append(daily_page(counts, run["id"], month, role, harmonized=estimates.get(month)))
         cursor = None
         while True:
             page = detections_page(root, polygon, run["id"], selected["start"], selected["end"], sources, role, cursor)
