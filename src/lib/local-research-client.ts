@@ -17,7 +17,7 @@ function database() {
     request.onblocked = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
   });
 }
-async function getBundle(id: string): Promise<Bundle> {
+export async function getBundle(id: string): Promise<Bundle> {
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {

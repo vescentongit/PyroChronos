@@ -20,7 +20,7 @@ Harmonisasi retrospektif memakai VIIRS S-NPP ke skala MODIS, model ratio_global.
 
 Nathan P0 telah tercatat selesai/direview setelah PR #7; P1 memiliki implementasi dan evaluasi, review serta integrasi menyeluruh tetap perlu bukti. Checklist lama yang menyebut OAuth sebagai acceptance digantikan keputusan tanpa login ini. Review manusia tidak dianggap terjadi hanya karena implementasi atau tes tersedia.
 
-Kelanjutan sprint Orkhan P1 mencakup integrasi model pada jalur anonim, kalender dan penjelasan perbandingan/anomali. Penutupan sprint penuh masih memerlukan alur penandaan lokasi, pemeriksaan/koreksi lokal, ekspor CSV/PNG yang konsisten, acceptance browser dan review rekan. Kolaborasi server tidak diwajibkan untuk versi tanpa login ini.
+Orkhan P1 O1–O4 kini memiliki implementasi lokal: kalender/perbandingan/anomali, bukti asli/lokasi tersimpan, penugasan/pemeriksaan/koreksi dan ekspor CSV/JSON/PNG. Acceptance browser sintetis desktop/mobile serta review finish independen lulus. Review manusia Nathan dan demonstrasi dataset aktif masih terbuka. [Bukti Sprint 2](orkhan-sprint-2-progress.md). Kolaborasi server tidak diwajibkan untuk versi tanpa login ini.
 
 Dokumen progres lama mencatat bukti pada saat dibuat. Angka tes/build historis tidak menjadi bukti verifikasi checkout terbaru. AGENTS.md tetap berlaku: baca panduan Next.js lokal sebelum menulis kode.
 
@@ -29,5 +29,5 @@ Dokumen progres lama mencatat bukti pada saat dibuat. Angka tes/build historis t
 - Typecheck dan `npm run build` lengkap (termasuk Prisma generate): lulus.
 - Contract checks: tujuh schema v1 dan 22 schema v2 lulus.
 - Python harmonisasi: 27 kasus, 26 lulus dan satu skip kondisional; mencakup handoff model worker anonim, anomali, dua periode dan kesesuaian jumlah harian.
-- Empat tes Node API anonim/contoh domain nyata, delapan frontend checks dan lima hotspot checks: lulus.
-- Playwright MCP gagal memulai Chrome (context/browser tertutup); inspeksi visual desktop/mobile pada perubahan ini belum terverifikasi. Tidak ada klaim login, database remote atau arsip aktif telah diuji.
+- Suite Node terbaru: 124 kasus, 122 lulus dan dua skip integrasi native yang tidak dikonfigurasi. Enam tes baru memeriksa monitoring lokal, ekspor dan kontras.
+- Playwright MCP kini berhasil: alur sintetis desktop/mobile, heatmap ke bukti asli, persistensi, koreksi, unduhan dan EN/ID lulus tanpa exception runtime. Pemeriksaan tambahan ekspor seluruh halaman dan kegagalan penyimpanan lulus. Database remote dan arsip aktif tidak diuji oleh pekerjaan ini.

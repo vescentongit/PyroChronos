@@ -219,6 +219,18 @@ Hover or focus reveals illustrative points; dragging rotates, the wheel or plus/
 
 Recent detections are red, older/recheck detections magenta, and the selected marker has a white ring. Labels explain the distinction. The map retains attribution and loading/failure handling; its SVG fallback is hidden and inert when the normal map is available, with visible white keyboard focus for fallback points when used. Candidate rows, detail, reports, exports, and history remain part of the inherited workflow.
 
+### Sprint 2 Research Extensions
+
+Research results extend Simulation's inherited Operate expression: flat sections separated by fine rules, compact headings, dark labeled fields, and wrapping action rows. The existing palette and Plus Jakarta Sans remain authoritative. Calendar and evidence tables scroll inside their containers on mobile; inline forms fill the available width, with fields capped at (640px) on desktop.
+
+The year-by-month calendar separates detection count from anomaly through labeled, pressed-state controls. Count uses a sequential light-to-dark blue ramp; anomaly uses a blue-white-red percentile ramp. Cell text switches between dark and white according to relative luminance. Numbers, availability/partial status, missing-value dashes, and scale explanations remain visible; selecting a month opens daily detail. Comparison presents duration and estimates per day alongside totals, with baseline and method context in a disclosure.
+
+**The Original Evidence Rule.** Density-map clicks zoom toward evidence; only original observation points or table detections anchor a monitoring location. Saved locations retain their original evidence and analysis context. Local assignment, inspection, and correction forms stay inline, with separate inspector/recorder names, observation/input times, correction history, and status audit. Names are user supplied; records remain in this browser. Completed inspection is a task state, not evidence that a fire is extinguished.
+
+Exports use explicit outline actions for original-detection CSV, aggregate CSV, JSON with manifest, and calendar PNG. Original CSV rows identify `recordType=observation`; a zero-detection export retains context in a `recordType=metadata` row with empty observation fields. Estimated aggregates remain separate from observations. Keep synthetic/demo scope, export errors, and save feedback textual and visible.
+
+This implementation is recorded from source and desktop/mobile captures in `.cache/sprint2-acceptance/`. The finish review returned **ship** after its three findings were resolved; Nathan's human review remains open.
+
 ## Do's and Don'ts
 
 ### Do:
