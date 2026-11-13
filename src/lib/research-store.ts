@@ -34,7 +34,7 @@ export async function workspaceLock(db: Sql, workspace: string) {
 }
 export async function idempotent(db: Sql, scope: string, requestId: string, body: unknown, action: () => Promise<{ value: any; status: number }>) {
   // Serialize even the first request, before a request record exists.
-  await db.query("SELECT pg_advisory_xact_lock(hashtext($1))", [scope]);
+  await db.query("SELECT pg_advisory_xact_lock(hashtext($1))::text", [scope]);
   const [old] = await db.query('SELECT * FROM "ResearchRequest" WHERE scope=$1 AND "requestId"=$2', [scope, requestId]);
   const digest = hash(body);
   if (old) {
@@ -142,7 +142,7 @@ export async function failRun(db: Sql, run: Row, code = "DEPENDENCY_UNAVAILABLE"
   });
 }
 export const producerBundleSchema = z.object({ result: researchAnalysisResultSchema, manifest: z.record(z.string(), z.unknown()), days: z.array(researchDailyPageSchema), detections: z.array(researchDetectionsPageSchema) }).strict();
-export async function publishRun(db: Sql, run: Row, raw: unknown) {
+export function validateProducerBundle(run: Row, raw: unknown) {
   const bundle = producerBundleSchema.parse(raw), result = bundle.result;
   const input = run.input;
   if (result.id !== run.id || result.jobId !== run.id || result.workspaceId !== run.workspaceId || hash(result.area) !== hash(input.area) || hash(result.primary.period) !== hash(input.period) || hash(result.comparison?.period ?? null) !== hash(input.comparisonPeriod) || result.baseline.windowYears !== input.baseline.windowYears || result.qualityPolicyVersion !== input.qualityPolicyVersion || result.method.manifestId !== bundle.manifest.id || result.mode !== "research") throw new Error("INVALID_PRODUCER");
@@ -174,6 +174,11 @@ export async function publishRun(db: Sql, run: Row, raw: unknown) {
   }
   if ([...bundle.days, ...bundle.detections].some(page => !roles.includes(page.periodRole))) throw new Error("INVALID_PERIOD_ROLE");
   if (bundle.detections.reduce((sum, page) => sum + page.observations.length, 0) > 100000) throw new ResearchFailure("CAPACITY_LIMIT", 503);
+  return bundle;
+}
+export async function publishRun(db: Sql, run: Row, raw: unknown) {
+  const bundle = validateProducerBundle(run, raw), result = bundle.result;
+  const roles = run.input.comparisonPeriod ? ["primary", "comparison"] : ["primary"];
   return db.transaction(async tx => {
     const [current] = await tx.query('SELECT * FROM "AnalysisRun" WHERE id=$1 AND "leaseToken"=$2 AND status=\'running\' AND "leaseUntil">clock_timestamp() FOR UPDATE', [run.id, run.leaseToken]);
     if (!current) throw new Error("LEASE_LOST");

@@ -52,9 +52,29 @@
     padding-block: 10px;
   }
   .research-panel p,
+  .research-setup p,
   .research-results p {
     line-height: 1.7;
     overflow-wrap: anywhere;
+  }
+  .research-panel h2,
+  .research-setup h2 {
+    font-size: 20px;
+    margin: 24px 0 12px;
+  }
+  .research-setup {
+    padding-top: 12px;
+    scroll-margin-top: 80px;
+  }
+  .research-setup > p,
+  .research-setup form > p {
+    margin-block: 12px;
+    color: #c7c7c7;
+    max-width: 70ch;
+  }
+  .global-drawing-tools .global-error {
+    flex-basis: 100%;
+    margin: 0;
   }
   .research-panel .global-toolbar {
     margin-top: 18px;
@@ -122,7 +142,7 @@
     flex-wrap: wrap;
     align-items: end;
     gap: 14px;
-    margin: 26px 0 16px;
+    margin: 16px 0 12px;
   }
   .global-toolbar label,
   .global-bounds label {
@@ -148,6 +168,20 @@
   .global-presets button {
     font-size: 12px;
     padding: 8px 12px;
+  }
+  @media (max-width: 600px) {
+    .global-presets {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .global-presets button {
+      flex-shrink: 0;
+    }
+    .global-toolbar label {
+      flex: 1 1 140px;
+      min-width: 0;
+    }
   }
   .global-data-status {
     display: flex;

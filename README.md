@@ -29,18 +29,24 @@ Acceptance frontend tanpa backend nyata: `npm run check:browser`, dengan server 
 
 Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Mode Operasional mengharapkan snapshot lewat `/api/snapshots`; endpoint belum tersedia, dan UI menampilkan unavailable tanpa memakai fixture sebagai pengganti. Kontrak: `docs/contracts/snapshot-v1.md`. Tidak ada autentikasi produksi, job FIRMS, atau model harmonisasi yang diklaim aktif. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
 
-## Neon dan API laporan
+## Penyimpanan browser dan analisis
+
+Penggunaan UI tidak memerlukan login. Workspace lokal, area, pilihan analisis, hasil dan laporan disimpan pada browser perangkat tersebut; data tidak disinkronkan ke perangkat atau pengguna lain. Menghapus data situs/browser dapat menghapusnya. Hasil lama dari akun atau database server tidak otomatis disalin ke browser dan tidak dihapus dari server.
+
+Analisis historis masih diproses pada server menggunakan dataset pada `RESEARCH_DATA_DIR` dan Python (`RESEARCH_PYTHON` opsional). Area dan periode dikirim ke server untuk pemrosesan; hasil dikembalikan dan disimpan di IndexedDB browser. Dataset kosong menghasilkan `no_data`, bukan nol kebakaran. API pemrosesan membatasi ukuran permintaan, waktu, dan satu analisis bersamaan per proses; batas ini bukan kuota global untuk deployment multi-instance. Fitur tim dan sinkronisasi lintas perangkat belum tersedia dalam mode lokal.
+
+## API dan integrasi lama
 
 Acuan implementasi lintas Nathan/Bagas/Orkhan: [kontrak payload API v1](docs/contracts/api-v1.md), dengan schema runtime, JSON Schema, contoh kedua wilayah, dan `npm run check:contracts`. Endpoint yang dijelaskan sebagai target di kontrak belum otomatis tersedia pada scaffold saat ini.
 
-Salin `.env.example` ke `.env`, isi `DATABASE_URL` pooled Neon dan `COORDINATOR_TOKEN` acak minimal 32 karakter. Jangan memakai prefix NEXT_PUBLIC untuk secret.
+Endpoint lama untuk akun, workspace server, dan laporan koordinator tetap berada di repository untuk kompatibilitas; UI lokal tidak menggunakannya. Untuk menjalankan endpoint lama, salin `.env.example` ke `.env`, isi `DATABASE_URL` dan `COORDINATOR_TOKEN` acak minimal 32 karakter. Jangan memakai prefix NEXT_PUBLIC untuk secret.
 
 ```sh
 npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-Pada mode Operasional, halaman Laporan lapangan menyediakan kode akses koordinator pengembangan untuk menghubungkan UI ke Neon. Endpoint session menyimpan cookie HttpOnly selama delapan jam. `GET /api/reports` dan `POST /api/reports` menerima cookie tersebut atau `Authorization: Bearer <COORDINATOR_TOKEN>`. POST menerima `requestId` UUID, `candidateId` dari fixture, `observedAt` ISO UTC, `result` sesuai tiga kategori UI, dan `notes`. requestId mencegah duplikasi. Token bersama adalah akses pengembangan, bukan akun koordinator individual. Sebelum penggunaan nyata, tambahkan Auth.js, pemetaan identitas, otorisasi wilayah dan jejak koreksi laporan.
+Endpoint lama `GET /api/reports` dan `POST /api/reports` menerima cookie koordinator atau `Authorization: Bearer <COORDINATOR_TOKEN>`. Laporan baru di UI disimpan secara lokal, terpisah antara mode demo dan operasional.
 
 Dengan `FIRMS_MAP_KEY`, `/api/firms?region=kalteng` atau `region=papua` menyediakan CSV NOAA-20 NRT untuk bounding box studi selama dua hari. Endpoint ini tidak mengaktifkan skor atau data dashboard otomatis dan tidak mengklaim cakupan provinsi penuh. Tidak ada key yang dikirim ke browser.
 

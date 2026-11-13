@@ -1,5 +1,23 @@
+import type { FeatureCollection } from "geojson";
+
 export type Vertex = [number, number];
 export type AreaPolygon = { type: "Polygon"; coordinates: Vertex[][] };
+
+export function researchMapGeometry(vertices: Vertex[], draft: AreaPolygon | null, active: AreaPolygon | null, drawing: boolean) {
+  const editing = drawing || JSON.stringify(vertices) !== JSON.stringify(draft?.coordinates[0].slice(0, -1) ?? []);
+  const edits: FeatureCollection = { type: "FeatureCollection", features: [] };
+  const outlines: FeatureCollection = { type: "FeatureCollection", features: [] };
+  if (editing) {
+    const coordinates = unwrapVertices(vertices);
+    edits.features = coordinates.map((point, index) => ({ type: "Feature", id: index, properties: {}, geometry: { type: "Point", coordinates: point } }));
+    if (coordinates.length > 1) edits.features.push({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates } });
+  } else {
+    for (const [geometry, kind] of [[draft, "draft"], [active, "active"]] as const) {
+      if (geometry) outlines.features.push({ type: "Feature", properties: { kind }, geometry: { ...geometry, coordinates: geometry.coordinates.map(unwrapVertices) } });
+    }
+  }
+  return { editing, edits, outlines };
+}
 
 export function unwrapVertices(vertices: Vertex[]): Vertex[] {
   const ring: Vertex[] = [];

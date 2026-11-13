@@ -100,7 +100,7 @@ export default function DashboardWorkspace() {
     { id: "overview" as const, name: "Dashboard", icon: LayoutDashboard },
     {
       id: "analysis" as const,
-      name: t("Analisis historis", "Historical analysis"),
+      name: t("Perbandingan sensor", "Sensor comparison"),
       icon: ChartNoAxesCombined,
     },
     {
