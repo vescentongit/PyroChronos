@@ -295,28 +295,26 @@ test("raw export deduplicates repeated original IDs and rejects conflicting copi
 		).csv.rowCount,
 		1,
 	);
-	const conflicting = await exportFixture(db, storage, {
-		skipLocation: true,
-		mutatePage(page) {
-			page.observations.push({ ...page.observations[0], frpMw: 99 });
-		},
-	});
-	const rejected = await api.createResearchExport(
-		conflicting.dependencies,
-		conflicting.workspace,
-		conflicting.user,
-		{ ...body(), analysisId: conflicting.analysisId },
-	);
-	assert.equal((await run()).status, "failed");
 	await rejects(
 		() =>
-			api.getResearchExportDownload(
-				conflicting.dependencies,
-				conflicting.workspace,
-				conflicting.user,
-				rejected.value.id,
-			),
-		"RESULT_NOT_READY",
+			exportFixture(db, storage, {
+				skipLocation: true,
+				mutatePage(page) {
+					page.observations.push({ ...page.observations[0], frpMw: 99 });
+				},
+			}),
+		"INVALID_OUTPUT",
+	);
+	assert.equal(
+		(
+			await api.readResearchExport(
+				repeated.dependencies,
+				repeated.workspace,
+				repeated.user,
+				created.value.id,
+			)
+		).status,
+		"ready",
 	);
 });
 

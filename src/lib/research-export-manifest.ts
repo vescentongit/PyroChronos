@@ -110,21 +110,7 @@ export async function exportSecretValues(
 		UNION ALL SELECT "leaseToken"::text AS token FROM "ResearchExportAttempt" WHERE "exportId"=$3 AND "workspaceId"=$2`,
 		[row.analysisId, row.workspaceId, row.id],
 	);
-	const root = process.env.RESEARCH_ARTIFACT_ROOT;
-	const configured = Object.entries(process.env)
-		.filter(([name]) =>
-			/(?:^|_)(?:SECRET|SECRET_KEY|TOKEN|API_KEY|PASSWORD|PASSWD|PRIVATE_KEY|SECRET_ACCESS_KEY)$/i.test(
-				name,
-			),
-		)
-		.flatMap(([, value]) => (value ? [value] : []));
-	return publicationSecrets([
-		...configured,
-		...tokens.map((token) => String(token.token)),
-		...(root
-			? [root, root.replaceAll("\\", "/"), root.replaceAll("/", "\\")]
-			: []),
-	]);
+	return publicationSecrets(tokens.map((token) => String(token.token)));
 }
 export async function assertExportSafe(
 	db: LocationDatabase,

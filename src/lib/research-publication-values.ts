@@ -97,6 +97,20 @@ export function publicationSecrets(
 		process.env.AUTH_SECRET,
 		process.env.AWS_SECRET_ACCESS_KEY,
 		...Object.entries(process.env)
+			.filter(([name]) =>
+				/(?:^|_)(?:SECRET|SECRET_KEY|TOKEN|API_KEY|PASSWORD|PASSWD|PRIVATE_KEY|SECRET_ACCESS_KEY)$/i.test(
+					name,
+				),
+			)
+			.flatMap(([, value]) => (value ? [value] : [])),
+		...(process.env.RESEARCH_ARTIFACT_ROOT
+			? [
+					process.env.RESEARCH_ARTIFACT_ROOT,
+					process.env.RESEARCH_ARTIFACT_ROOT.replaceAll("\\", "/"),
+					process.env.RESEARCH_ARTIFACT_ROOT.replaceAll("/", "\\"),
+				]
+			: []),
+		...Object.entries(process.env)
 			.filter(([name]) => /(?:^|_)(?:URL|DSN|CONNECTION_STRING)$/i.test(name))
 			.flatMap(([, value]) => (value ? dsnCredentials(value) : [])),
 		...extra,
@@ -105,7 +119,11 @@ export function publicationSecrets(
 		...new Set(
 			configured
 				.filter((v): v is string => typeof v === "string" && v.length > 0)
-				.flatMap((value) => [value, ...dsnCredentials(value)])
+				.flatMap((value) => [
+					value,
+					decodedCredential(value),
+					...dsnCredentials(value),
+				])
 				.map((value) => (uuidPattern.test(value) ? value.toLowerCase() : value))
 				.flatMap((value) => [value, encodeURIComponent(value)]),
 		),

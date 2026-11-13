@@ -4,9 +4,37 @@ import { foundationFixture } from "./research-foundation-fixtures.mjs";
 
 export const sha256 = (bytes) =>
 	`sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+function syntheticPage(result, role) {
+	const summary = role === "primary" ? result.primary : result.comparison;
+	const anchor = foundationFixture().location.anchor;
+	return {
+		schemaVersion: "research-2",
+		analysisId: result.id,
+		periodRole: role,
+		observations: Object.entries(summary.metric.rawCountsBySource).flatMap(
+			([sourceId, count]) =>
+				Array.from({ length: count ?? 0 }, (_, index) => ({
+					...anchor,
+					id:
+						role === "primary" && sourceId === anchor.sourceId && index === 0
+							? anchor.id
+							: `synthetic-${role}-${sourceId}-${index}`,
+					sourceId,
+					observedAt: `${summary.period.start}T00:15:00.000Z`,
+				})),
+		),
+		nextCursor: null,
+	};
+}
 export const artifact = (
 	kind = "observations",
-	content = Buffer.from('{"synthetic":true}\n'),
+	content = Buffer.from(
+		JSON.stringify(
+			kind === "observations"
+				? syntheticPage(foundationFixture().result.payload, "primary")
+				: { synthetic: true },
+		),
+	),
 ) => ({
 	kind,
 	periodRole: "primary",
@@ -15,6 +43,30 @@ export const artifact = (
 	bytes: content.byteLength,
 	checksum: sha256(content),
 });
+
+export function observationArtifacts(result, observations) {
+	return ["primary", ...(result.comparison ? ["comparison"] : [])].map(
+		(role) => ({
+			...artifact(
+				"observations",
+				Buffer.from(
+					JSON.stringify(
+						observations === undefined
+							? syntheticPage(result, role)
+							: {
+									schemaVersion: "research-2",
+									analysisId: result.id,
+									periodRole: role,
+									observations: role === "primary" ? observations : [],
+									nextCursor: null,
+								},
+					),
+				),
+			),
+			periodRole: role,
+		}),
+	);
+}
 
 export function publicationFixture() {
 	const f = foundationFixture();
@@ -34,7 +86,7 @@ export function publicationFixture() {
 				leaseToken: f.attempt.leaseToken,
 			},
 			producer: { result: f.result.payload, manifest: f.manifest },
-			artifacts: [artifact()],
+			artifacts: observationArtifacts(f.result.payload),
 		},
 	};
 }

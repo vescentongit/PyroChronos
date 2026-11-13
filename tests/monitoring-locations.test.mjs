@@ -284,10 +284,13 @@ for (const [name, mutatePage] of [
 		},
 	],
 ])
-	test(`immutable artifact with ${name} is rejected`, async () => {
-		const other = await publishedFixture(database, storage, { mutatePage });
-		await rejects(() => create(other.body), "DEPENDENCY_UNAVAILABLE");
+	test(`publisher rejects an artifact with ${name} before it reaches locations`, async () => {
+		await rejects(
+			() => publishedFixture(database, storage, { mutatePage }),
+			"INVALID_OUTPUT",
+		);
 		assert.equal(await count("MonitoringLocation"), 0);
+		assert.equal(await count("AnalysisResult"), 1);
 	});
 
 test("pagination is deterministic across tied timestamps and validates workspace-bound cursors", async () => {

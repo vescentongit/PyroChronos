@@ -19,14 +19,11 @@ const hook = registerHooks({
 		);
 	},
 });
-let locations, storageModule, publication, scope;
+let locations, storageModule, publication;
 try {
 	locations = await import("../../src/lib/monitoring-locations.ts");
 	storageModule = await import("../../src/lib/research-publication-storage.ts");
 	publication = await import("../../src/lib/research-publication.ts");
-	({ publicationScope: scope } = await import(
-		"../../src/lib/research-publication-producer.ts"
-	));
 } finally {
 	hook.deregister();
 }
@@ -50,6 +47,24 @@ export async function publishedFixture(database, storage, options = {}) {
 	request.producer.result.jobId = request.producer.manifest.jobId =
 		fixture.job.id;
 	makeRawResult(request);
+	const result = request.producer.result;
+	const metric = (count) => ({
+		rawCount: count,
+		harmonizedCount: null,
+		rawCountsBySource: Object.fromEntries(
+			result.sources.map((s) => [
+				s.id,
+				s.id === fixture.location.anchor.sourceId ? count : 0,
+			]),
+		),
+		status: "method_unsupported",
+	});
+	result.primary.metric = metric(1);
+	if (result.comparison) result.comparison.metric = metric(0);
+	for (const month of result.months)
+		month.metric = metric(
+			month.month === fixture.location.anchor.observedAt.slice(0, 7) ? 1 : 0,
+		);
 	const workspace = fixture.job.workspaceId;
 	const user = fixture.job.requestedById;
 	await database.query(
@@ -69,11 +84,10 @@ export async function publishedFixture(database, storage, options = {}) {
 		request.producer.result.comparison = null;
 	}
 	await seedPublication(database, fixture);
-	const analysisId = `result-${scope({ job: fixture.job, attempt: fixture.attempt })}`;
 	const observation = structuredClone(fixture.location.anchor);
 	const page = {
 		schemaVersion: "research-2",
-		analysisId,
+		analysisId: request.producer.result.id,
 		periodRole: "primary",
 		observations: [observation],
 		nextCursor: null,
@@ -82,8 +96,30 @@ export async function publishedFixture(database, storage, options = {}) {
 	options.mutateResult?.(request.producer.result);
 	request.artifacts = [
 		artifact("observations", Buffer.from(JSON.stringify(page))),
+		...(request.producer.result.comparison
+			? [
+					{
+						...artifact(
+							"observations",
+							Buffer.from(
+								JSON.stringify({
+									schemaVersion: "research-2",
+									analysisId: request.producer.result.id,
+									periodRole: "comparison",
+									observations: [],
+									nextCursor: null,
+								}),
+							),
+						),
+						periodRole: "comparison",
+					},
+				]
+			: []),
 	];
-	await publication.publishResearchResult({ database, storage }, request);
+	const { resultId: analysisId } = await publication.publishResearchResult(
+		{ database, storage },
+		request,
+	);
 	return {
 		workspace,
 		user,

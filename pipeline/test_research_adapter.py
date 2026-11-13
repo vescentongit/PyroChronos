@@ -5,11 +5,22 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
-from area_counts import QUALITY_POLICY, build_manifest, count_area, month_status, source_coverage
+from area_counts import (
+    QUALITY_POLICY,
+    build_manifest,
+    count_area,
+    month_status,
+    source_coverage,
+)
 from area_query import Polygon
 from detection_store import StoreError, month_path
 from firms_archive import process_year
-from research_adapter import build_result, daily_page, detections_page, polygon_from_area
+from research_adapter import (
+    build_result,
+    daily_page,
+    detections_page,
+    polygon_from_area,
+)
 from synthetic import MODIS_HEADER, VIIRS_HEADER, make_archive, modis_row, viirs_row
 
 NOW = datetime(2026, 11, 11, 3, 0, tzinfo=timezone.utc)
@@ -43,7 +54,8 @@ def build_archive(root, source, year, rows, header):
 
 def fixture(root):
     """SYNTHETIC archives: MODIS 2018 complete, MODIS 2019 only to 2019-10-15; VIIRS 2019 complete; no 2020."""
-    inside = lambda i: round(-2.4 - i * 0.01, 2)
+    def inside(i):
+        return round(-2.4 - i * 0.01, 2)
     build_archive(root, "MODIS_SP", 2018, [modis_row(-2.4, 114.1, "2018-01-01"), modis_row(-2.4, 114.1, "2018-09-03"), modis_row(-2.4, 114.1, "2018-12-31")], MODIS_HEADER)
     build_archive(root, "MODIS_SP", 2019, [
         modis_row(-2.4, 114.1, "2019-01-01"),
@@ -208,6 +220,8 @@ class AdapterTests(unittest.TestCase):
             "area.json": built["result"]["area"],
             "daily-page.json": daily_page(built["counts"], built["result"]["id"], "2019-09"),
             "detections-page.json": detections_page(self.store, KALTENG, built["result"]["id"], "2019-09-01", "2019-10-31", limit=2),
+            "publication-primary.json": detections_page(self.store, KALTENG, built["result"]["id"], "2019-09-01", "2019-11-30"),
+            "publication-comparison.json": detections_page(self.store, KALTENG, built["result"]["id"], "2018-09-01", "2018-09-30", role="comparison"),
         }
         for name, payload in files.items():
             (out / name).write_text(json.dumps(payload), encoding="utf-8")

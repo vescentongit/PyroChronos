@@ -19,7 +19,7 @@ export type PublishedAnalysis = z.infer<typeof researchAnalysisResultSchema>;
 export type ResearchObservation = z.infer<
 	typeof researchDetectionsPageSchema
 >["observations"][number];
-const pagesSchema = z.union([
+export const researchObservationPagesSchema = z.union([
 	researchDetectionsPageSchema,
 	z.array(researchDetectionsPageSchema).min(1).max(128),
 ]);
@@ -60,14 +60,28 @@ export async function* iterateResearchObservations(
 		AND ($3::text IS NULL OR "periodRole"=$3) ORDER BY id LIMIT 129`,
 		[result.id, result.workspaceId, options.periodRole ?? null],
 	);
+	yield* iterateObservationArtifacts(rows, reader, result, options);
+}
+
+export async function* iterateObservationArtifacts(
+	rows: readonly unknown[],
+	reader: ResearchArtifactReader,
+	result: PublishedAnalysis,
+	options: {
+		periodRole?: "primary" | "comparison";
+		maxBytes?: number;
+		maxObservations?: number;
+	} = {},
+): AsyncGenerator<ResearchObservation> {
 	if (!rows.length || rows.length > 128)
 		return fail("DEPENDENCY_UNAVAILABLE", 503);
 	let totalBytes = 0;
 	const seen = new Map<string, string>();
 	for (const row of rows) {
+		const fields = z.record(z.string(), z.unknown()).parse(row);
 		const metadata = analysisArtifactSchema.safeParse({
-			...row,
-			bytes: Number(row.bytes),
+			...fields,
+			bytes: Number(fields.bytes),
 		});
 		if (!metadata.success || metadata.data.format !== "json")
 			return fail("DEPENDENCY_UNAVAILABLE", 503);
@@ -91,7 +105,7 @@ export async function* iterateResearchObservations(
 		} catch {
 			return fail("DEPENDENCY_UNAVAILABLE", 503);
 		}
-		const parsed = pagesSchema.safeParse(document);
+		const parsed = researchObservationPagesSchema.safeParse(document);
 		if (!parsed.success) return fail("DEPENDENCY_UNAVAILABLE", 503);
 		for (const page of Array.isArray(parsed.data)
 			? parsed.data

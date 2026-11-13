@@ -9,6 +9,42 @@ import {
 const unsafe = (run) =>
 	assert.throws(run, (error) => error.code === "UNSAFE_METADATA");
 
+for (const name of [
+	"AUTH_GOOGLE_SECRET",
+	"AUTH_GITHUB_SECRET",
+	"OAUTH_PRIVATE_KEY",
+	"EXPORT_API_KEY",
+	"SERVICE_PASSWORD",
+	"SERVICE_PASSWD",
+	"SERVICE_TOKEN",
+	"SERVICE_SECRET_KEY",
+	"AWS_SECRET_ACCESS_KEY",
+]) {
+	test(`${name} secrets are blocked in literal, encoded and decoded forms`, () => {
+		const previous = process.env[name];
+		const secret = 'synthetic-oauth/private:"sentinel';
+		try {
+			for (const configured of [secret, encodeURIComponent(secret)]) {
+				process.env[name] = configured;
+				for (const variant of [secret, encodeURIComponent(secret)]) {
+					unsafe(() =>
+						assertPublicationMetadataSafe(
+							{ archiveRevision: variant },
+							publicationSecrets(),
+						),
+					);
+					unsafe(() =>
+						assertPublicationSafe(Buffer.from(variant), publicationSecrets()),
+					);
+				}
+			}
+		} finally {
+			if (previous === undefined) delete process.env[name];
+			else process.env[name] = previous;
+		}
+	});
+}
+
 test("UUID secrets block every casing in metadata, keys and artifact bytes", () => {
 	const token = "abcdefab-abcd-4abc-8abc-abcdefabcdef";
 	for (const configured of [token, token.toUpperCase()]) {

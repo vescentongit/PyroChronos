@@ -70,6 +70,46 @@ const rejects = (run, code) =>
 	assert.rejects(run, (error) => error.code === code);
 const rows = (table) => db.query(`SELECT * FROM "${table}" ORDER BY id`);
 
+test("OAuth secrets are rejected from inspection notes, correction metadata and actor snapshots", async () => {
+	const a = await createAssignment();
+	const report = await createReport(a.id);
+	const previous = process.env.AUTH_GOOGLE_SECRET;
+	process.env.AUTH_GOOGLE_SECRET = 'synthetic-inspection/private:"sentinel';
+	try {
+		for (const variant of [
+			process.env.AUTH_GOOGLE_SECRET,
+			encodeURIComponent(process.env.AUTH_GOOGLE_SECRET),
+		]) {
+			await rejects(
+				() => createReport(a.id, { ...reportBody(), notes: variant }),
+				"INVALID_REQUEST",
+			);
+			await rejects(
+				() =>
+					reports.correctResearchReport(
+						db,
+						f.workspace,
+						f.recorder,
+						report.id,
+						{ ...reportBody(), expectedRevision: 1, reason: variant },
+					),
+				"INVALID_REQUEST",
+			);
+			await db.query('UPDATE "User" SET name=$1 WHERE id=$2', [
+				variant,
+				f.owner,
+			]);
+			await rejects(() => createAssignment(), "INVALID_REQUEST");
+		}
+		assert.equal((await rows("P1InspectionReport")).length, 1);
+		assert.equal((await rows("P1InspectionReportRevision")).length, 0);
+		assert.equal((await rows("InspectionAuditEvent")).length, 2);
+	} finally {
+		if (previous === undefined) delete process.env.AUTH_GOOGLE_SECRET;
+		else process.env.AUTH_GOOGLE_SECRET = previous;
+	}
+});
+
 test("assignment creation preserves server identities and idempotent receipts", async () => {
 	const body = assignmentBody();
 	const first = await createAssignment(body);

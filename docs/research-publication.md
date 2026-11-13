@@ -25,6 +25,22 @@ input. A changed archive/model needs a new job; the publisher does not rewrite
 are assigned from database time for the normalized persistence package, rather
 than trusting producer placeholder publication timestamps.
 
+Observation evidence is mandatory for each published primary/comparison period,
+including an empty research-2 page for a no_data period. Arbitrary JSON, missing
+pages, foreign analysis IDs, unsupported observation formats, invalid source/time/
+polygon references and conflicting duplicate detections fail before storage.
+The publisher uses the same verified observation iterator as locations and exports;
+unique per-period/per-source totals must match the published raw metrics. Unknown
+counts remain null and require no observations, rather than being rewritten as zero.
+
+The producer page ID may be its own result ID or the final publication ID. After
+verifying the supplied checksum/size, publication binds every observation page to
+the final result ID, canonicalizes its JSON and recomputes checksum/size/object keys
+before staging. Both single pages and arrays of pages are supported. Caller buffers
+remain unchanged; an identical replay produces identical final metadata even after
+the original lease expires. The shared reader's 128-artifact/64-MiB evidence limits
+also apply at publication, so a successful publication is readable by B2/B4.
+
 Nathan's P0 `analysis-manifest-1` is not the persistence envelope and is not
 silently relabelled. A complete producer handoff must supply the internal
 envelope with real build/policy/source provenance. The integration test invokes
@@ -45,6 +61,10 @@ automatically install a production producer or expose a publication endpoint.
 1. Parse the input, clone producer data/artifact buffers and reject configured
    secrets, the current claim token, or credential-bearing URLs. JSON artifacts are also scanned after
    decoding, so JSON escaping cannot hide secret values.
+   B1, B3 and B4 share the configured secret list, including OAuth/provider secrets,
+   named token/API/private-key/password variables, private-root variants and DSN
+   credentials. Percent-encoded and decoded forms are scanned as well as UUID
+   casing variants. No service keeps a separate, narrower environment allowlist.
 2. Read the actual latest attempt and verify its token, scope and live lease.
    Validate the complete prepared package before storing anything.
 3. Derive result/manifest IDs and artifact key namespaces from the job/workspace/
