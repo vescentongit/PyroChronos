@@ -1,21 +1,60 @@
 # R2-P1 Step 1: data foundation
 
-> Merge compatibility: the existing P0 `AnalysisJob` and `AnalysisArtifact`
-> remain authoritative for the application. P1's corresponding tables and
-> Prisma models are named `P1AnalysisJob` and `P1AnalysisArtifact`; the P1
-> migration is separate from the already-applied P0 migration. This preserves
-> both implementations but does not connect P1's worker or publisher to P0
-> jobs. Integration and review remain open. A database that already applied
+> Stage 7B: new submissions use `P1AnalysisJob` and publish `AnalysisResult`.
+> P0 `AnalysisRun`/`AnalysisJob`/`AnalysisArtifact` data remain unchanged and
+> readable through the API's legacy fallback. Old queued P0 jobs require an
+> explicit operational drain; they are not silently rewritten into P1 jobs.
+> The P1 migrations are separate from P0. A database that already applied
 > the earlier P1 migration under the P0 migration name requires a separately
 > reviewed reconciliation; do not apply these migrations blindly there.
 
-This step adds persistence and internal contracts for R2-P1-B1/B2. It does not
-implement a worker, publication service, routes, or production authorization.
+The initial step added persistence and internal contracts for R2-P1-B1/B2.
+Stage 7B connects the authenticated submission, P1 queue, Nathan producer,
+atomic publisher, locations/inspections and private exports. Experimental
+routes remain gated by RESEARCH_V2_EXPERIMENTAL=true; local synthetic native
+acceptance does not establish staging OAuth, live archives or deployment.
 The public `research-2` contracts in `research-contracts.ts` remain unchanged.
 
-The subsequent [Step 2 worker](research-worker.md) adds queue/lease handling and
-native PostgreSQL integration tests. Publication, producer and authorization
-integration remain separate steps.
+The [worker](research-worker.md) supplies fenced claims/leases; the
+[publisher](research-publication.md) validates and commits immutable results.
+
+## Active submission and versioning
+
+`npm run research:worker -- --register` activates a new immutable producer
+snapshot in ResearchDataset using RESEARCH_DATA_DIR and optional
+RESEARCH_MODELS_DIR. It includes original archive checksums/fingerprint,
+exact model/baseline JSON documents and their hashes, harmonization/quality
+policy hash, producer source fingerprint and build commit. Re-run registration
+to activate changed files; unregistered filesystem changes do not silently
+change queued jobs or the active API configuration. Missing versions fail closed.
+
+POST /api/v2/workspaces/:workspaceId/analyses validates the current session,
+active membership, immutable AOI revision and optional monitoringLocationId.
+The latter must belong to the same workspace, even if the caller belongs to
+both workspaces. Workspace-locked idempotency returns the original receipt;
+same requestId with different content returns 409. Input versions are resolved
+from the active snapshot and frozen with the complete request. Scoped dataVersion
+matches Nathan's actual source/year checksum calculation.
+
+The compute key includes workspace/AOI/settings and the entire producer snapshot,
+including model, baseline and policy content hashes. It excludes requestId and
+monitoringLocationId so identical work can share a P1 job. Different registered
+content invalidates reuse even when human version strings are unchanged. A
+request against an already successful identical job can return 200; retries keep
+their original 202/200 receipt. Job polling exposes current persisted status.
+
+The additive P1AnalysisLocationRequest table retains every location interested
+in shared work. Composite FKs constrain workspace/job/location scope, and triggers
+prevent UPDATE/DELETE/TRUNCATE. The publisher locks workspace before job, then
+adds MonitoringLocationAnalysis links in its publication transaction. A late
+request for a cached successful result links immediately under the workspace lock.
+Original anchor, evidence, initialAnalysisId and report history never change.
+
+New P1 GET job/result/days/detections/raw-density tile routes authorize every read,
+verify private artifacts and expose private/no-store responses with safe errors.
+Old P0 job/result IDs retain read compatibility. Neither reading nor map movement
+starts a producer. P1 raw-density tiles are derived from verified observations;
+capacity/cache optimization remains separate from functional integration.
 
 ## P0 boundary
 
@@ -23,8 +62,8 @@ integration remain separate steps.
 opaque P0 references. No fake User/Workspace/Area records are created. Synthetic
 fixtures live only under `tests/` and derive from the explicitly synthetic v2
 contract examples. Composite foreign keys prevent mixing P1 resources across
-workspaces, but do not prove membership, AOI ownership or identity. P0 integration
-must supply those checks and any additional foreign keys once its models exist.
+workspaces, but do not prove membership, AOI ownership or identity. The active
+submission and read services supply those checks using the existing P0 identities.
 
 ## Models and invariants
 
@@ -54,7 +93,7 @@ must supply those checks and any additional foreign keys once its models exist.
   at the contract boundary (maximum `Number.MAX_SAFE_INTEGER`).
 - `MonitoringLocation`: immutable original observation snapshot, creator,
   initial result and AOI revision, with workspace/creator/request idempotency.
-  The original result must be published. The future location service must
+  The original result must be published. The location service must
   resolve `anchorDetectionId` against the actual immutable observation dataset:
   schema validation alone cannot prove that a point is a real detection.
 - `MonitoringLocationAnalysis`: immutable, workspace-consistent links to
@@ -77,7 +116,7 @@ artifact metadata, and location records/links.
 still running and its attempt has completed successfully. It reuses the existing
 Zod result schema, including its cross-field refinements, and checks the package's
 workspace/job/manifest, AOI, periods, source checksums, pinned versions, baseline,
-timestamps and artifact scope. The future publication service still needs to
+timestamps and artifact scope. The publication service must also
 read/lock the actual database state and verify current ownership/lease; accepting
 a package does not authorize its publisher or validate scientific claims.
 

@@ -1,64 +1,107 @@
 import { PrismaClient } from "@prisma/client";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { claimRun, failRun, hash, heartbeat, publishRun } from "../src/lib/research-store.ts";
+import { randomUUID } from "node:crypto";
+import {
+	researchProducerConfigSchema,
+	producerConfigurationKey,
+} from "../src/lib/research-producer-contracts.ts";
+import {
+	assertPublicationMetadataSafe,
+	publicationSecrets,
+} from "../src/lib/research-publication-values.ts";
 
 if (existsSync(".env")) process.loadEnvFile(".env");
-const client = new PrismaClient();
-function sql(client) {
-  return {
-    query: (statement, params = []) => client.$queryRawUnsafe(statement, ...params),
-    transaction: fn => client.$transaction(tx => fn(sql(tx)), { maxWait: 30000, timeout: 120000 }),
-  };
-}
-const db = sql(client);
-const root = process.env.RESEARCH_DATA_DIR;
-if (!root) throw new Error("RESEARCH_DATA_DIR is required");
-function python(request) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.env.RESEARCH_PYTHON || "python", ["pipeline/research_worker.py"], { stdio: ["pipe", "pipe", "pipe"] });
-    let output = "", size = 0;
-    child.stdout.on("data", chunk => { size += chunk.length; if (size > 100_000_000) child.kill(); else output += chunk; });
-    child.on("error", reject);
-    child.on("close", code => { if (code) reject(new Error("PRODUCER_FAILED")); else { try { resolve(JSON.parse(output)); } catch { reject(new Error("INVALID_PRODUCER")); } } });
-    child.stdin.end(JSON.stringify(request));
-  });
+const python = process.env.RESEARCH_PYTHON || process.env.PYTHON || "python";
+function describe() {
+	return new Promise((resolve, reject) => {
+		const child = spawn(python, ["pipeline/research_worker.py"], {
+			stdio: ["pipe", "pipe", "ignore"],
+			windowsHide: true,
+		});
+		const chunks = [];
+		let size = 0;
+		child.stdout.on("data", (chunk) => {
+			size += chunk.length;
+			if (size > 12 * 1024 * 1024) child.kill();
+			else chunks.push(chunk);
+		});
+		child.on("error", () => reject(new Error("PRODUCER_UNAVAILABLE")));
+		child.on("close", (code) => {
+			if (code) reject(new Error("PRODUCER_UNAVAILABLE"));
+			else {
+				try {
+					resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+				} catch {
+					reject(new Error("INVALID_OUTPUT"));
+				}
+			}
+		});
+		child.stdin.on("error", () => child.kill());
+		child.stdin.end(
+			JSON.stringify({
+				action: "describe",
+				root: process.env.RESEARCH_DATA_DIR,
+				modelsDir: process.env.RESEARCH_MODELS_DIR,
+				mode: process.env.RESEARCH_PRODUCER_MODE || "research",
+			}),
+		);
+	});
 }
 try {
-  if (process.argv.includes("--register")) {
-    const fingerprint = await python({ action: "fingerprint", root });
-    const config = { fingerprint, sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-raw-1" };
-    const id = hash(config);
-    await db.query('INSERT INTO "ResearchDataset" (id,config) VALUES ($1,$2::jsonb) ON CONFLICT (id) DO NOTHING RETURNING id', [id, JSON.stringify(config)]);
-    console.log(`Registered dataset ${id}`);
-  } else {
-    do {
-      let run;
-      try {
-        run = await claimRun(db);
-      } catch {
-        console.error("RESEARCH_QUEUE_UNAVAILABLE; retrying");
-        if (process.argv.includes("--once")) { process.exitCode = 1; break; }
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        continue;
-      }
-      if (!run) {
-        if (process.argv.includes("--once")) break;
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        continue;
-      }
-      let lost = false;
-      const timer = setInterval(() => heartbeat(db, run.id, run.leaseToken).then(ok => { if (!ok) lost = true; }).catch(() => { lost = true; }), 30000);
-      try {
-        const bundle = await python({ root, run });
-        if (!lost) await publishRun(db, run, bundle);
-      } catch {
-        if (!lost) {
-          try { await failRun(db, run); }
-          catch { console.error("RESEARCH_JOB_STATUS_UNAVAILABLE; lease will expire"); }
-        }
-      } finally { clearInterval(timer); }
-      if (process.argv.includes("--once")) break;
-    } while (true);
-  }
-} finally { await client.$disconnect(); }
+	if (!process.env.RESEARCH_DATA_DIR) throw new Error("DATASET_REQUIRED");
+	if (process.argv.includes("--register")) {
+		const config = researchProducerConfigSchema.parse(await describe());
+		assertPublicationMetadataSafe(config, publicationSecrets());
+		const id = randomUUID(),
+			client = new PrismaClient();
+		try {
+			await client.$executeRawUnsafe(
+				'INSERT INTO "ResearchDataset" (id,config) VALUES ($1,$2::jsonb)',
+				id,
+				JSON.stringify(config),
+			);
+		} finally {
+			await client.$disconnect();
+		}
+		console.log(
+			JSON.stringify({
+				status: "registered",
+				datasetId: id,
+				configurationKey: producerConfigurationKey(config),
+			}),
+		);
+	} else {
+		const child = spawn(
+			python,
+			[
+				"pipeline/research_p1_worker.py",
+				...(process.argv.includes("--once") ? ["--once"] : []),
+			],
+			{
+				stdio: ["pipe", "inherit", "ignore"],
+				windowsHide: true,
+				env: { ...process.env, RESEARCH_NODE: process.execPath },
+			},
+		);
+		let shutdownTimer;
+		child.stdin.on("error", () => {});
+		const stop = () => {
+			if (!child.stdin.writableEnded) child.stdin.end("stop\n");
+			shutdownTimer ??= setTimeout(() => child.kill("SIGTERM"), 10000).unref();
+		};
+		process.once("SIGINT", stop);
+		process.once("SIGTERM", stop);
+		const code = await new Promise((resolve) => {
+			child.once("error", () => resolve(1));
+			child.once("close", (value) => resolve(value ?? 1));
+		});
+		clearTimeout(shutdownTimer);
+		process.removeListener("SIGINT", stop);
+		process.removeListener("SIGTERM", stop);
+		process.exitCode = code;
+	}
+} catch {
+	console.error("RESEARCH_WORKER_UNAVAILABLE");
+	process.exitCode = 1;
+}

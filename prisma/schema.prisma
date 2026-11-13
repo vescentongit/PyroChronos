@@ -267,6 +267,7 @@ model P1AnalysisJob {
   error           Json?             @db.JsonB
 
   attempts        P1AnalysisJobAttempt[]
+  locationRequests P1AnalysisLocationRequest[]
   manifests       AnalysisManifest[]
   result          AnalysisResult?      @relation("JobResult")
   publishedResult AnalysisResult?      @relation("PublishedResult", fields: [resultId], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -362,6 +363,7 @@ model MonitoringLocation {
   createdAt         DateTime                     @default(now()) @db.Timestamptz(3)
   initialAnalysis   AnalysisResult               @relation(fields: [initialAnalysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
   analyses          MonitoringLocationAnalysis[]
+  analysisRequests  P1AnalysisLocationRequest[]
   assignments       InspectionAssignment[]
 
   @@unique([id, workspaceId])
@@ -490,6 +492,16 @@ model MonitoringLocationAnalysis {
 
   @@id([locationId, analysisId])
   @@index([workspaceId, analysisId])
+}
+
+model P1AnalysisLocationRequest {
+  jobId String
+  workspaceId String
+  locationId String
+  job P1AnalysisJob @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  location MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  @@id([jobId, locationId])
+  @@index([workspaceId, locationId])
 }
 
 enum P1ResearchExportStatus {

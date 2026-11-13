@@ -76,11 +76,15 @@ export async function readPublicationContext(
 	claim: PublicationClaim,
 	lock = false,
 ): Promise<PublicationContext> {
-	if (lock)
+	if (lock) {
+		await sql.query('SELECT id FROM "Workspace" WHERE id=$1 FOR UPDATE', [
+			claim.workspaceId,
+		]);
 		await sql.query(
 			'SELECT "id" FROM "P1AnalysisJob" WHERE "id"=$1 AND "workspaceId"=$2 FOR UPDATE',
 			[claim.jobId, claim.workspaceId],
 		);
+	}
 	const [raw] = await sql.query(
 		`SELECT to_jsonb(j) AS job, to_jsonb(a) AS attempt,
     date_trunc('milliseconds', clock_timestamp()) AS now FROM "P1AnalysisJob" j
@@ -194,4 +198,8 @@ export async function insertPublication(
 		[result.id, result.publishedAt, job.id, attempt.id],
 	);
 	if (!published.length) throw new PublicationFailure("LEASE_LOST");
+	await sql.query(
+		'INSERT INTO "MonitoringLocationAnalysis" ("locationId","workspaceId","analysisId") SELECT "locationId","workspaceId",$1 FROM "P1AnalysisLocationRequest" WHERE "jobId"=$2 AND "workspaceId"=$3 ON CONFLICT DO NOTHING',
+		[result.id, job.id, job.workspaceId],
+	);
 }

@@ -6,7 +6,9 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { PGlite } from "@electric-sql/pglite";
-import { claimRun, createArea, getArtifact, getJobRow, hash, idempotent, jobWire, member, publishRun, resultWire, submitAnalysis } from "../src/lib/research-store.ts";
+import { claimRun, createArea, getArtifact, getJobRow, hash, idempotent, jobWire, member, publishRun, resultWire, submitLegacyAnalysis as submitAnalysis } from "../src/lib/research-store.ts";
+import { loadInspectionModule } from "./helpers/research-inspection-fixtures.mjs";
+const p1Reads = await loadInspectionModule("research-analyses");
 
 test("isolated database: authorization, idempotency, leased job and atomic publication", async () => {
   const pg = await PGlite.create();
@@ -56,6 +58,8 @@ test("isolated database: authorization, idempotency, leased job and atomic publi
     assert.equal(jobWire(job).status, "succeeded");
     assert.equal(resultWire(job, artifact).primary.metric.status, "no_data");
     assert.equal(resultWire(job, artifact).primary.metric.rawCount, null);
+    assert.equal((await p1Reads.readResearchJob(db, "w1", "u1", first.value.id)).status, "succeeded");
+    assert.deepEqual(await p1Reads.readResearchAnalysis(db, "w1", "u1", first.value.id), resultWire(job, artifact));
     const secondRequest = { ...request, requestId: randomUUID(), period: { start: "2019-02-01", end: "2019-02-02" } };
     const second = await db.transaction(tx => submitAnalysis(tx, "w1", "u1", secondRequest));
     const old = await claimRun(db);

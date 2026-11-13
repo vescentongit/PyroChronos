@@ -1,4 +1,5 @@
 import type { LocationDatabase } from "./monitoring-locations.ts";
+import { projectExportProducerMetadata } from "./research-producer-contracts.ts";
 import { monitoringLocationSchema } from "./research-contracts.ts";
 import { analysisManifestSchema } from "./research-foundation-contracts.ts";
 import {
@@ -148,7 +149,16 @@ export async function buildExportManifest(
 	if (!period) return fail("INVALID_REQUEST");
 	const provenance = researchExportManifestSchema.shape.provenance.parse(
 		Object.fromEntries(
-			Object.entries(manifest).filter(([key]) =>
+			Object.entries({
+				...manifest,
+				...(manifest.producerMetadata
+					? {
+							producerMetadata: projectExportProducerMetadata(
+								manifest.producerMetadata,
+							),
+						}
+					: {}),
+			}).filter(([key]) =>
 				Object.hasOwn(researchExportManifestSchema.shape.provenance.shape, key),
 			),
 		),

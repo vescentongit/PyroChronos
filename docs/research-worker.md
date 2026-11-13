@@ -1,10 +1,23 @@
 # R2-P1 Step 2: PostgreSQL worker, claims and leases
 
-`pipeline/research_jobs.py` implements the queue over the Step 1 Prisma tables.
-`pipeline/research_p1_worker.py` supervises an explicitly injected asynchronous
-processor. This step does not implement the Nathan adapter or production
-publication service; the integration tests use a publisher fixture inside their
-isolated test schema.
+`pipeline/research_jobs.py` implements the queue over the P1 Prisma tables.
+`pipeline/research_p1_worker.py` supervises an asynchronous processor. Stage 7B
+wires its CLI to research_p1_runtime.py, the authentic Nathan adapter and the
+existing Node atomic publisher. Injected processors remain available for isolated
+queue tests; native E2E tests execute the actual CLI and publisher.
+
+Use `npm run research:worker -- --register` to activate a frozen archive/model/
+baseline/policy snapshot, then `npm run research:worker` or `-- --once` to process
+P1 jobs. Registration is an explicit deployment/operator action; new submissions
+use the latest activated snapshot. Old P0 queued jobs are not silently migrated.
+Runtime configuration and remaining deployment limits are described in
+research-foundation.md and research-publication.md.
+
+Private producer/publisher subprocess IO uses bounded pipes and worker-owned child
+termination. On Windows it runs through threads so the psycopg Selector loop can
+continue heartbeats. Normal parent shutdown sends a private stop command before a
+bounded termination fallback. Neither child stderr nor raw exceptions/credentials
+are forwarded to logs; only allowlisted status/job/attempt/result fields are emitted.
 
 ## Queue protocol
 

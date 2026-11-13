@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { exportProducerMetadataSchema } from "./research-producer-contracts.ts";
 import {
 	researchExportSchema,
 	researchAreaSchema,
@@ -100,6 +101,7 @@ export const researchExportManifestSchema = z
 		provenance: z
 			.object({
 				producerVersion: analysisManifestSchema.shape.producerVersion,
+				producerMetadata: exportProducerMetadataSchema.optional(),
 				buildCommit: analysisManifestSchema.shape.buildCommit,
 				satelliteConfigVersion:
 					analysisManifestSchema.shape.satelliteConfigVersion,

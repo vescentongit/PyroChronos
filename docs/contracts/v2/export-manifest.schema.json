@@ -454,6 +454,213 @@
           "minLength": 1,
           "maxLength": 200
         },
+        "producerMetadata": {
+          "type": "object",
+          "properties": {
+            "nativeManifestChecksum": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "archiveFingerprint": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "modelChecksum": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "baselineChecksum": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "policyChecksum": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "archives": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "year": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "checksum": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "year",
+                    "checksum"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "harmonization": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "configHash": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "evaluationId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "referenceSource": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "inputSource": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "polygonSupported": {
+                      "type": "boolean"
+                    },
+                    "model": {
+                      "type": "object",
+                      "properties": {
+                        "family": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "ratio": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "ratios": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "additionalProperties": {
+                                "type": "number"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "family",
+                        "ratio",
+                        "ratios"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "baseline": {
+                      "type": "object",
+                      "properties": {
+                        "policyVersion": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "kind": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "windowYears": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "minimumValidYears": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "statistic": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "scoreKind": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        }
+                      },
+                      "required": [
+                        "policyVersion",
+                        "kind",
+                        "windowYears",
+                        "minimumValidYears",
+                        "statistic",
+                        "scoreKind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "configHash",
+                    "evaluationId",
+                    "referenceSource",
+                    "inputSource",
+                    "polygonSupported",
+                    "model",
+                    "baseline"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "nativeManifestChecksum",
+            "archiveFingerprint",
+            "modelChecksum",
+            "baselineChecksum",
+            "policyChecksum",
+            "harmonization"
+          ],
+          "additionalProperties": false
+        },
         "buildCommit": {
           "type": "string",
           "pattern": "^[a-f0-9]{40}$"
