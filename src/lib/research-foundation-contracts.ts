@@ -6,7 +6,7 @@ import {
   researchPeriodSchema,
   researchAnalysisResultSchema,
   monitoringLocationSchema,
-} from "./research-contracts";
+} from "./research-contracts.ts";
 
 // Internal persistence/handoff contracts. They do not replace research-2 API DTOs.
 // P0 identities remain opaque references until workspace/auth integration exists.

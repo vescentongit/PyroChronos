@@ -21,7 +21,13 @@
 			"src/lib/research-http.ts",
 			"tests/research-inspections*.test.mjs",
 			"tests/inspection-transitions.test.mjs",
-			"tests/helpers/research-inspection-fixtures.mjs"
+			"tests/helpers/research-inspection-fixtures.mjs",
+			"src/lib/research-export*.ts",
+			"src/lib/research-observations.ts",
+			"src/lib/research-report-projection.ts",
+			"scripts/research-export-worker.mjs",
+			"tests/research-export*.test.mjs",
+			"tests/helpers/research-export-fixtures.mjs"
 		]
 	},
 	"linter": {

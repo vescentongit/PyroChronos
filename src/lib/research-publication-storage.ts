@@ -63,15 +63,34 @@ export class FileResearchArtifactStorage
 	}
 
 	async put(key: string, content: Uint8Array): Promise<void> {
+		const copy = Uint8Array.from(content);
+		await this.putStream(
+			key,
+			(async function* () {
+				yield copy;
+			})(),
+		);
+	}
+
+	async putStream(
+		key: string,
+		source: AsyncIterable<Uint8Array>,
+	): Promise<{ checksum: string; bytes: number }> {
 		let temporary: string | undefined;
 		try {
-			if (content.byteLength > this.maxBytes)
-				throw new PublicationFailure("STORAGE_FAILED");
+			const hash = createHash("sha256");
+			let bytes = 0;
 			const target = await this.target(key, true);
 			temporary = join(dirname(target), `.publication-${randomUUID()}`);
 			const handle = await open(temporary, "wx", 0o600);
 			try {
-				await handle.writeFile(content);
+				for await (const chunk of source) {
+					bytes += chunk.byteLength;
+					if (bytes > this.maxBytes)
+						throw new PublicationFailure("STORAGE_FAILED");
+					hash.update(chunk);
+					await handle.writeFile(chunk);
+				}
 				await handle.sync();
 			} finally {
 				await handle.close();
@@ -87,11 +106,9 @@ export class FileResearchArtifactStorage
 				)
 					throw error;
 			});
-			await this.verify(
-				key,
-				`sha256:${createHash("sha256").update(content).digest("hex")}`,
-				content.byteLength,
-			);
+			const checksum = `sha256:${hash.digest("hex")}`;
+			await this.verify(key, checksum, bytes);
+			return { checksum, bytes };
 		} catch (error: unknown) {
 			throw publicationFailure(error, "STORAGE_FAILED");
 		} finally {

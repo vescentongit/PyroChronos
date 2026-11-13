@@ -41,6 +41,7 @@ test('shipped migrations match Prisma columns, enum values, defaults and indexes
         expected.push(
           { indexname: 'InspectionAuditEvent_assignment_revision_key', indexdef: 'CREATE UNIQUE INDEX "InspectionAuditEvent_assignment_revision_key" ON "InspectionAuditEvent" USING btree ("assignmentId", "toRevision") WHERE ("reportId" IS NULL)' },
           { indexname: 'InspectionAuditEvent_report_revision_key', indexdef: 'CREATE UNIQUE INDEX "InspectionAuditEvent_report_revision_key" ON "InspectionAuditEvent" USING btree ("reportId", "toRevision") WHERE ("reportId" IS NOT NULL)' },
+          { indexname: 'ResearchExport_reusable_key', indexdef: 'CREATE UNIQUE INDEX "ResearchExport_reusable_key" ON "ResearchExport" USING btree ("workspaceId", "exportKey") WHERE (status <> \'failed\'::"P1ResearchExportStatus")' },
         );
         expected.sort((a, b) => a.indexname < b.indexname ? -1 : a.indexname > b.indexname ? 1 : 0);
       }

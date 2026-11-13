@@ -5,6 +5,7 @@ import { snapshotSchema, parseSnapshot } from "../src/lib/snapshot.ts";
 import { studyRegions } from "../src/lib/regions.ts";
 import { hotspotsSchema, querySchema } from "../src/lib/hotspots.ts";
 import { researchContracts } from "../src/lib/research-contracts.ts";
+import { researchExportManifestSchema } from "../src/lib/research-export-contracts.ts";
 import {
   createReportSchema,
   correctReportSchema,
@@ -111,3 +112,12 @@ for (const [name, schema] of Object.entries(researchContracts)) {
 console.log(
   `Research v2: ${Object.keys(researchContracts).length} target schemas and synthetic examples passed; no v2 endpoint is claimed implemented.`,
 );
+
+const exportManifestFile = new URL("../docs/contracts/v2/export-manifest.schema.json", import.meta.url);
+const exportManifestJson = z.toJSONSchema(researchExportManifestSchema, { io: "input" });
+if (process.argv.includes("--write")) writeFileSync(exportManifestFile, JSON.stringify(exportManifestJson, null, 2) + "\n");
+else assert.deepEqual(JSON.parse(readFileSync(exportManifestFile)), exportManifestJson, "Export manifest schema drifted");
+const exportExamples = JSON.parse(readFileSync(new URL("../docs/contracts/research-export-manifest.examples.json", import.meta.url)));
+assert(exportExamples.notice.startsWith("SYNTHETIC"));
+researchExportManifestSchema.parse(exportExamples.manifest);
+console.log("Protected research-export-manifest-1 schema and synthetic example passed.");

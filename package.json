@@ -16,6 +16,7 @@
     "check:contracts": "node scripts/check-contracts.mjs",
     "check:browser": "node scripts/browser-acceptance.mjs",
     "research:worker": "node scripts/research-worker.mjs",
+    "research:export-worker": "node scripts/research-export-worker.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "keywords": [],

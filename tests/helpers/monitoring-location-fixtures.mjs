@@ -64,6 +64,10 @@ export async function publishedFixture(database, storage, options = {}) {
 		'INSERT INTO "Membership" ("workspaceId","userId",role) VALUES ($1,$2,\'owner\') ON CONFLICT DO NOTHING',
 		[workspace, user],
 	);
+	if (options.withoutComparison) {
+		fixture.job.input.request.comparisonPeriod = null;
+		request.producer.result.comparison = null;
+	}
 	await seedPublication(database, fixture);
 	const analysisId = `result-${scope({ job: fixture.job, attempt: fixture.attempt })}`;
 	const observation = structuredClone(fixture.location.anchor);
@@ -75,6 +79,7 @@ export async function publishedFixture(database, storage, options = {}) {
 		nextCursor: null,
 	};
 	options.mutatePage?.(page);
+	options.mutateResult?.(request.producer.result);
 	request.artifacts = [
 		artifact("observations", Buffer.from(JSON.stringify(page))),
 	];

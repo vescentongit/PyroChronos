@@ -1,0 +1,219 @@
+{
+  "notice": "SYNTHETIC ONLY: schema example, not an operational export or field inspection.",
+  "manifest": {
+    "schemaVersion": "research-export-manifest-1",
+    "exportId": "synthetic-export",
+    "analysisId": "analysis-demo",
+    "analysisManifestId": "manifest-demo",
+    "kind": "raw-hotspots-csv",
+    "periodRole": "primary",
+    "snapshotAt": "2026-09-02T00:00:00.000Z",
+    "area": {
+      "schemaVersion": "research-2",
+      "id": "area-demo",
+      "workspaceId": "workspace-demo",
+      "revision": 1,
+      "name": "Synthetic custom AOI",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              113,
+              -4
+            ],
+            [
+              115,
+              -3
+            ],
+            [
+              114,
+              0
+            ],
+            [
+              112,
+              -1
+            ],
+            [
+              113,
+              -4
+            ]
+          ]
+        ]
+      },
+      "geometryHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "areaKm2": 100,
+      "createdAt": "2026-09-02T00:00:00.000Z"
+    },
+    "period": {
+      "start": "2026-08-01",
+      "end": "2026-08-31"
+    },
+    "summary": {
+      "period": {
+        "start": "2026-08-01",
+        "end": "2026-08-31"
+      },
+      "days": 31,
+      "metric": {
+        "rawCount": 30,
+        "harmonizedCount": null,
+        "rawCountsBySource": {
+          "MODIS_SP": 20,
+          "VIIRS_SNPP_SP": 10
+        },
+        "status": "method_unsupported"
+      }
+    },
+    "granularity": "observations",
+    "mode": "demo",
+    "dataVersion": "synthetic-archive-1",
+    "unit": "original-hotspot-detections",
+    "method": {
+      "name": "raw-counts-per-source",
+      "version": "demo-1",
+      "referenceScale": "MODIS-equivalent",
+      "unit": "estimated-hotspot-detections",
+      "validation": "unsupported",
+      "validationDomain": "Synthetic fixture only; not a real validated model",
+      "manifestId": "manifest-demo"
+    },
+    "baseline": {
+      "kind": "rolling-same-calendar-period",
+      "windowYears": 10,
+      "minimumValidYears": 10,
+      "policyVersion": "synthetic-reference-1"
+    },
+    "sources": [
+      {
+        "id": "MODIS_SP",
+        "product": "synthetic-MODIS",
+        "version": "demo",
+        "processingLevel": "STANDARD",
+        "status": "available",
+        "observedFrom": "2016-08-01T00:00:00.000Z",
+        "observedTo": "2026-08-31T23:59:00.000Z",
+        "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "id": "VIIRS_SNPP_SP",
+        "product": "synthetic-VIIRS",
+        "version": "demo",
+        "processingLevel": "STANDARD",
+        "status": "available",
+        "observedFrom": "2016-08-01T00:00:00.000Z",
+        "observedTo": "2026-08-31T23:59:00.000Z",
+        "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ],
+    "provenance": {
+      "producerVersion": "synthetic-producer-1",
+      "buildCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "satelliteConfigVersion": "synthetic-satellites-1",
+      "aggregationVersion": "synthetic-aggregation-1",
+      "qualityPolicyVersion": "synthetic-quality-1",
+      "baselinePolicyVersion": "synthetic-reference-1",
+      "pairingPolicyVersion": "synthetic-pairing-1",
+      "missingnessPolicyVersion": "synthetic-missingness-1",
+      "trainPeriod": null,
+      "testPeriod": null,
+      "sourceSnapshots": [
+        {
+          "sourceId": "MODIS_SP",
+          "processingLevel": "STANDARD",
+          "productVersion": "demo",
+          "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "batchIds": [],
+          "archiveRevision": "synthetic-archive-1",
+          "ingestedAt": null
+        },
+        {
+          "sourceId": "VIIRS_SNPP_SP",
+          "processingLevel": "STANDARD",
+          "productVersion": "demo",
+          "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "batchIds": [],
+          "archiveRevision": "synthetic-archive-1",
+          "ingestedAt": null
+        }
+      ]
+    },
+    "formatterVersion": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "sanitizationVersion": "csv-safe-2",
+    "inspectionContext": {
+      "locations": [
+        {
+          "schemaVersion": "research-2",
+          "id": "location-demo",
+          "workspaceId": "workspace-demo",
+          "name": "Synthetic monitoring location",
+          "anchor": {
+            "id": "detection-demo",
+            "sourceId": "VIIRS_SNPP_SP",
+            "observedAt": "2026-08-01T00:15:00.000Z",
+            "coordinates": [
+              114,
+              -2.5
+            ],
+            "confidence": "n",
+            "frpMw": 7
+          },
+          "initialAnalysisId": "analysis-demo",
+          "areaId": "area-demo",
+          "areaRevision": 1,
+          "createdAt": "2026-09-02T00:00:00.000Z",
+          "createdBy": {
+            "id": "user-demo-nathan",
+            "displayName": "Synthetic researcher"
+          }
+        }
+      ],
+      "assignments": [
+        {
+          "schemaVersion": "research-2",
+          "id": "assignment-demo",
+          "workspaceId": "workspace-demo",
+          "locationId": "location-demo",
+          "assignee": {
+            "id": "user-demo-nathan",
+            "displayName": "Synthetic researcher"
+          },
+          "assignedBy": {
+            "id": "user-demo-nathan",
+            "displayName": "Synthetic researcher"
+          },
+          "status": "in_progress",
+          "revision": 2,
+          "createdAt": "2026-09-02T00:00:00.000Z",
+          "updatedAt": "2026-09-02T00:00:00.000Z"
+        }
+      ],
+      "reports": [
+        {
+          "schemaVersion": "research-2",
+          "id": "report-demo",
+          "workspaceId": "workspace-demo",
+          "locationId": "location-demo",
+          "assignmentId": "assignment-demo",
+          "inspectorUserId": "user-demo-nathan",
+          "observedAt": "2026-09-02T12:00:00.000Z",
+          "outcome": "inconclusive",
+          "notes": "Synthetic report; no actual field inspection.",
+          "recordedBy": {
+            "id": "user-demo-nathan",
+            "displayName": "Synthetic researcher"
+          },
+          "revision": 1,
+          "createdAt": "2026-09-03T00:00:00.000Z",
+          "updatedAt": "2026-09-03T00:00:00.000Z",
+          "corrections": []
+        }
+      ]
+    },
+    "csv": {
+      "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "bytes": 10000,
+      "rowCount": 30
+    }
+  }
+}

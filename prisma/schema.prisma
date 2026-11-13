@@ -125,6 +125,7 @@ model Membership {
   inspectionCorrections P1InspectionReportRevision[] @relation("InspectionCorrector")
   revisedInspections P1InspectionReportRevision[] @relation("InspectionRevisionInspector")
   inspectionAuditEvents InspectionAuditEvent[] @relation("InspectionAuditActor")
+  researchExports ResearchExport[]
   @@id([workspaceId, userId])
   @@index([userId, active])
 }
@@ -323,6 +324,7 @@ model AnalysisResult {
   artifacts        P1AnalysisArtifact[]
   initialLocations MonitoringLocation[]
   locationLinks    MonitoringLocationAnalysis[]
+  exports          ResearchExport[]
 
   @@unique([id, workspaceId])
   @@unique([jobId, workspaceId])
@@ -488,4 +490,80 @@ model MonitoringLocationAnalysis {
 
   @@id([locationId, analysisId])
   @@index([workspaceId, analysisId])
+}
+
+enum P1ResearchExportStatus {
+  queued
+  running
+  ready
+  failed
+}
+
+enum P1ResearchExportKind {
+  raw_hotspots_csv
+  harmonized_aggregates_csv
+}
+
+model ResearchExport {
+  id String @id @default(cuid())
+  workspaceId String
+  analysisId String
+  requestedById String
+  exportKey String @db.VarChar(71)
+  periodRole String
+  kind P1ResearchExportKind
+  analysisChecksum String @db.VarChar(71)
+  manifestChecksum String @db.VarChar(71)
+  formatterVersion String @db.VarChar(71)
+  sanitizationVersion String
+  inspectionSnapshot Json @db.JsonB
+  snapshotChecksum String @db.VarChar(71)
+  status P1ResearchExportStatus @default(queued)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  startedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  resultAttemptId String? @unique
+  error Json? @db.JsonB
+  analysis AnalysisResult @relation(fields: [analysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_analysis_fkey")
+  requester Membership @relation(fields: [workspaceId, requestedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_requester_fkey")
+  attempts ResearchExportAttempt[] @relation("ExportAttempts")
+  resultAttempt ResearchExportAttempt? @relation("ExportPublishedAttempt", fields: [resultAttemptId, id, workspaceId], references: [id, exportId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_result_attempt_fkey")
+  @@unique([id, workspaceId], map: "ResearchExport_scope_key")
+  @@index([workspaceId, exportKey], map: "ResearchExport_dedup_idx")
+  @@index([status, createdAt], map: "ResearchExport_queue_idx")
+}
+
+model ResearchExportAttempt {
+  id String @id @default(cuid())
+  exportId String
+  workspaceId String
+  attemptNo Int
+  leaseToken String @unique @db.Uuid
+  status AnalysisAttemptStatus @default(running)
+  claimedAt DateTime @db.Timestamptz(3)
+  heartbeatAt DateTime @db.Timestamptz(3)
+  leaseExpiresAt DateTime @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  errorCode String?
+  retryable Boolean?
+  export ResearchExport @relation("ExportAttempts", fields: [exportId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExportAttempt_export_fkey")
+  publishedExports ResearchExport[] @relation("ExportPublishedAttempt")
+  artifacts ResearchExportArtifact[]
+  @@unique([id, exportId, workspaceId], map: "ResearchExportAttempt_scope_key")
+  @@unique([exportId, attemptNo], map: "ResearchExportAttempt_sequence_key")
+  @@index([status, leaseExpiresAt], map: "ResearchExportAttempt_lease_idx")
+}
+
+model ResearchExportArtifact {
+  id String @id @default(cuid())
+  exportId String
+  workspaceId String
+  attemptId String
+  kind String
+  objectKey String @unique
+  checksum String @db.VarChar(71)
+  bytes BigInt
+  rowCount Int?
+  attempt ResearchExportAttempt @relation(fields: [attemptId, exportId, workspaceId], references: [id, exportId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExportArtifact_attempt_fkey")
+  @@unique([attemptId, kind], map: "ResearchExportArtifact_kind_key")
 }
