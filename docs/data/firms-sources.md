@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
+
 # Data FIRMS dan kalender global (Nathan, Sprint 1)
 
 > **Fondasi producer, belum consumer riset v2.** Draft calendar-1 di bawah masih memakai pusat grid 0,25 derajat dan pembanding semua tahun; itu belum memenuhi polygon tepat, detail harian, atau referensi bergerak 10 tahun. Target baru adalah [API v2](../contracts/api-v2.md), dengan hipotesis skala setara MODIS yang harus divalidasi. Pekerjaan adaptasi: R2-P0-N1 sampai N4 dan R2-P1-N1 sampai N4 pada [sprint Nathan](../../tasks/Nathan/SPRINT-1-P0.md).

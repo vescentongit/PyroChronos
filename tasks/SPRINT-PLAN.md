@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../docs/current-status.md).
+
 # PyroChronos — Rencana 3 Sprint Riset v2
 
 Acuan: [product.md](../product.md), diperbarui 10 November 2026. Kontrak integrasi baru: [API v2](../docs/contracts/api-v2.md). Kontrak v1 tetap untuk kompatibilitas prototype.

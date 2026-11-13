@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
+
 # Sprint 1 (P0) — Orkhan
 
 **Fokus:** Fondasi riset dan pengalaman peta.\

@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
+
 # Kontrak integrasi PyroChronos
 
 Mulai pekerjaan baru dari **[API dan payload riset v2](api-v2.md)**, mengikuti [product.md](../../product.md). Orkhan menetapkan kontrak atas mandat tim; ini tidak menunggu persetujuan draft baru per anggota.

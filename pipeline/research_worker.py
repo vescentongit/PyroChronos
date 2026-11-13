@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from area_query import Polygon, months_between, period_minutes
-from research_adapter import build_result, daily_page, detections_page
+from research_adapter import build_result, daily_page, detections_page, load_default_harmonization
 
 
 def fingerprint(root):
@@ -29,9 +29,10 @@ def produce(root, run):
     polygon = Polygon(area["geometry"])
     period, comparison = data["period"], data["comparisonPeriod"]
     sources = tuple(data["dataset"]["sources"])
+    model, baseline = load_default_harmonization(data["baseline"]["windowYears"]) if data["dataset"].get("producerVersion") == "research-harmonized-1" else (None, None)
     built = build_result(root, polygon, period["start"], period["end"], comparison, sources=sources,
                          name=area["name"], area_id=area["id"], workspace_id=run["workspaceId"],
-                         job_id=run["id"], result_id=run["id"], window_years=data["baseline"]["windowYears"])
+                         job_id=run["id"], result_id=run["id"], window_years=data["baseline"]["windowYears"], model=model, baseline=baseline)
     built["result"]["area"] = area
     # The server's canonical hash identifies the submitted area in its own namespace.
     built["manifest"]["serverGeometryHash"] = area["geometryHash"]
@@ -40,7 +41,8 @@ def produce(root, run):
         if selected is None:
             continue
         for month in months_between(*period_minutes(selected["start"], selected["end"])):
-            days.append(daily_page(counts, run["id"], month, role))
+            estimates = built["harmonized"] if role == "primary" else built["comparisonHarmonized"]
+            days.append(daily_page(counts, run["id"], month, role, harmonized=estimates.get(month)))
         cursor = None
         while True:
             page = detections_page(root, polygon, run["id"], selected["start"], selected["end"], sources, role, cursor)

@@ -88,7 +88,7 @@ export async function POST(req: Request) {
   try {
     const fingerprint = await producer({ action: "fingerprint", root }, req.signal);
     if (typeof fingerprint !== "string" || !/^sha256:[a-f0-9]{64}$/.test(fingerprint)) throw new Error("PRODUCER_FAILED");
-    const run = { id: randomUUID(), workspaceId, input: { ...request, area: submittedArea, dataset: { fingerprint, sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-raw-1" } } };
+    const run = { id: randomUUID(), workspaceId, input: { ...request, area: submittedArea, dataset: { fingerprint, sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-harmonized-1" } } };
     stage = "producer";
     const rawBundle = await producer({ root, run }, req.signal);
     stage = "validation";

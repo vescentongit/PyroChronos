@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../docs/current-status.md).
+
 # PyroChronos — Task Tracker Riset v2
 
 Acuan keputusan: [product.md](../product.md), 10 November 2026. Rincian per orang, task, dependensi, dan checklist PR: [3 sprint](SPRINT-PLAN.md). Kontrak target: [API v2](../docs/contracts/api-v2.md).
@@ -38,6 +40,8 @@ Implementasi frontend P0 tersedia; 31 tes, typecheck, build dan browser acceptan
 
 
 ## P1 — Fitur inti versi pertama
+
+Pembaruan 13 November 2026: jalur analisis anonim memuat model harmonisasi beserta baseline; kalender tahun × bulan dan ringkasan perbandingan/anomali tersedia. Penggunaan web tidak memerlukan OAuth atau membership. Pekerjaan kolaborasi server pada checklist lama bukan prasyarat versi lokal. O1/O2 menunggu acceptance browser/review; O3/O4 masih perlu dilanjutkan. Lihat [status aktif](../docs/current-status.md).
 
 ### Nathan
 

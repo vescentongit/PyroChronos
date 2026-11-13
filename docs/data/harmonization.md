@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
+
 # Harmonisasi VIIRS ke skala setara MODIS (Nathan, Sprint 2)
 
 **Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; menunggu review Bagas dan integrasi worker. Evaluasi bersifat **retrospektif** pada arsip FIRMS 2013–2025 dan **bukan** validasi operasional untuk bulan mendatang. Hasil yang terbit berlabel `research` hanya untuk polygon yang seluruhnya berada di domain tervalidasi; selain itu estimasi `null`.

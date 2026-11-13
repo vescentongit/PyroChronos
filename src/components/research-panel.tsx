@@ -32,6 +32,7 @@ import {
 } from "@/lib/local-research-client";
 import { ResearchApiError } from "@/lib/research-client";
 import demo from "@/lib/fixtures/research-demo.json";
+import { ResearchSummary } from "@/components/research-summary";
 
 const labels: Record<string, [string, string]> = {
   fixture_points: [
@@ -62,12 +63,12 @@ const labels: Record<string, [string, string]> = {
     "Research v2 service is unavailable. Recent FIRMS exploration remains available.",
   ],
   UNAUTHENTICATED: [
-    "Masuk dengan akun individual untuk mengakses workspace riset.",
-    "Sign in with an individual account to access research workspaces.",
+    "Layanan mengembalikan persyaratan akun lama. Muat ulang halaman untuk memakai analisis lokal tanpa login.",
+    "The service returned a legacy account requirement. Reload to use local analysis without signing in.",
   ],
   FORBIDDEN: [
-    "Akun ini tidak memiliki akses ke workspace.",
-    "Your account does not have access to this workspace.",
+    "Permintaan ditolak. Muat ulang halaman lalu coba kembali dari situs ini.",
+    "Request denied. Reload the page and retry from this site.",
   ],
   RATE_LIMITED: [
     "Batas permintaan tercapai. Tunggu sebelum mencoba lagi.",
@@ -894,6 +895,7 @@ export default function ResearchPanel({
                 "White outline: previous result area. Dashed blue outline: selected area. Only the current sketch is shown while editing.",
               )}
             </p>
+            <ResearchSummary result={result} english={language === "en"} onMonth={month => void loadDays(month)} />
             <div className="table-scroll">
               <table>
                 <caption>

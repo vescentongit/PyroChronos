@@ -165,6 +165,24 @@ class ReferenceTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def test_anonymous_worker_passes_model_to_months_days_and_comparison(self):
+        from unittest.mock import patch
+        from research_worker import fingerprint, produce
+        run = {"id": "synthetic-run", "workspaceId": "local", "input": {
+            "area": {"id": "synthetic-area", "name": "Synthetic", "geometry": KALTENG.geometry, "geometryHash": "synthetic"},
+            "period": {"start": "2020-09-01", "end": "2020-09-30"},
+            "comparisonPeriod": {"start": "2019-09-01", "end": "2019-09-30"},
+            "baseline": {"windowYears": 10},
+            "dataset": {"fingerprint": fingerprint(self.store), "sources": ["VIIRS_SNPP_SP"], "producerVersion": "research-harmonized-1"}}}
+        with patch("research_worker.load_default_harmonization", return_value=(MODEL, POLICY)):
+            bundle = produce(self.store, run)
+        result = bundle["result"]
+        self.assertEqual(result["months"][0]["anomaly"]["status"], "assessed")
+        self.assertEqual(result["primary"]["metric"]["harmonizedCount"], 2)
+        self.assertEqual(result["comparison"]["metric"]["harmonizedCount"], 1.25)
+        for role, expected in (("primary", 2), ("comparison", 1.25)):
+            self.assertAlmostEqual(sum(day["metric"]["harmonizedCount"] for page in bundle["days"] if page["periodRole"] == role for day in page["days"]), expected)
+
     def test_median_reference_uses_only_earlier_years_and_scores_the_target(self):
         built = build_result(self.store, KALTENG, "2020-09-01", "2020-09-30", now=NOW, model=MODEL, baseline=POLICY)
         month = built["result"]["months"][0]

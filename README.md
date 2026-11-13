@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](docs/current-status.md).
+
 # PyroChronos
 
 Next.js + Tailwind + Prisma + Neon. Home dengan globe geografis interaktif dan halaman Simulation untuk dashboard, peta MapLibre, grafik historis, dua wilayah, kandidat verifikasi, ekspor CSV/JSON, serta laporan. Mendukung Indonesia/English dan Plus Jakarta Sans.
@@ -30,6 +32,8 @@ Acceptance frontend tanpa backend nyata: `npm run check:browser`, dengan server 
 Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Mode Operasional mengharapkan snapshot lewat `/api/snapshots`; endpoint belum tersedia, dan UI menampilkan unavailable tanpa memakai fixture sebagai pengganti. Kontrak: `docs/contracts/snapshot-v1.md`. Tidak ada autentikasi produksi, job FIRMS, atau model harmonisasi yang diklaim aktif. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
 
 ## Penyimpanan browser dan analisis
+
+Keputusan aktif: seluruh fitur web dapat digunakan tanpa login dan tanpa konfigurasi Google OAuth. Kalender tahun × bulan, ringkasan dua periode dan tabel anomali membaca hasil analisis yang sama. Jalur analisis lokal memuat model terbitan `pipeline/models`; estimasi tetap null pada domain yang tidak lolos evaluasi. Lihat [status dan sisa sprint](docs/current-status.md).
 
 Penggunaan UI tidak memerlukan login. Workspace lokal, area, pilihan analisis, hasil dan laporan disimpan pada browser perangkat tersebut; data tidak disinkronkan ke perangkat atau pengguna lain. Menghapus data situs/browser dapat menghapusnya. Hasil lama dari akun atau database server tidak otomatis disalin ke browser dan tidak dihapus dari server.
 

@@ -1,3 +1,5 @@
+> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
+
 # Migrasi kontrak v1 ke riset v2
 
 **Status:** rencana integrasi, bukan migrasi database yang sudah dijalankan. Acuan baru: [API v2](api-v2.md), [produk](../../product.md), dan [sprint](../../tasks/SPRINT-PLAN.md).
