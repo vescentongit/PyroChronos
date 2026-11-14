@@ -16,6 +16,10 @@ declare module "d3-geo" {
     context: CanvasRenderingContext2D,
   ): (object: GeoJsonObject | { type: "Sphere" }) => void;
   export function geoGraticule10(): GeoJsonObject;
+  export function geoInterpolate(
+    a: [number, number],
+    b: [number, number],
+  ): (t: number) => [number, number];
   export function geoDistance(a: [number, number], b: [number, number]): number;
   export function geoContains(
     object: GeoJsonObject,

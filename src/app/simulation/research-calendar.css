@@ -1,0 +1,352 @@
+@keyframes fire-cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fire-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.simulation-root {
+  .fire-kpis {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-block: 20px;
+  }
+  .fire-kpi {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    min-width: 0;
+    padding: 16px 18px;
+    border: 1px solid #ffffff4d;
+    border-radius: 0;
+    background: #ffffff08;
+    animation: fire-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .fire-kpi:nth-child(2) { animation-delay: 0.07s; }
+  .fire-kpi:nth-child(3) { animation-delay: 0.14s; }
+  .fire-kpi:nth-child(4) { animation-delay: 0.21s; }
+  .fire-kpi-lead {
+    border: 2px solid #fff;
+    background: #fc3c2322;
+    box-shadow: 6px 6px 0 #fc3c23;
+  }
+  .fire-kpi > span:first-child {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c4c4c4;
+  }
+  .fire-kpi strong {
+    font-family: var(--display);
+    font-size: clamp(24px, 2.7vw, 40px);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .fire-kpi strong i {
+    font-style: normal;
+    font-size: 0.45em;
+    color: #aaa;
+    letter-spacing: 0;
+  }
+  .fire-kpi small {
+    font-size: 11px;
+    color: #b4b4b4;
+    line-height: 1.5;
+  }
+  .fire-kpi ul {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .fire-kpi li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .fire-kpi li b {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: #c4c4c4;
+  }
+  .fire-withheld {
+    padding: 12px 14px;
+    border-left: 4px solid #fc3c23;
+    background: #fc3c2312;
+    border-radius: 0;
+  }
+  .fire-withheld small {
+    display: block;
+    margin-top: 6px;
+    color: #bdbdbd;
+  }
+  .fire-source-picker {
+    display: inline-flex;
+    gap: 8px;
+    margin-left: 6px;
+    padding-left: 14px;
+    border-left: 1px solid #ffffff24;
+  }
+  .fire-calendar-wrap {
+    margin-top: 14px;
+  }
+  .fire-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: #c4c4c4;
+  }
+  .fire-legend i {
+    display: block;
+    width: 160px;
+    height: 8px;
+    border-radius: 8px;
+  }
+  .fire-legend i.fire-legend-unknown {
+    width: 22px;
+    height: 12px;
+    border-radius: 3px;
+    margin-left: 14px;
+    border: 1px solid #ffffff3d;
+    background: repeating-linear-gradient(135deg, #ffffff30 0 2px, transparent 2px 6px);
+  }
+  .fire-calendar table {
+    width: 100%;
+    min-width: 900px;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 5px;
+  }
+  .fire-calendar th:first-child {
+    width: 58px;
+  }
+  .fire-calendar caption {
+    text-align: left;
+    padding-bottom: 8px;
+    font-size: 11px;
+    color: #b4b4b4;
+  }
+  .fire-calendar th {
+    padding: 4px 6px;
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: #b4b4b4;
+    text-align: center;
+  }
+  .fire-calendar th[scope="row"] {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    position: sticky;
+    left: 0;
+    background: rgba(10, 8, 35, 0.82);
+    backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  .fire-calendar td {
+    padding: 0;
+    border: 0;
+  }
+  .fire-calendar td > span {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    color: #5f5f5f;
+  }
+  .fire-calendar .calendar-cell {
+    position: relative;
+    width: 100%;
+    min-width: 66px;
+    min-height: 48px;
+    padding: 6px 4px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #ffffff1f;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    animation: fire-cell-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(min(var(--i, 0), 36) * 22ms);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .fire-calendar .calendar-cell small {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .fire-calendar .calendar-cell:hover,
+  .fire-calendar .calendar-cell[data-focus="true"] {
+    transform: translateY(-2px) scale(1.06);
+    z-index: 2;
+    border-color: #ffffff;
+    box-shadow: 4px 4px 0 #ffffff;
+  }
+  .fire-calendar .calendar-cell.is-unknown {
+    color: #bdbdbd !important;
+    background-image: repeating-linear-gradient(135deg, #ffffff22 0 2px, transparent 2px 7px) !important;
+  }
+  .fire-calendar .calendar-cell[data-extreme="high"] {
+    box-shadow: 0 0 0 2px #fc3c23;
+  }
+  .fire-calendar .calendar-cell[data-extreme="low"] {
+    box-shadow: 0 0 0 2px #5eead4;
+  }
+  .fire-focus {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 118px;
+    margin-top: 14px;
+    padding: 16px 20px;
+    border: 1px solid #ffffff4d;
+    border-radius: 0;
+    background: #ffffff06;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .fire-focus[data-active="true"] {
+    border-color: #fc3c23;
+  }
+  .fire-focus > p {
+    margin: 0;
+    color: #b4b4b4;
+    font-size: 13px;
+  }
+  .fire-focus strong {
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+  .fire-focus dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px 22px;
+    margin: 10px 0 0;
+  }
+  .fire-focus dl div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .fire-focus dt {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+  .fire-focus dd {
+    margin: 0;
+    font-size: 13px;
+    color: #fff;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+  .fire-focus-ring {
+    position: relative;
+    flex: 0 0 82px;
+    width: 82px;
+    height: 82px;
+  }
+  .fire-focus-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .fire-focus-ring circle {
+    fill: none;
+    stroke: #ffffff1f;
+    stroke-width: 6;
+  }
+  .fire-focus-ring .fire-focus-arc {
+    stroke: #fc3c23;
+    stroke-linecap: butt;
+    stroke-dasharray: 100;
+    stroke-dashoffset: calc(100 - var(--p, 0) * 100);
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .fire-focus-ring b {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+  .research-results details[open] > ul,
+  .research-results details[open] > .table-scroll {
+    animation: fire-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @media (max-width: 900px) {
+    .fire-kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .fire-kpi-lead {
+      grid-column: 1 / -1;
+    }
+    .fire-focus {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fire-kpi,
+    .fire-calendar .calendar-cell {
+      animation: none;
+    }
+    .fire-calendar .calendar-cell:hover,
+    .fire-calendar .calendar-cell[data-focus="true"] {
+      transform: none;
+    }
+  }
+}
+
+.simulation-root {
+  animation: sim-enter 0.7s ease both;
+}
+@keyframes sim-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .simulation-root {
+    animation: none;
+  }
+}

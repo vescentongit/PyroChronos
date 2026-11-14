@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./simulation.css";
 import "./global-heatmap.css";
+import "./research-calendar.css";
+import "./theme.css";
 
 export const metadata: Metadata = { title: "Simulation · PyroChronos" };
 

@@ -7,3 +7,5 @@
 `land-dots.json` is derived from that geometry by `node scripts/build-globe-land.mjs`. Precomputing the points avoids polygon containment work in the browser. Both assets are served locally; the Home page requires no third-party geographic request.
 
 Fire markers come from the application's explicitly illustrative demo fixtures. They are not live FIRMS detections.
+
+`land-dots-fine.json` is a denser hexagonal set (1.1 degree spacing, longitude step scaled by 1/cos(latitude)) derived from the same polygons for the Home globe. It is decorative geography only.
