@@ -67,6 +67,8 @@ Pembaruan 13 November 2026: O1–O4 Orkhan sudah diimplementasikan pada alur lok
 
 ## P2 — Penguatan dan evaluasi tambahan
 
+Orkhan O1/O3: benchmark dan audit otomatis tersedia dengan batas pengujian eksplisit; [hasil Sprint 3](../docs/orkhan-sprint-3-progress.md). O2 menunggu peneliti (belum tersedia menurut pengguna), O4 serta review Nathan tetap terbuka. Checklist selesai/direview di bawah tidak ditutup oleh tes sintetis.
+
 ### Nathan
 
 - [ ] **R2-P2-N1** — Sensitivitas NRT versus standard (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).

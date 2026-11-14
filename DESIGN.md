@@ -231,6 +231,8 @@ Exports use explicit outline actions for original-detection CSV, aggregate CSV, 
 
 This implementation is recorded from source and desktop/mobile captures in `.cache/sprint2-acceptance/`. The finish review returned **ship** after its three findings were resolved; Nathan's human review remains open.
 
+Sprint 3 normalizes the count ramp from zero to the actual positive maximum, including fractional estimates below one, with a safe denominator when no positive estimate exists. Synthetic edge checks in `.cache/sprint3-acceptance/edge.json` verified keyboard interaction, Indonesian/English states, missing-versus-zero distinction, export metadata, and contained overflow for no-data, unsupported-method, partial, and fractional results, plus reflow at (720px).
+
 ## Do's and Don'ts
 
 ### Do:

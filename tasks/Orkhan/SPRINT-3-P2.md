@@ -4,7 +4,13 @@
 
 **Fokus:** Penguatan, evaluasi tambahan dan kesiapan rilis.\
 **Reviewer utama:** Nathan.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status 13 November 2026:** O1/O3 otomatis dikerjakan dan diverifikasi: benchmark sintetis 20.000 titik/312 bulan/500 vertex, optimasi paging/cache serta audit edge ID/EN. [Bukti dan batas](../../docs/orkhan-sprint-3-progress.md). Review Nathan, perangkat fisik dan acceptance manusia masih terbuka. Pengguna menyatakan peneliti belum tersedia; O2 belum dijalankan. O4 tidak ditutup oleh acceptance sintetis.
+
+- [x] Benchmark sebelum/sesudah dan validasi geometri, dengan lingkungan serta keterbatasan dicatat.
+- [x] Audit otomatis no_data/unsupported/partial/pembanding nol/pecahan, keyboard, ID/EN dan reflow; regresi Sprint 2 lulus.
+- [ ] Review Nathan dan uji perangkat/assistive technology yang belum tersedia.
+- [ ] O2: sesi dengan peneliti; tidak digantikan tes otomatis.
+- [ ] O4: integrasi/reproduksibilitas/kesiapan rilis lintas tim.
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 

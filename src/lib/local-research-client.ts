@@ -7,6 +7,7 @@ const areaKey = "pyro-local-areas-v1";
 const historyKey = "pyro-research-history-v1";
 const bundleSchema = z.object({ result: researchAnalysisResultSchema, manifest: z.record(z.string(), z.unknown()), days: z.array(researchDailyPageSchema), detections: z.array(researchDetectionsPageSchema) }).strict();
 type Bundle = z.infer<typeof bundleSchema>;
+let bundleCache: { id: string; promise: Promise<Bundle> } | undefined;
 
 function database() {
   return new Promise<IDBDatabase>((resolve, reject) => {
@@ -17,7 +18,17 @@ function database() {
     request.onblocked = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
   });
 }
-export async function getBundle(id: string): Promise<Bundle> {
+export function getBundle(id: string): Promise<Bundle> {
+  // Results are immutable; retain only the active bundle to bound memory use.
+  if (bundleCache?.id === id) return bundleCache.promise;
+  const promise = readBundle(id).catch(error => {
+    if (bundleCache?.promise === promise) bundleCache = undefined;
+    throw error;
+  });
+  bundleCache = { id, promise };
+  return promise;
+}
+async function readBundle(id: string): Promise<Bundle> {
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {
@@ -36,6 +47,7 @@ async function saveBundle(bundle: Bundle) {
       tx.oncomplete = () => resolve();
       tx.onerror = tx.onabort = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     });
+    if (bundleCache?.id === bundle.result.id) bundleCache = undefined;
     const history = researchHistory();
     const summary = { id: bundle.result.id, name: bundle.result.area.name, start: bundle.result.primary.period.start, end: bundle.result.primary.period.end };
     localStorage.setItem(historyKey, JSON.stringify([summary, ...history.filter(item => item.id !== summary.id)]));
