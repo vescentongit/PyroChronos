@@ -28,6 +28,16 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 1/2 (14 November 2026): matriks anonim vs legacy dan
+benchmark sintetis terukur tersedia pada [laporan kapasitas](bagas-sprint-3-capacity.md).
+Pengukuran memakai producer/route aktual serta PostgreSQL 16 lokal sementara,
+bukan data FIRMS aktif atau tarif deployment. Backpressure dan akses hasil lama
+lulus; guard tetap dipertahankan, tanpa klaim ETA/SLA. Regresi terbaru perubahan
+ini: 253 tes Node dan 154 tes Python tanpa skip, typecheck/lint/contracts lulus.
+B1 belum ditandai selesai/direview; review Orkhan tetap terbuka.
+
+Catatan verifikasi checkout Orkhan sebelumnya (bukan hasil run Bagas di atas):
+
 - Typecheck dan `npm run build` lengkap (termasuk Prisma generate): lulus.
 - Contract checks: tujuh schema v1 dan 22 schema v2 lulus.
 - Python harmonisasi: 27 kasus, 26 lulus dan satu skip kondisional; mencakup handoff model worker anonim, anomali, dua periode dan kesesuaian jumlah harian.

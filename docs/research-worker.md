@@ -104,6 +104,11 @@ The worker never loads `.env`, creates identities, or supplies demo data.
 
 ## Policy
 
+Sprint 3 B1 records measured synthetic producer/queue capacity, current anonymous
+vs legacy guards and reproduction commands in [the capacity report](bagas-sprint-3-capacity.md).
+The local measurements retain existing limits; they do not establish a deployment
+SLA, external pricing, or a reason to block old-result reads under submission load.
+
 `WorkerPolicy` is explicit constructor configuration. Defaults are an engineering
 starting point, not a measured capacity/SLA: lease 60s, heartbeat 15s, processor
 timeout 300s, maximum 3 attempts, retry delays 5s/10s/... capped at 60s, idle loop

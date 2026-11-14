@@ -1,0 +1,389 @@
+{
+  "schemaVersion": "capacity-benchmark-1",
+  "measuredAt": "2026-11-14T07:17:32.744Z",
+  "fixture": {
+    "synthetic": true,
+    "inputRows": 12000
+  },
+  "provenance": {
+    "baseCommit": "c8e9cbd625f67af28c49efe68dc5b1c6bdfd9d2f",
+    "python": "Python 3.14.6",
+    "modelFiles": [
+      {
+        "name": "baseline-a34f51d0a650.json",
+        "sha256": "3e6391389465d10c2ac0e4e01b7f6c77de5628d9e533c293d342bca99858282f"
+      },
+      {
+        "name": "evaluation-a34f51d0a650.json",
+        "sha256": "90928b55670affa5f9d7aee69bb858ce5b82885cabc8309e13e98322f8c61735"
+      },
+      {
+        "name": "model-a34f51d0a650.json",
+        "sha256": "1e486b8076cfff368ac95555a029f327410a819848d135f9ea77aba8f30475d4"
+      },
+      {
+        "name": "pairs-a34f51d0a650.manifest.json",
+        "sha256": "acd504925b45c01920ae22c7233c36e0c058f8da9699cf6664e40c9169d44eaf"
+      },
+      {
+        "name": "polygon-check-a34f51d0a650.json",
+        "sha256": "862576a21948cb94992fbadba97871edb5b81b0954de2afccdd0f80660a2d18c"
+      },
+      {
+        "name": "transfer-a34f51d0a650.json",
+        "sha256": "529dca1f96962d3a8d613138318c1991ff7c339fbea562940f9a536dc6d903da"
+      }
+    ]
+  },
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "node": "v24.15.0",
+    "cpu": "Intel(R) Core(TM) Ultra 7 255HX",
+    "logicalCpus": 20,
+    "totalMemoryBytes": 33752997888
+  },
+  "methodology": {
+    "repeats": 3,
+    "osCache": "uncontrolled warm/cold; no disk cache flush",
+    "producerResources": "fresh Python process; peak RSS process lifetime; CPU and IO deltas around fingerprint+produce; Windows transfer counters include cached IO, not physical disk",
+    "route": "direct production POST handler; real Python subprocesses, no HTTP/Next overhead",
+    "clientCache": "production getBundle with synthetic IndexedDB double, not browser storage benchmark",
+    "costs": "external deployment rates excluded; no ETA extrapolation"
+  },
+  "nativePostgres": {
+    "report": "bagas-sprint-3-native.json",
+    "scope": "separate command; this file contains no native DB measurements"
+  },
+  "dataset": {
+    "files": 26,
+    "bytes": 66869,
+    "contentHash": "3b493148c051cd28617f7fe222e19d2a52b83170a1e4e5abc3197bda980716d6"
+  },
+  "nodePeakRssBytes": 218976256,
+  "rows": [
+    {
+      "name": "producer/small/short",
+      "elapsedMs": 890.5459000000001,
+      "repeat": 0,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 405.61249997699633,
+      "cpuSeconds": 0.078125,
+      "peakRssBytes": 27779072,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 50,
+      "outputBytes": 23072
+    },
+    {
+      "name": "producer/small/short",
+      "elapsedMs": 542.4033,
+      "repeat": 1,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 105.16289999941364,
+      "cpuSeconds": 0.09375,
+      "peakRssBytes": 27598848,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 50,
+      "outputBytes": 23072
+    },
+    {
+      "name": "producer/small/short",
+      "elapsedMs": 546.7181,
+      "repeat": 2,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 105.34259999985807,
+      "cpuSeconds": 0.109375,
+      "peakRssBytes": 27631616,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 50,
+      "outputBytes": 23072
+    },
+    {
+      "name": "route/small/short/miss",
+      "elapsedMs": 923.5390000000002,
+      "status": 200,
+      "outputBytes": 23072,
+      "id": "0bc53d30-0997-4a66-b867-6e145d2ac9ce"
+    },
+    {
+      "name": "producer/small/long",
+      "elapsedMs": 613.4337999999998,
+      "repeat": 0,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 153.75120000680909,
+      "cpuSeconds": 0.15625,
+      "peakRssBytes": 28045312,
+      "readTransferBytes": 435501,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 150,
+      "outputBytes": 145337
+    },
+    {
+      "name": "producer/small/long",
+      "elapsedMs": 602.7563,
+      "repeat": 1,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 160.6268000032287,
+      "cpuSeconds": 0.171875,
+      "peakRssBytes": 28274688,
+      "readTransferBytes": 435501,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 150,
+      "outputBytes": 145337
+    },
+    {
+      "name": "producer/small/long",
+      "elapsedMs": 589.8343999999997,
+      "repeat": 2,
+      "areaKm2": 1111.853992980342,
+      "geometryHash": "sha256:a48615f9c5d7bc25ec43503ee04452292c49d6d44ebdad247e6e3daa8e2a3d74",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 152.1534000057727,
+      "cpuSeconds": 0.125,
+      "peakRssBytes": 28250112,
+      "readTransferBytes": 435501,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 150,
+      "outputBytes": 145337
+    },
+    {
+      "name": "route/small/long/miss",
+      "elapsedMs": 1007.7352000000001,
+      "status": 200,
+      "outputBytes": 145337,
+      "id": "4cadbc67-0074-4553-ae8e-22124c996f54"
+    },
+    {
+      "name": "producer/large/short",
+      "elapsedMs": 631.6222000000007,
+      "repeat": 0,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 182.92530000326224,
+      "cpuSeconds": 0.171875,
+      "peakRssBytes": 28979200,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 1000,
+      "outputBytes": 165721
+    },
+    {
+      "name": "producer/large/short",
+      "elapsedMs": 613.7340999999997,
+      "repeat": 1,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 183.1621999735944,
+      "cpuSeconds": 0.1875,
+      "peakRssBytes": 29028352,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 1000,
+      "outputBytes": 165721
+    },
+    {
+      "name": "producer/large/short",
+      "elapsedMs": 628.4061000000002,
+      "repeat": 2,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-09-01",
+        "end": "2019-09-30"
+      },
+      "wallMs": 189.97350000427105,
+      "cpuSeconds": 0.171875,
+      "peakRssBytes": 28954624,
+      "readTransferBytes": 245731,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 1000,
+      "outputBytes": 165721
+    },
+    {
+      "name": "route/large/short/miss",
+      "elapsedMs": 1019.4220000000005,
+      "status": 200,
+      "outputBytes": 165721,
+      "id": "d4c4add4-6f38-4fa4-a240-99da3b16199f"
+    },
+    {
+      "name": "producer/large/long",
+      "elapsedMs": 5120.758599999999,
+      "repeat": 0,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 4563.003599992953,
+      "cpuSeconds": 4.421875,
+      "peakRssBytes": 46841856,
+      "readTransferBytes": 1668040,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 12000,
+      "outputBytes": 1960700
+    },
+    {
+      "name": "producer/large/long",
+      "elapsedMs": 5049.202599999999,
+      "repeat": 1,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 4490.316699986579,
+      "cpuSeconds": 4.375,
+      "peakRssBytes": 46919680,
+      "readTransferBytes": 1668040,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 12000,
+      "outputBytes": 1960700
+    },
+    {
+      "name": "producer/large/long",
+      "elapsedMs": 5261.0697999999975,
+      "repeat": 2,
+      "areaKm2": 617432.9264781835,
+      "geometryHash": "sha256:584224c0a569535e83ed804e6958ba9f8489ab84fa0d03fa444472e6f7a75646",
+      "period": {
+        "start": "2019-01-01",
+        "end": "2019-12-31"
+      },
+      "wallMs": 4705.5339999787975,
+      "cpuSeconds": 4.625,
+      "peakRssBytes": 46977024,
+      "readTransferBytes": 1668040,
+      "writeTransferBytes": 0,
+      "subprocessWallIncludesStartup": false,
+      "observations": 12000,
+      "outputBytes": 1960700
+    },
+    {
+      "name": "route/large/long/miss",
+      "elapsedMs": 5943.771999999997,
+      "status": 200,
+      "outputBytes": 1960700,
+      "id": "b9925cab-7aaf-498e-a1f9-a774902c5d11"
+    },
+    {
+      "name": "route/identical-resubmission/no-server-cache",
+      "elapsedMs": 5800.733900000003,
+      "status": 200,
+      "distinctResult": true
+    },
+    {
+      "name": "client/cache-miss/idb-double",
+      "elapsedMs": 73.04799999999523,
+      "reads": 1
+    },
+    {
+      "name": "route/concurrency-2",
+      "elapsedMs": 5347.401600000005,
+      "statuses": [
+        200,
+        503
+      ],
+      "oldResultReadable": true
+    },
+    {
+      "name": "route/concurrency-4",
+      "elapsedMs": 2950.986499999999,
+      "statuses": [
+        200,
+        503,
+        503,
+        503
+      ],
+      "oldResultReadable": true
+    },
+    {
+      "name": "route/concurrency-8",
+      "elapsedMs": 2846.7787000000026,
+      "statuses": [
+        200,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503
+      ],
+      "oldResultReadable": true
+    },
+    {
+      "name": "client/cache-hit/idb-double",
+      "elapsedMs": 0.1260000000038417,
+      "repeat": 0,
+      "concurrency": 8,
+      "reads": 0
+    },
+    {
+      "name": "client/cache-hit/idb-double",
+      "elapsedMs": 0.03179999999701977,
+      "repeat": 1,
+      "concurrency": 8,
+      "reads": 0
+    },
+    {
+      "name": "client/cache-hit/idb-double",
+      "elapsedMs": 0.00480000000243308,
+      "repeat": 2,
+      "concurrency": 8,
+      "reads": 0
+    }
+  ]
+}

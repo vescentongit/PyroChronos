@@ -26,6 +26,13 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-B1, R2-P1-B4
 
+**Bukti Tahap 1/2 — 14 November 2026:** [matriks cakupan, benchmark dan keputusan
+batas lokal](../../docs/bagas-sprint-3-capacity.md), termasuk JSON sampel anonim
+dan PostgreSQL native sementara. Beban sintetis, pengukuran waktu/resource nyata;
+tarif deployment terpisah dan belum ditentukan. Guard tidak dinaikkan, polygon
+tetap utuh; hasil lama terbaca saat kapasitas penuh. Review Orkhan dan validasi
+deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum dicentang.
+
 ### R2-P2-B2 — Ketahanan antrean dan pemulihan
 
 - [ ] **Selesai dan direview** — estimasi 4 poin.
