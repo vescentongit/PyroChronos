@@ -116,7 +116,7 @@ test("repeated browser index recovery retains bundles, bad records and damaged h
 			throw new Error("Synthetic quota failure");
 		set(key, value);
 	};
-	await assert.rejects(recoverLocalResearch(), /Synthetic quota failure/);
+	await assert.rejects(recoverLocalResearch(), error => error.code === "STORAGE_UNAVAILABLE");
 	assert.deepEqual(values, before);
 	globalThis.localStorage.setItem = set;
 	await recoverLocalResearch();

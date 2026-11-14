@@ -150,13 +150,14 @@ Handoff commit `4b8a2a5` mencatat typecheck/kontrak lulus; Node 259 kasus (231 l
 
 ## Verifikasi terbaru dan gerbang versi aktif — 15 November 2026
 
-[Bukti, cara mengulang dan batas pengujian](verification-2026-11-15.md). Perubahan storage, status cancel dan layout riwayat hasil sudah diuji; hasil lengkap sebelumnya dipertahankan ketika penulisan gagal. Ini bukan penutupan acceptance manusia atau hosted.
+Resolusi PR #15 menggabungkan `d94a567` dengan Sprint 3 Bagas: pemulihan indeks/checkpoint dan backpressure dipertahankan bersama pengaman storage/cancel/pergantian hasil. Regresi reload memperbaiki pemulihan hasil yang sebelumnya dibatalkan oleh pemulihan draft. Bukti gabungan terbaru: Node 271 lulus/39 skip, Python 164 lulus/17 skip, build Webpack/typecheck/kontrak/frontend checks lulus, serta 19 checkpoint browser sintetis tanpa exception runtime. [Rincian dan batas bukti](verification-2026-11-15.md). Daftar bug sweep berikut tetap merupakan catatan pengujian sebelum integrasi PR.
+
+[Bukti, cara mengulang dan batas pengujian](verification-2026-11-15.md). Bug sweep lanjutan memperbaiki klasifikasi error metadata storage, pembatalan saat commit hasil akhir, analisis tersembunyi ketika memilih hasil dashboard, race pergantian hasil cepat, timeout FIRMS/transport HTTP dan penutupan stream respons gagal. Tes regresi mereproduksi kegagalan sebelum perbaikan. Selector QA editor koordinat dan pelaporan status setiap run tetap diperbaiki dari kelanjutan awal. Hasil lengkap sebelumnya tetap dipertahankan ketika storage atau request gagal. Acceptance manusia dan hosted tetap terbuka.
 
 - [x] Dokumen aktif disinkronkan; rencana worker/database server tetap scope legacy.
-- [x] Build produksi Webpack lengkap lulus; typecheck, kontrak dan frontend checks lulus. Node: 232 lulus/28 skip; Python: 154 lulus/17 skip.
-- [x] Browser QA sintetis pada server produksi: cancel, reload/resume, refresh, storage gagal, ekspor dan viewport ID/EN lulus tanpa exception runtime. Artefak lokal di `.cache/verification-2026-11-15/browser/`.
-- [x] `vercel.json` lulus schema resmi; service, binding dan rewrite publik tetap sama.
-- [ ] Build default Turbopack tetap dibatasi lingkungan saat membuat port lokal; build Webpack tidak membuktikan bundler default berhasil.
-- [ ] FIRMS live: request availability gagal pada koneksi HTTPS dari lingkungan ini. Belum ada respons live yang diproses; key tidak disalahkan tanpa bukti.
+- [x] Build default Turbopack dan Webpack lengkap lulus pada perubahan aplikasi final; typecheck, kontrak dan delapan frontend checks lulus. Node: 245 lulus/28 skip; Python: 158 lulus/17 skip.
+- [x] Browser QA sintetis lengkap pada server produksi: 18 checkpoint, 20 request analisis, nol exception runtime. Mencakup cancel/reload/resume/refresh/storage/ekspor, workspace hasil tersimpan, laporan dan follow-up polygon, Kalteng dengan estimasi null, tanggal tanpa cakupan, error jaringan, pergantian hasil saat request berjalan, cancel saat commit akhir, kuota metadata area serta viewport ID/EN. Artefak lokal di `.cache/verification-2026-11-15/browser/`.
+- [x] Bukti schema resmi `vercel.json` berasal dari sesi Linux sebelumnya; konfigurasi tidak diubah pada bug sweep ini. Verifikasi remote tetap terbuka.
+- [ ] FIRMS live: request availability pada sesi Linux sebelumnya gagal pada koneksi HTTPS. Koneksi NASA belum diuji ulang pada kelanjutan Windows; belum ada respons live yang diproses. Key tidak disalahkan tanpa bukti.
 - [ ] Periksa project hosting yang sudah ada, secret, binding/routing privat, kapasitas/kuota dan acceptance Preview. Akses akun/link Vercel belum tersedia pada sesi Linux; jangan membuat resource pengganti secara otomatis.
 - [ ] Review manusia Nathan/Bagas, demonstrasi dataset nyata, uji peneliti serta mobile fisik/screen reader. Domain ditolak tidak dibuka hanya karena data tersedia.

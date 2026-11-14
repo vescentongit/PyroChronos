@@ -69,3 +69,23 @@ test("Vercel with a missing binding never tries the local Python fallback", asyn
     if (previous.url === undefined) delete process.env.PIPELINE_URL; else process.env.PIPELINE_URL = previous.url;
   }
 });
+
+test("HTTP transport and response-stream failures expose only actionable public codes", async t => {
+  const previous = { fetch: globalThis.fetch, url: process.env.PIPELINE_URL };
+  process.env.PIPELINE_URL = "https://internal.invalid/";
+  try {
+    for (const [name, fail, expected] of [
+      ["connection", () => { throw new TypeError("private transport details"); }, "NETWORK_ERROR"],
+      ["timeout", () => { throw new DOMException("private timeout details", "TimeoutError"); }, "TIMEOUT"],
+      ["body stream", () => new Response(new ReadableStream({ start(controller) { controller.error(new Error("private stream details")); } })), "NETWORK_ERROR"],
+    ]) {
+      await t.test(name, async () => {
+        globalThis.fetch = async () => fail();
+        await assert.rejects(researchProducer({ action: "fingerprint" }, new AbortController().signal), { message: expected });
+      });
+    }
+  } finally {
+    globalThis.fetch = previous.fetch;
+    if (previous.url === undefined) delete process.env.PIPELINE_URL; else process.env.PIPELINE_URL = previous.url;
+  }
+});

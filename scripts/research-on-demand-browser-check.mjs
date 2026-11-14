@@ -7,7 +7,6 @@ import { parse } from "csv-parse/sync";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline";
 
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const output = resolve(".cache/verification-2026-11-15/browser");
 mkdirSync(output, { recursive: true });
 const base = `http://127.0.0.1:${Number(process.env.PYRO_BROWSER_PORT || 3109)}`;
@@ -16,6 +15,14 @@ const children = [];
 let browser;
 let page;
 const checks = [], exceptions = [], calls = [];
+const startedAt = new Date().toISOString();
+let buildId = null;
+const writeReport = (status, error) => writeFileSync(`${output}/result.json`, JSON.stringify({
+  status, passed: status === "passed", synthetic: true, startedAt,
+  finishedAt: status === "running" ? null : new Date().toISOString(), buildId,
+  checks, runtimeExceptions: exceptions, analysisRequests: calls.length, error,
+}, null, 2));
+writeReport("running");
 const python = spawn(process.env.RESEARCH_PYTHON || "python", ["-u", "-c", [
   "from wsgiref.simple_server import make_server, WSGIRequestHandler",
   "from urllib.parse import urlparse",
@@ -39,6 +46,8 @@ const python = spawn(process.env.RESEARCH_PYTHON || "python", ["-u", "-c", [
 children.push(python);
 python.stderr.pipe(createWriteStream(`${output}/python.log`));
 try {
+  buildId = readFileSync(".next/BUILD_ID", "utf8").trim();
+  const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
   const lines = createInterface({ input: python.stdout });
   const port = await Promise.race([once(lines, "line").then(([line]) => Number(line)), once(python, "exit").then(() => { throw Error("Python fixture failed to start"); })]);
   lines.close();
@@ -73,8 +82,10 @@ try {
     calls.push({ period: body.request.period, baseline: body.includeBaseline });
     if (mode === "network-error") return route.fulfill({ status: 503, json: { code: "NETWORK_ERROR" } });
     if (mode === "fail-second" && calls.length === 2) return route.fulfill({ status: 503, json: { code: "DEPENDENCY_UNAVAILABLE" } });
-    if (mode === "hold-second" && calls.length === held) {
+    if (["hold-second", "hold-success"].includes(mode) && calls.length === held) {
+      const continueAfterHold = mode === "hold-success";
       await new Promise(resolve => { release = resolve; });
+      if (continueAfterHold) return route.continue().catch(() => {});
       return route.abort().catch(() => {});
     }
     return route.continue();
@@ -113,6 +124,9 @@ try {
     return JSON.parse(Buffer.concat(chunks).toString());
   };
   const bundle = await downloadBundle();
+  await open();
+  await page.getByRole("region", { name: "Analysis result", exact: true }).getByText(/Synthetic staged Amazon/).waitFor();
+  checks.push("complete saved results restore after reload and local index recovery");
   await page.getByRole("button", { name: "View detection", exact: true }).first().waitFor();
   checks.push("first page of original points loads automatically after analysis");
   assert.equal(bundle.manifest.stages.length, 4);
@@ -239,7 +253,7 @@ try {
   assert.equal(await page.getByLabel("Area name", { exact: true }).inputValue(), "Synthetic staged Amazon");
   checks.push("field report follow-up opens the historical workspace with the saved polygon");
   await page.getByText("Polygon coordinate editor", { exact: true }).click();
-  await page.getByLabel("Longitude, latitude", { exact: true }).fill("113,-3\n113.1,-3\n113.1,-2.9");
+  await page.getByRole("textbox", { name: "Longitude, latitude", exact: true }).fill("113,-3\n113.1,-3\n113.1,-2.9");
   await page.getByRole("button", { name: "Use coordinates as draft", exact: true }).click();
   await page.getByRole("button", { name: "Use this area", exact: true }).first().click();
   await page.getByLabel("Area name", { exact: true }).fill("Unsupported Kalteng test");
@@ -269,6 +283,64 @@ try {
   await page.getByRole("alert").filter({ hasText: "Connection to the historical service or NASA failed" }).waitFor();
   assert.equal(await storedId(), beforeNetworkFailure);
   checks.push("NASA connectivity error is visible and preserves the previous complete result");
+  await page.evaluate(() => {
+    const original = window.fetch;
+    window.researchSelectionAborted = false;
+    window.fetch = function(input, options) {
+      if (input === "/api/local-research" && JSON.parse(options.body).action === "analyze") {
+        options.signal.addEventListener("abort", () => { window.researchSelectionAborted = true; }, { once: true });
+      }
+      return original.call(this, input, options);
+    };
+  });
+  await page.getByLabel("Start (UTC)", { exact: true }).fill("2019-04-01");
+  await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2019-04-01");
+  mode = "hold-success"; held = calls.length + 1; release = undefined;
+  await analyze();
+  for (let attempt = 0; !release && attempt < 150; attempt++) await pause(100);
+  assert.ok(release, "request must be in flight before selecting another saved result");
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
+  await workspace.getByRole("combobox", { name: "Analysis result", exact: true }).selectOption(bundle.result.id);
+  await workspace.getByRole("heading", { name: /Synthetic staged Amazon/ }).waitFor();
+  release(); mode = "pass";
+  await page.waitForFunction(() => window.researchSelectionAborted === true);
+  await page.getByRole("button", { name: "Historical research", exact: true }).click();
+  assert.equal(await storedId(), bundle.result.id);
+  await page.getByRole("region", { name: "Analysis result", exact: true }).getByText(/Synthetic staged Amazon/).waitFor();
+  checks.push("selecting a saved dashboard result cancels the hidden analysis and preserves the user's selection");
+  await open();
+  const beforeFinalWrite = await storedId();
+  const historyBeforeFinalWrite = await page.evaluate(() => localStorage.getItem("pyro-research-history-v1"));
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function(value, ...args) {
+      const request = original.call(this, value, ...args);
+      if (value?.result?.id.startsWith("staged-")) this.transaction.addEventListener("complete", () => {
+        [...document.querySelectorAll("button")].find(node => node.textContent.trim() === "Stop monitoring")?.click();
+      }, { once: true });
+      return request;
+    };
+  });
+  await page.getByLabel("Start (UTC)", { exact: true }).fill("2019-07-01");
+  await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2019-07-01");
+  await analyze();
+  await page.getByRole("status").filter({ hasText: "Loading stopped" }).waitFor();
+  assert.equal(await storedId(), beforeFinalWrite);
+  assert.equal(await page.evaluate(() => localStorage.getItem("pyro-research-history-v1")), historyBeforeFinalWrite);
+  checks.push("cancellation during the final IndexedDB commit preserves the selected result and history");
+  await open();
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      if (key === "pyro-local-areas-v1") throw new DOMException("Synthetic full storage", "QuotaExceededError");
+      return original.call(this, key, value);
+    };
+  });
+  await analyze();
+  await page.getByRole("alert").filter({ hasText: "storage" }).waitFor();
+  assert.equal(await storedId(), beforeFinalWrite);
+  checks.push("area metadata quota failures show a storage error and preserve the previous result");
+  await open();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator(".language-switch select").selectOption("id");
   await page.getByRole("button", { name: "Analisis area", exact: true }).waitFor();
@@ -276,10 +348,11 @@ try {
   await page.screenshot({ path: `${output}/mobile-id.png`, fullPage: true });
   checks.push("Indonesian labels and mobile viewport without page overflow");
   assert.deepEqual(exceptions, []);
-  writeFileSync(`${output}/result.json`, JSON.stringify({ passed: true, synthetic: true, checks, runtimeExceptions: exceptions, analysisRequests: calls.length }, null, 2));
+  writeReport("passed");
   console.log(JSON.stringify({ passed: true, synthetic: true, checks, analysisRequests: calls.length }, null, 2));
   await context.close();
 } catch (error) {
+  writeReport("failed", error.message);
   if (page && !page.isClosed()) {
     writeFileSync(`${output}/failure.html`, await page.content());
     await page.screenshot({ path: `${output}/failure.png`, fullPage: true });
