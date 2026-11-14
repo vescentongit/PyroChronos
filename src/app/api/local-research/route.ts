@@ -8,7 +8,8 @@ import { validateProducerBundle } from "@/lib/research-store";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 const areaInput = z.object({ action: z.literal("area"), workspaceId: z.string().min(1).max(200), area: createResearchAreaSchema }).strict();
-const analysisInput = z.object({ action: z.literal("analyze"), workspaceId: z.string().min(1).max(200), area: researchAreaSchema, request: createResearchAnalysisSchema }).strict();
+const analysisInput = z.object({ action: z.literal("analyze"), workspaceId: z.string().min(1).max(200), area: researchAreaSchema, request: createResearchAnalysisSchema, includeBaseline: z.boolean().default(true) }).strict();
+const answerSchema = z.object({ fingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/), bundle: z.unknown() }).strict();
 let running = false;
 
 export async function POST(req: Request) {
@@ -50,24 +51,22 @@ export async function POST(req: Request) {
     if (geometry.geometryHash !== submittedArea.geometryHash || submittedArea.id !== request.areaId || submittedArea.workspaceId !== workspaceId || submittedArea.revision !== request.areaRevision || request.monitoringLocationId !== null || request.baseline.windowYears > 30 || request.qualityPolicyVersion !== "quality-policy-1" || [request.period, request.comparisonPeriod].filter(Boolean).some(period => period!.end > new Date().toISOString().slice(0, 10))) return error("INVALID_REQUEST", 400);
   } catch { return error("INVALID_REQUEST", 400); }
   const root = process.env.RESEARCH_DATA_DIR;
-  if (!root && !process.env.PIPELINE_URL) { console.warn("[local-research] dataset not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
+  if (!root && !process.env.PIPELINE_URL && !process.env.FIRMS_MAP_KEY) { console.warn("[local-research] producer not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
   if (running) return error("CAPACITY_LIMIT", 503);
   running = true;
-  let stage = "fingerprint";
+  let stage = "producer";
   try {
-    const fingerprint = await producer({ action: "fingerprint", root }, req.signal);
-    if (typeof fingerprint !== "string" || !/^sha256:[a-f0-9]{64}$/.test(fingerprint)) throw new Error("PRODUCER_FAILED");
-    const run = { id: randomUUID(), workspaceId, input: { ...request, area: submittedArea, dataset: { fingerprint, sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-harmonized-1" } } };
-    stage = "producer";
-    const rawBundle = await producer({ root, run }, req.signal);
+    const run = { id: randomUUID(), workspaceId, input: { ...request, includeBaseline: input.data.includeBaseline, area: submittedArea, dataset: { sources: ["MODIS_SP", "VIIRS_SNPP_SP"], qualityPolicyVersion: "quality-policy-1", producerVersion: "research-harmonized-1" } } };
+    const answer = answerSchema.parse(await producer({ action: "analyze", root, run }, req.signal));
     stage = "validation";
-    const bundle = validateProducerBundle(run, rawBundle);
+    const bundle = validateProducerBundle({ ...run, input: { ...run.input, dataset: { ...run.input.dataset, fingerprint: answer.fingerprint } } }, answer.bundle);
+    if (bundle.manifest.snapshot && bundle.result.dataVersion !== `firms-area-${answer.fingerprint.slice(7)}`) throw new Error("INVALID_PRODUCER");
     if (process.env.PIPELINE_URL && Buffer.byteLength(JSON.stringify(bundle)) > maxHostedBundleBytes) return error("CAPACITY_LIMIT", 503);
     return Response.json(bundle, { headers: { "Cache-Control": "private, no-store" } });
   } catch (reason) {
-    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT"].includes(reason.message) ? reason.message : "UNAVAILABLE";
+    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT", "RATE_LIMITED"].includes(reason.message) ? reason.message : "UNAVAILABLE";
     console.warn(`[local-research] ${stage} ${known}`);
-    return error(known === "CAPACITY_LIMIT" ? known : "DEPENDENCY_UNAVAILABLE", 503);
+    return error(["CAPACITY_LIMIT", "RATE_LIMITED"].includes(known) ? known : "DEPENDENCY_UNAVAILABLE", known === "RATE_LIMITED" ? 429 : 503);
   }
   finally { running = false; }
 }

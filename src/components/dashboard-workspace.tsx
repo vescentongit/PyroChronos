@@ -53,7 +53,7 @@ const statusNames = {
 };
 
 export default function DashboardWorkspace() {
-  const [language, setLanguage] = useState<Language>("id");
+  const [language, setLanguage] = useState<Language>("en");
   const [regionId, setRegionId] = useState<RegionId>("kalteng");
   const [mode, setMode] = useState<DataMode>("demo");
   const [view, setView] = useState<View>("global");

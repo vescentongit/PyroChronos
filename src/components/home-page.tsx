@@ -10,7 +10,7 @@ import RotatingEarth, {
 import type { Language } from "@/lib/regions";
 
 export default function HomePage() {
-  const [language, setLanguage] = useState<Language>("id");
+  const [language, setLanguage] = useState<Language>("en");
   const [active, setActive] = useState<GlobeHotspot | null>(null);
   const router = useRouter();
   const t = (id: string, en: string) => (language === "id" ? id : en);

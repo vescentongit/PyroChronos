@@ -26,6 +26,7 @@ from area_counts import (
     archive_checksum,
     build_manifest,
     count_area,
+    fetched_status,
     source_coverage,
 )
 from area_query import Polygon, months_between, period_minutes, query
@@ -227,7 +228,7 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
         if model is None:
             entry_anomaly = _anomaly(metric)
         else:
-            values = reference_values(store_dir, polygon, model, first, last, window_years) if supported and value is not None else {}
+            values = reference_values(store_dir, polygon, model, first, last, window_years) if supported and value is not None and getattr(store_dir, "provenance", {}).get("baselineRequested", True) else {}
             entry_anomaly = assess_anomaly(value, values, window_years, policy["minimumValidYears"], supported, value is not None)
         months.append({"month": month, "metric": metric, "anomaly": entry_anomaly, "isPartialPeriod": partial})
     sources_out = []
@@ -245,15 +246,17 @@ def build_result(store_dir, polygon, start, end, comparison=None, sources=DEFAUL
         years = list(years.values())
         sources_out.append({
             "id": sid,
-            "product": PRODUCTS[source.sensor],
+            "product": f"FIRMS {source.sensor} Area API standard-processing snapshot" if hasattr(store_dir, "provenance") else PRODUCTS[source.sensor],
             "version": CATALOG_VERSION,
             "processingLevel": source.processing.upper() if source.processing in ("nrt", "standard") else "STANDARD",
             "status": "unavailable" if statuses == {"no_data"} else "available" if statuses == {"observed"} else "partial",
-            "observedFrom": min((y["firstObserved"] for y in years), default=None),
-            "observedTo": max((y["lastObserved"] for y in years), default=None),
+            "observedFrom": min((y["firstObserved"] for y in years if y["firstObserved"] is not None), default=None),
+            "observedTo": max((y["lastObserved"] for y in years if y["lastObserved"] is not None), default=None),
             "checksum": archive_checksum(data["coverage"], selected_months),
         })
     data_version = "firms-detections-" + hashlib.sha256("|".join(f"{s['id']}:{s['checksum']}" for s in sources_out).encode()).hexdigest()[:12]
+    if hasattr(store_dir, "provenance"):
+        data_version = "firms-area-" + store_dir.fingerprint().removeprefix("sha256:")
     method = {**_method(model, supported, domains), "referenceScale": "MODIS-equivalent", "unit": "estimated-hotspot-detections", "manifestId": manifest["id"]}
     result = {
         "schemaVersion": SCHEMA,
@@ -301,7 +304,7 @@ def daily_page(counts, analysis_id, month, role="primary", harmonized=None):
                 per_source[sid] = (None, "no_data")
             else:
                 entry = data["coverage"][cursor.year]
-                covered = date.fromisoformat(entry["first_observed"][:10]) <= cursor <= date.fromisoformat(entry["last_observed"][:10])
+                covered = fetched_status(data["coverage"], cursor, cursor) == "observed" if "fetched_intervals" in entry else date.fromisoformat(entry["first_observed"][:10]) <= cursor <= date.fromisoformat(entry["last_observed"][:10])
                 per_source[sid] = (data["days"].get(text, 0), "observed") if covered else (None, "no_data")
         value = None
         if harmonized and harmonized["value"] is not None:

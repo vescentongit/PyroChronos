@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from threading import BoundedSemaphore
 
-from research_worker import fingerprint, produce
+from research_worker import analyze, fingerprint, produce
 
 MAX_REQUEST_BYTES = 100_000
 MAX_RESPONSE_BYTES = 4_000_000
@@ -42,7 +42,7 @@ def app(environ, start_response):
         if request.get("action") == "fingerprint":
             if set(request) != {"action"}:
                 raise ValueError("INVALID_REQUEST")
-        elif request.get("action") == "produce":
+        elif request.get("action") in ("produce", "analyze"):
             if set(request) != {"action", "run"} or not isinstance(request["run"], dict):
                 raise ValueError("INVALID_REQUEST")
             # Frozen P1 configs can reference files; they belong to the separate private queue worker.
@@ -55,12 +55,15 @@ def app(environ, start_response):
         return respond("400 Bad Request", {"code": "INVALID_REQUEST"})
     configured = os.environ.get("RESEARCH_DATA_DIR")
     remote = os.environ.get("FIRMS_BLOB_BASE_URL")
-    if not configured and not remote:
+    on_demand = request["action"] == "analyze" and not configured and os.environ.get("FIRMS_MAP_KEY")
+    if not configured and not remote and not on_demand:
         return respond("503 Service Unavailable", {"code": "DEPENDENCY_UNAVAILABLE"})
     if not _running.acquire(blocking=False):
         return respond("503 Service Unavailable", {"code": "CAPACITY_LIMIT"})
     try:
-        if remote:
+        if on_demand:
+            root = None
+        elif remote and not configured:
             from firms_blob import BlobDataset, PrivateBlob
 
             pinned = request["run"]["input"]["dataset"]["fingerprint"] if request["action"] == "produce" else None
@@ -71,10 +74,10 @@ def app(environ, start_response):
                 root = Path(__file__).resolve().parent / root
             if not root.is_dir():
                 raise ValueError("MISSING_DATASET")
-        value = fingerprint(root) if request["action"] == "fingerprint" else produce(root, request["run"])
+        value = analyze(root, request["run"]) if request["action"] == "analyze" else fingerprint(root) if request["action"] == "fingerprint" else produce(root, request["run"])
         return respond("200 OK", value)
     except Exception as error:
-        code = "CAPACITY_LIMIT" if str(error) == "CAPACITY_LIMIT" else "DEPENDENCY_UNAVAILABLE"
-        return respond("503 Service Unavailable", {"code": code})
+        code = str(error) if str(error) in ("CAPACITY_LIMIT", "RATE_LIMITED") else "DEPENDENCY_UNAVAILABLE"
+        return respond("429 Too Many Requests" if code == "RATE_LIMITED" else "503 Service Unavailable", {"code": code})
     finally:
         _running.release()

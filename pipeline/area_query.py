@@ -214,6 +214,9 @@ def query(store_dir, source_id, polygon, start, end, include=None):
     include: optional predicate on the decoded dict (quality policy). Months missing from the store
     are skipped here; use coverage in area_counts to see them explicitly.
     """
+    if hasattr(store_dir, "query"):
+        yield from store_dir.query(source_id, polygon, start, end, include)
+        return
     start_minute, end_minute = period_minutes(start, end)
     rows = []
     expected = {item["month"] for year in source_coverage(store_dir, source_id).values() for item in year["months"]}

@@ -1,5 +1,6 @@
 """Build a bounded research bundle from a versioned local detection store."""
 import json
+import os
 import sys
 
 from area_query import Polygon, months_between, period_minutes
@@ -15,6 +16,17 @@ from research_p1_producer import (
     frozen_harmonization,
     publication_manifest,
 )
+
+
+def analyze(root, run):
+    """Prepare and consume one immutable snapshot in the same invocation."""
+    if root is None:
+        from firms_on_demand import prepare
+
+        root = prepare(run["input"], os.environ.get("FIRMS_MAP_KEY"))
+    pinned = fingerprint(root)
+    run = {**run, "input": {**run["input"], "dataset": {**run["input"]["dataset"], "fingerprint": pinned}}}
+    return {"fingerprint": pinned, "bundle": produce(root, run)}
 
 
 def produce(root, run):
@@ -74,11 +86,15 @@ def produce(root, run):
 if __name__ == "__main__":
     try:
         request = json.load(sys.stdin)
-        if request.get("action") == "describe":
+        if request.get("action") == "analyze":
+            result = analyze(request.get("root"), request["run"])
+        elif request.get("action") == "describe":
             result = describe_producer(request["root"], models_dir=request.get("modelsDir"), mode=request.get("mode", "research"))
         else:
             result = fingerprint(request["root"]) if request.get("action") == "fingerprint" else produce(request["root"], request["run"])
         json.dump(result, sys.stdout, allow_nan=False)
-    except Exception:
-        print("RESEARCH_WORKER_FAILED", file=sys.stderr)
+    except Exception as error:
+        # Public codes only; never forward upstream error messages or keyed URLs.
+        code = str(error) if str(error) in ("RATE_LIMITED", "CAPACITY_LIMIT") else "DEPENDENCY_UNAVAILABLE"
+        json.dump({"code": code}, sys.stdout)
         sys.exit(1)

@@ -33,7 +33,7 @@ Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Mode Op
 
 ## Penyimpanan browser dan analisis
 
-Konfigurasi dua servis Vercel (`app` publik, `pipeline` internal melalui binding) tersedia pada `vercel.json`. Dataset historis FIRMS memiliki publisher GitHub Actions harian ke private Vercel Blob dan pembaca tile dengan checksum. Langkah aktivasi store/secret, backfill, Preview serta batas payload/cakupan ada di [panduan deployment Vercel](docs/vercel-deployment.md). Konfigurasi ini belum berarti deployment atau jadwal cloud sudah berjalan.
+Konfigurasi dua servis Vercel (`app` publik, `pipeline` internal melalui binding) tersedia pada `vercel.json`. Analisis historis mengambil FIRMS sesuai polygon/periode tanpa arsip global permanen. Browser memuat dan menyimpan per bulan, melanjutkan bagian yang belum selesai, lalu membentuk kalender lengkap dengan provenance setiap snapshot. Jadwal arsip global dinonaktifkan. [Panduan deployment Vercel](docs/vercel-deployment.md) menjelaskan key server-only dan batas layanan; deployment belum dilakukan.
 
 Keputusan aktif: seluruh fitur web dapat digunakan tanpa login dan tanpa konfigurasi Google OAuth. Kalender tahun × bulan, ringkasan dua periode dan tabel anomali membaca hasil analisis yang sama. Jalur analisis lokal memuat model terbitan `pipeline/models`; estimasi tetap null pada domain yang tidak lolos evaluasi. Lihat [status dan sisa sprint](docs/current-status.md).
 
@@ -41,7 +41,7 @@ Hasil riset kini menyediakan lokasi pemantauan dari titik asli, penugasan/pemeri
 
 Penggunaan UI tidak memerlukan login. Workspace lokal, area, pilihan analisis, hasil dan laporan disimpan pada browser perangkat tersebut; data tidak disinkronkan ke perangkat atau pengguna lain. Menghapus data situs/browser dapat menghapusnya. Hasil lama dari akun atau database server tidak otomatis disalin ke browser dan tidak dihapus dari server.
 
-Analisis historis masih diproses pada server menggunakan dataset pada `RESEARCH_DATA_DIR` dan Python (`RESEARCH_PYTHON` opsional). Area dan periode dikirim ke server untuk pemrosesan; hasil dikembalikan dan disimpan di IndexedDB browser. Dataset kosong menghasilkan `no_data`, bukan nol kebakaran. API pemrosesan membatasi ukuran permintaan, waktu, dan satu analisis bersamaan per proses; batas ini bukan kuota global untuk deployment multi-instance. Fitur tim dan sinkronisasi lintas perangkat belum tersedia dalam mode lokal.
+Analisis historis diproses di Python menggunakan `FIRMS_MAP_KEY`, atau `RESEARCH_DATA_DIR` bila dataset lokal dipilih (`RESEARCH_PYTHON` opsional untuk interpreter lokal). Data mentah API hanya berada dalam memori selama request; hasil/bukti asli serta manifest disimpan di IndexedDB. Sumber standard dan NRT tetap terpisah. Bagian gagal/belum dimuat tidak menjadi nol; respons CSV sukses tanpa observasi menghasilkan nol observasi, bukan bukti tidak ada kebakaran. Pilihan ambil ulang memeriksa revisi data, sedangkan cache biasa mempertahankan snapshot lama. Ukuran, waktu dan konkurensi dibatasi; kalender multidekade dapat memerlukan banyak request. Sinkronisasi lintas perangkat belum tersedia.
 
 ## API dan integrasi lama
 

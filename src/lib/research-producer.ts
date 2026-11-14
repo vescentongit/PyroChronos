@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
 
-type ProducerInput = { action: "fingerprint"; root?: string } | { root?: string; run: unknown };
+type ProducerInput = { action: "fingerprint"; root?: string } | { action?: "analyze"; root?: string; run: unknown };
+function failure(value: unknown) {
+  return value && typeof value === "object" && "code" in value && ["CAPACITY_LIMIT", "RATE_LIMITED"].includes(String(value.code)) ? String(value.code) : "PRODUCER_FAILED";
+}
 const maxLocalBytes = 100_000_000;
 // Keep hosted JSON bundles below Vercel's non-streaming response limit.
 export const maxHostedBundleBytes = 4_000_000;
@@ -8,7 +11,7 @@ export const maxHostedBundleBytes = 4_000_000;
 export async function researchProducer(input: ProducerInput, signal: AbortSignal): Promise<unknown> {
   const base = process.env.PIPELINE_URL;
   if (base) {
-    const body = "run" in input ? { action: "produce", run: input.run } : { action: "fingerprint" };
+    const body = "run" in input ? { action: input.action ?? "produce", run: input.run } : { action: "fingerprint" };
     const response = await fetch(new URL("produce", base.endsWith("/") ? base : `${base}/`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -34,8 +37,7 @@ export async function researchProducer(input: ProducerInput, signal: AbortSignal
     try { value = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
     catch { throw new Error("PRODUCER_FAILED"); }
     if (!response.ok) {
-      const capacity = value && typeof value === "object" && "code" in value && value.code === "CAPACITY_LIMIT";
-      throw new Error(capacity ? "CAPACITY_LIMIT" : "PRODUCER_FAILED");
+      throw new Error(failure(value));
     }
     return value;
   }
@@ -62,8 +64,11 @@ export async function researchProducer(input: ProducerInput, signal: AbortSignal
     });
     child.on("error", () => finish(new Error("PRODUCER_FAILED")));
     child.on("close", code => {
-      if (code !== 0) return finish(new Error("PRODUCER_FAILED"));
-      try { finish(undefined, JSON.parse(Buffer.concat(chunks).toString("utf8"))); }
+      try {
+        const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        if (code !== 0) return finish(new Error(failure(value)));
+        finish(undefined, value);
+      }
       catch { finish(new Error("PRODUCER_FAILED")); }
     });
     child.stdin.on("error", () => finish(new Error("PRODUCER_FAILED")));

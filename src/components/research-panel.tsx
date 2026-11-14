@@ -31,6 +31,7 @@ import {
   openResearchResult,
 } from "@/lib/local-research-client";
 import { ResearchApiError } from "@/lib/research-client";
+import type { StageProgress } from "@/lib/research-stages";
 import demo from "@/lib/fixtures/research-demo.json";
 import { ResearchSummary } from "@/components/research-summary";
 import { ResearchMonitoring } from "@/components/research-monitoring";
@@ -103,8 +104,8 @@ const labels: Record<string, [string, string]> = {
   ],
   STORAGE_UNAVAILABLE: ["Penyimpanan browser tidak tersedia atau penuh. Hasil belum tersimpan.", "Browser storage is unavailable or full. The result was not saved."],
   cancelled: [
-    "Pemantauan dihentikan; job server mungkin masih berjalan. Klik Analisis area untuk melanjutkan.",
-    "Monitoring stopped; the server job may still be running. Click Analyze area to resume.",
+    "Pemuatan dihentikan. Bagian yang sudah tersimpan tetap ada; klik Analisis area untuk melanjutkan.",
+    "Loading stopped. Saved parts are retained; click Analyze area to resume.",
   ],
 };
 const geometryLabels: Record<string, [string, string]> = {
@@ -190,6 +191,8 @@ function ResearchPanel({
   const [workspaceCreateError, setWorkspaceCreateError] = useState("");
   const workspaceRequest = useRef<ReturnType<typeof requestIdentity> | null>(null);
   const [status, setStatus] = useState("idle");
+  const [stageProgress, setStageProgress] = useState<StageProgress[]>([]);
+  const [refreshSaved, setRefreshSaved] = useState(false);
   const [error, setError] = useState("");
   const [job, setJob] = useState<ResearchJob | null>(null);
   const [result, setResult] = useState<ResearchAnalysisResult | null>(null);
@@ -319,6 +322,7 @@ function ResearchPanel({
     setStatus("idle");
     setJob(null);
     setError("");
+    setStageProgress([]);
   }, [selectionKey]);
 
   useEffect(() => { setGeometryError(""); }, [vertices]);
@@ -414,7 +418,9 @@ function ResearchPanel({
         areaId: area.id,
         areaRevision: area.revision,
       };
-      const initial = await submitResearch(workspace, body, controller.signal);
+      const initial = await submitResearch(workspace, body, controller.signal, { refresh: refreshSaved, onProgress: progress => {
+        if (current()) { setStageProgress(progress); setStatus("running"); }
+      } });
       if (!current()) return;
       const next = await watchResearch(
         workspace,
@@ -867,10 +873,23 @@ function ResearchPanel({
           </button>
         </div>
       </form>
+      <label><input type="checkbox" checked={refreshSaved} disabled={busy} onChange={event => setRefreshSaved(event.target.checked)} /> {t("Ambil ulang bagian tersimpan dari NASA", "Fetch saved parts again from NASA")}</label>
+      <p>{t("Kalender dimuat per bulan. Bagian tersimpan dipakai kembali saat melanjutkan, termasuk setelah halaman dimuat ulang; revisi NASA tidak diperiksa otomatis. Riwayat standard dan NRT tetap terpisah.", "The calendar loads by month. Saved parts are reused when resuming, including after a page reload; NASA revisions are not checked automatically. Standard and NRT histories stay separate.")}</p>
       <p role="status" aria-live="polite">
         {label(status)}
         {job?.progressPercent != null ? ` · ${job.progressPercent}%` : ""}
+        {stageProgress.length > 0 ? ` · ${stageProgress.filter(item => item.status === "saved").length}/${stageProgress.length} ${t("bulan tersimpan", "months saved")}` : ""}
       </p>
+      {stageProgress.length > 0 && status !== "succeeded" && <div className="table-scroll"><table>
+        <caption>{t("Pemuatan kalender · belum dimuat berbeda dari data tidak tersedia. Bagian yang gagal dapat dicoba kembali melalui Analisis area.", "Calendar loading · not loaded differs from unavailable data. Retry failed parts with Analyze area.")}</caption>
+        <thead><tr><th>{t("Periode", "Period")}</th><th>{t("Bulan", "Month")}</th><th>Status</th><th>{t("Deteksi asli", "Original detections")}</th><th>{t("Estimasi", "Estimate")}</th></tr></thead>
+        <tbody>{stageProgress.map(item => <tr key={`${item.stage.role}-${item.stage.period.start}`}>
+          <th scope="row">{item.stage.role === "primary" ? t("Utama", "Primary") : t("Pembanding", "Comparison")}</th>
+          <td>{item.stage.period.start.slice(0, 7)}</td>
+          <td>{item.status === "pending" ? t("Belum dimuat", "Not loaded") : item.status === "loading" ? t("Memuat…", "Loading…") : item.status === "failed" ? t("Gagal / dihentikan", "Failed / stopped") : `${t("Tersimpan", "Saved")} · ${label(item.metric!.status)}`}</td>
+          <td>{item.metric?.rawCount ?? "—"}</td><td>{item.metric?.harmonizedCount?.toLocaleString(language === "en" ? "en" : "id", { maximumFractionDigits: 2 }) ?? "—"}</td>
+        </tr>)}</tbody>
+      </table></div>}
       {error && (
         <p className="global-error" role="alert">
           {label(error)}
