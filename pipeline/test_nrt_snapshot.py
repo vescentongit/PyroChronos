@@ -56,5 +56,29 @@ class SnapshotTests(unittest.TestCase):
         self.assertNotIn("relativeChange", report["areas"]["box"])
 
 
+class SensitivityTests(unittest.TestCase):
+    def snapshot(self, total):
+        return {"id": "s", "standardSource": "VIIRS_SNPP_SP", "areas": {"box": {"bbox": [0, 0, 10, 10], "firstDay": "2026-10-01", "lastDay": "2026-11-02", "dailyCounts": {"2026-10-01": total}}}}
+
+    def run_sweep(self, total, per_year):
+        coverage = {year: {"first_observed": f"{year}-01-01T00:00:00Z", "last_observed": f"{year}-12-31T23:59:00Z"} for year in range(2016, 2026)}
+        items = [{"fireType": "vegetation", "confidenceClass": "nominal"}] * per_year
+        with mock.patch.object(snap, "source_coverage", return_value=coverage), mock.patch.object(snap, "month_status", return_value="observed"), mock.patch.object(snap, "query", return_value=items):
+            return snap.sensitivity(self.snapshot(total), "unused")["areas"]["box"]
+
+    def test_scale_that_reaches_the_median_is_reported(self):
+        result = self.run_sweep(100, 200)
+        self.assertEqual(result["verdict"], "assessed")
+        self.assertEqual(result["baselineMedian"], 200)
+        self.assertEqual(result["scaleThatReachesMedian"], 2.0)
+
+    def test_sweep_is_labelled_as_assumed_not_measured(self):
+        coverage = {}
+        with mock.patch.object(snap, "source_coverage", return_value=coverage), mock.patch.object(snap, "month_status", return_value="no_data"):
+            report = snap.sensitivity(self.snapshot(100), "unused")
+        self.assertIn("not measured", report["kind"])
+        self.assertEqual(report["areas"]["box"]["verdict"], "insufficient_history")
+
+
 if __name__ == "__main__":
     unittest.main()

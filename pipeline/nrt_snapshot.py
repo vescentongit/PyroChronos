@@ -16,14 +16,19 @@ import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from statistics import median
 
 from area_counts import QUALITY_POLICY, accepts, month_status
 from area_query import Polygon, query
 from firms_parse import parse_batch
 from harmonize_pairs import ROOT
+from reference_baseline import percentile, reference_window
 from research_adapter import source_coverage
 
 SNAPSHOT_VERSION = "nrt-snapshot-1"
+SCALES = (0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5)
+WINDOW_YEARS = 10
+MINIMUM_YEARS = 4
 PAIRS = {"VIIRS_SNPP_NRT": "VIIRS_SNPP_SP", "MODIS_NRT": "MODIS_SP"}
 AREAS_NOTE = "boxes are the bounding boxes passed to the FIRMS area API; counts use the same quality policy as the research counts"
 
@@ -94,10 +99,62 @@ def compare(snapshot, store_dir):
     return {"snapshotId": snapshot["id"], "standardSource": snapshot["standardSource"], "areas": report, "interpretation": "only days whose whole UTC month is covered by the standard archive are compared; a difference describes revision of these batches and is not a measure of NRT performance for other periods"}
 
 
+def window_count(store_dir, source, polygon, start, end, keep_item):
+    return sum(1 for item in query(store_dir, source, polygon, start.isoformat(), end.isoformat()) if keep_item(item))
+
+
+def sensitivity(snapshot, store_dir):
+    coverage = source_coverage(store_dir, snapshot["standardSource"])
+    keep_item = accepts(QUALITY_POLICY)
+    report = {}
+    for name, area in snapshot["areas"].items():
+        first, last = date.fromisoformat(area["firstDay"]), date.fromisoformat(area["lastDay"])
+        days = (last - first).days + 1
+        if days < 20:
+            report[name] = {"verdict": "skipped", "reason": f"snapshot window of {days} days is too short for a period assessment"}
+            continue
+        polygon = polygon_of(area["bbox"])
+        target = sum(area["dailyCounts"].values())
+        values = {}
+        for year in range(first.year - WINDOW_YEARS, first.year):
+            ref_start, ref_end = reference_window(first, last, year)
+            months = {(ref_start + timedelta(days=i)).strftime("%Y-%m") for i in range((ref_end - ref_start).days + 1)}
+            if all(month_status(coverage, month) == "observed" for month in months):
+                values[year] = window_count(store_dir, snapshot["standardSource"], polygon, ref_start, ref_end, keep_item)
+        if len(values) < MINIMUM_YEARS:
+            report[name] = {"verdict": "insufficient_history", "referenceYears": sorted(values)}
+            continue
+        reference = [values[y] for y in sorted(values)]
+        base = median(reference)
+        rows = []
+        for scale in SCALES:
+            scaled = target * scale
+            rows.append({"nrtScale": scale, "count": round(scaled, 1), "percentile": round(percentile(scaled, reference), 1), "aboveMedian": scaled > base})
+        crossing = base / target if target else None
+        report[name] = {
+            "verdict": "assessed",
+            "window": [first.isoformat(), last.isoformat()],
+            "nrtCount": target,
+            "referenceYears": sorted(values),
+            "referenceCounts": values,
+            "baselineMedian": base,
+            "scaleThatReachesMedian": crossing,
+            "scaleThatLeavesReferenceRange": {"below": min(reference) / target if target else None, "above": max(reference) / target if target else None},
+            "sweep": rows,
+        }
+    return {
+        "snapshotId": snapshot["id"],
+        "kind": "assumed NRT-to-standard scale sweep; the scale values are hypothetical and are not measured revisions",
+        "referencePolicy": f"same month-day window in the {WINDOW_YEARS} previous years, standard archive only, minimum {MINIMUM_YEARS} years, raw VIIRS S-NPP counts under {QUALITY_POLICY['version']}",
+        "areas": report,
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--compare", action="store_true")
+    parser.add_argument("--sensitivity", action="store_true")
     parser.add_argument("--source", default="VIIRS_SNPP_NRT")
     parser.add_argument("--raw", default=ROOT / "data" / "raw" / "firms", type=Path)
     parser.add_argument("--store", default=ROOT / "data" / "processed" / "detections", type=Path)
@@ -114,6 +171,11 @@ def main(argv=None):
             report = compare(snapshot, args.store)
             (args.out / f"{args.source}-comparison.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
             print(json.dumps({k: {x: y for x, y in v.items() if x != "daily"} for k, v in report["areas"].items()}, indent=1))
+        if args.sensitivity:
+            snapshot = json.loads((args.out / f"{args.source}-snapshot.json").read_text(encoding="utf-8"))
+            report = sensitivity(snapshot, args.store)
+            (args.out / f"{args.source}-sensitivity.json").write_text(json.dumps(report, indent=1) + chr(10), encoding="utf-8")
+            print(json.dumps({k: {x: y for x, y in v.items() if x not in ("sweep", "referenceCounts")} for k, v in report["areas"].items()}, indent=1))
     except (ValueError, OSError, KeyError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

@@ -4,7 +4,7 @@ Dokumen ini mencatat keputusan dan bukti R2-P2-N1, N3 dan N4. Benchmark transfer
 
 ## N1 — Sensitivitas NRT versus standard
 
-**Hasil: belum dapat diukur. Tidak ada angka perubahan yang diklaim.**
+**Hasil: revisi NRT ke standard belum dapat diukur; tidak ada angka revisi yang diklaim. Yang tersedia adalah snapshot beku dan analisis sensitivitas penilaian periode berjalan terhadap skala asumsi.**
 
 FIRMS mengganti NRT dengan standard setelah standard terbit, sehingga satu tanggal tidak punya kedua versi sekaligus. Ketersediaan API pada 14 November 2026 (`python pipeline/firms_availability.py`):
 
@@ -24,6 +24,23 @@ Yang dikerjakan adalah snapshot beku yang bisa dibandingkan nanti, bukan hasil p
 Cara memakainya nanti: setelah VIIRS_SNPP_SP untuk Oktober–November 2026 terbit, unduh dengan `firms_archive.py --source VIIRS_SNPP_SP --years 2026 --force`, lalu jalankan `--compare`. Selisih yang keluar menggambarkan revisi batch ini saja, bukan performa NRT pada periode lain, dan belum boleh dipakai untuk mengubah kebijakan anomali bulan berjalan sebelum ada lebih dari satu periode.
 
 Batas: hanya satu satelit, tiga kotak dan satu bulan; kotak adalah bounding box kasar, bukan polygon pengguna.
+
+### Sensitivitas penilaian periode berjalan (skala asumsi, bukan selisih terukur)
+
+Karena revisi sebenarnya belum terukur, `python pipeline/nrt_snapshot.py --sensitivity` menanyakan hal yang bisa dijawab sekarang: seberapa besar NRT harus berbeda dari standard agar penilaian periode berjalan berubah. Skala 0,5 sampai 1,5 pada hitungan NRT adalah **asumsi**, bukan revisi yang diukur. Referensi: jendela tanggal yang sama pada 2016–2025 dari arsip standard (VIIRS S-NPP mentah, `quality-policy-1`, minimal 4 tahun) ([hasil](nrt/VIIRS_SNPP_NRT-sensitivity.json)).
+
+| Kotak (1 Okt–2 Nov 2026) | Hitungan NRT | Median 2016–2025 | NRT perlu dikali… agar mencapai median | …agar masuk rentang referensi |
+|---|---|---|---|---|
+| Rondônia | 4.640 | 17.704,5 | 3,82 | 1,42 (batas bawah) |
+| Miombo | 87.640 | 93.032 | 1,06 | sudah di dalam (0,71 sampai 1,86) |
+| Kalimantan Tengah | 66.908 | 1.077 | 0,016 | 0,22 (batas atas, 14.457 pada 2023) |
+
+Pembacaan yang boleh diambil:
+- **Rondônia dan Kalimantan:** posisi terhadap riwayat (jauh di bawah, jauh di atas) tidak berubah oleh selisih NRT-standard yang masuk akal; butuh faktor 1,4 sampai 4,6 untuk berubah. Pembacaan arah anomali di sini kokoh terhadap ketidakpastian NRT, tetapi besar anomali tetap bergantung pada data.
+- **Miombo:** persentilnya bergeser 40 → 60 hanya dengan selisih +10%, dan melewati median pada +6%. Pembacaan "di bawah atau di atas median" tidak kokoh; selisih NRT-standard sekecil itu cukup membaliknya.
+- Hitungan Kalimantan Tengah (66.908, sekitar 4,6 kali nilai tertinggi 2016–2025) belum diperiksa silang dengan sumber lain; angka ini tidak boleh dikutip sebagai fakta tentang musim kebakaran 2026 sebelum ada pemeriksaan tambahan.
+
+Batas: skala asumsi tidak menyatakan seberapa besar revisi nyata; bobot tiga kotak dan satu bulan tidak mewakili wilayah lain; jendela 33 hari mencakup akhir Oktober saat NRT terakhir yang tersedia, sehingga hari terakhir dapat belum lengkap.
 
 ## N3 — Eksperimen QA coverage
 

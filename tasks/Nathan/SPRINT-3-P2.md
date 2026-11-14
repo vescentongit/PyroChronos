@@ -26,7 +26,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N4
 
-**Status:** implementasi selesai sebagai snapshot beku dan pembanding; **belum ada hasil perbandingan** karena FIRMS tidak menyimpan NRT dan standard untuk tanggal yang sama. Lihat [catatan](../../docs/data/sprint-3-nrt-qa-reproducibility.md). Menunggu review Bagas.
+**Status:** implementasi selesai sebagai snapshot beku dan pembanding; **revisi belum terukur** (ditambah sensitivitas skala asumsi terhadap penilaian periode berjalan) karena FIRMS tidak menyimpan NRT dan standard untuk tanggal yang sama. Lihat [catatan](../../docs/data/sprint-3-nrt-qa-reproducibility.md). Menunggu review Bagas.
 
 ### R2-P2-N2 — Benchmark transfer lintas domain
 
