@@ -269,12 +269,22 @@ function ResearchPanel({
   useEffect(() => {
     let active = true;
     try { setHistory(researchHistory()); } catch { setError("STORAGE_UNAVAILABLE"); }
-    const restore = () => lastResearchResult().then(saved => {
-      if (active && saved) { publishResult(saved, "saved-local-result"); setHistory(researchHistory()); setStatus("succeeded"); }
-    }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
+    const restore = () => {
+      const run = generation.current;
+      return lastResearchResult().then(saved => {
+        if (active && run === generation.current && saved) { publishResult(saved, "saved-local-result"); setHistory(researchHistory()); setStatus("succeeded"); }
+      }).catch(() => { if (active && run === generation.current) setError("STORAGE_UNAVAILABLE"); });
+    };
+    const selected = () => {
+      abort.current?.abort();
+      generation.current++;
+      setJob(null); setError("");
+      setStageProgress(current => current.map(item => item.status === "loading" ? { ...item, status: "failed" } : item));
+      void restore();
+    };
     void restore();
-    window.addEventListener("pyro-research-selected", restore);
-    return () => { active = false; window.removeEventListener("pyro-research-selected", restore); };
+    window.addEventListener("pyro-research-selected", selected);
+    return () => { active = false; window.removeEventListener("pyro-research-selected", selected); };
   }, []);
   useEffect(() => { if (reuse) reuseLocation(reuse.location); }, [reuse]);
   useEffect(() => {

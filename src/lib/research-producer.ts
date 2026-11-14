@@ -12,35 +12,43 @@ export const maxHostedBundleBytes = 4_000_000;
 export async function researchProducer(input: ProducerInput, signal: AbortSignal): Promise<unknown> {
   const base = process.env.PIPELINE_URL;
   if (base) {
-    const body = "run" in input ? { action: input.action ?? "produce", run: input.run } : { action: "fingerprint" };
-    const response = await fetch(new URL("produce", base.endsWith("/") ? base : `${base}/`), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      cache: "no-store",
-      redirect: "error",
-      signal: AbortSignal.any([signal, AbortSignal.timeout(120_000)]),
-    });
-    if (!response.body) throw new Error("PRODUCER_FAILED");
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let size = 0;
+    const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(120_000)]);
     try {
-      for (;;) {
-        const part = await reader.read();
-        if (part.done) break;
-        size += part.value.byteLength;
-        if (size > maxHostedBundleBytes) throw new Error("CAPACITY_LIMIT");
-        chunks.push(part.value);
+      const body = "run" in input ? { action: input.action ?? "produce", run: input.run } : { action: "fingerprint" };
+      const response = await fetch(new URL("produce", base.endsWith("/") ? base : `${base}/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        cache: "no-store",
+        redirect: "error",
+        signal: requestSignal,
+      });
+      if (!response.body) throw new Error("PRODUCER_FAILED");
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let size = 0;
+      try {
+        for (;;) {
+          const part = await reader.read();
+          if (part.done) break;
+          size += part.value.byteLength;
+          if (size > maxHostedBundleBytes) throw new Error("CAPACITY_LIMIT");
+          chunks.push(part.value);
+        }
+      } finally { await reader.cancel(); }
+      let value: unknown;
+      try { value = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+      catch { throw new Error("PRODUCER_FAILED"); }
+      if (!response.ok) {
+        throw new Error(failure(value));
       }
-    } finally { await reader.cancel(); }
-    let value: unknown;
-    try { value = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
-    catch { throw new Error("PRODUCER_FAILED"); }
-    if (!response.ok) {
-      throw new Error(failure(value));
+      return value;
+    } catch (error) {
+      if (signal.aborted) throw new Error("ABORTED");
+      if (requestSignal.aborted || (error instanceof Error && error.name === "TimeoutError")) throw new Error("TIMEOUT");
+      if (error instanceof Error && ["PRODUCER_FAILED", ...producerFailureCodes].includes(error.message)) throw error;
+      throw new Error("NETWORK_ERROR");
     }
-    return value;
   }
   // A missing binding on Vercel must never fall back to a nonexistent Python binary.
   if (process.env.VERCEL) throw new Error("PRODUCER_FAILED");

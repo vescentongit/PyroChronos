@@ -27,13 +27,13 @@ Geometri Natural Earth disimpan lokal di `public/geo`; sumber/lisensi ada pada R
 
 Pemeriksaan: `npm run check:frontend` (Node.js 22.18+/24), `npm run typecheck`, `npm run build`, dan `TEST_URL=http://localhost:3000 npm run smoke` dengan server aktif. Typecheck menonaktifkan cache incremental agar tipe route baru tidak tertahan cache TypeScript lama.
 
-[Verifikasi 15 November](docs/verification-2026-11-15.md) mencatat build produksi Webpack, tes terbaru dan cara menjalankan QA browser historis. Build default Turbopack masih terkena pembatasan port lingkungan Linux ini; hasil Webpack tidak dinyatakan sebagai kelulusan Turbopack. FIRMS live dan routing hosted belum terverifikasi.
+[Verifikasi 15 November](docs/verification-2026-11-15.md) mencatat build produksi, tes regresi storage/pembatalan/pergantian hasil/transport dan 18 checkpoint QA browser historis. Kendala port pada build Linux sebelumnya tetap dicatat sebagai bukti historis. FIRMS live dan routing hosted belum terverifikasi.
 
 ## Status data dan batas implementasi
 
 Acceptance frontend tanpa backend nyata: `npm run check:browser`, dengan server dan Chrome debugging lokal aktif. Script memakai context incognito dan respons API sintetis; cara menjalankan serta bukti hasil ada di [docs/frontend-acceptance.md](docs/frontend-acceptance.md).
 
-Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Dashboard Operasional legacy mengharapkan snapshot lewat `/api/snapshots`; endpoint belum tersedia, dan UI menampilkan unavailable tanpa fixture pengganti. Ini terpisah dari Analisis historis aktif melalui `/api/local-research`, yang memakai producer Python dan model terbitan pada domain yang didukung. Kontrak snapshot lama: `docs/contracts/snapshot-v1.md`. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
+Data ruang kerja default memakai analisis tersimpan dari browser: dashboard, perbandingan sensor dan laporan lapangan membaca hasil historis yang sama. Jalur aktif `/api/local-research` memakai producer Python dan model terbitan pada domain yang didukung. Mode Demo dapat dipilih secara eksplisit dan memakai kandidat, grafik, persentil serta prioritas ilustratif. API `/api/snapshots` lama belum tersedia dan tidak dipanggil oleh jalur analisis tersimpan. Kontrak snapshot lama: `docs/contracts/snapshot-v1.md`. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
 
 ## Penyimpanan browser dan analisis
 

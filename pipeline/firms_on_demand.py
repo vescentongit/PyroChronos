@@ -44,6 +44,7 @@ def download(url, timeout):
                 raise ValueError("CAPACITY_LIMIT")
             return body
     except urllib.error.HTTPError as error:
+        error.close()
         raise ValueError("RATE_LIMITED" if error.code == 429 else "UPSTREAM_DENIED" if error.code in (401, 403) else "DEPENDENCY_UNAVAILABLE") from None
     except urllib.error.URLError as error:
         raise ValueError("TIMEOUT" if isinstance(error.reason, TimeoutError) else "NETWORK_ERROR") from None
@@ -124,7 +125,12 @@ def prepare(data, key, fetch=None, deadline_seconds=95):
         first, last = date.fromisoformat(period["start"]), date.fromisoformat(period["end"])
         if first > last or first.strftime("%Y-%m") != last.strftime("%Y-%m"):
             raise ValueError("CAPACITY_LIMIT")
-    body = fetch(f"https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/{key}/ALL", 10)
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise ValueError("TIMEOUT")
+    body = fetch(f"https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/{key}/ALL", min(10, remaining))
+    if time.monotonic() >= deadline:
+        raise ValueError("TIMEOUT")
     ranges = availability(body)
     windows = {sid: set() for sid in SOURCES}
     for period in selected:
@@ -160,7 +166,7 @@ def prepare(data, key, fetch=None, deadline_seconds=95):
         sid, start, days, bbox = piece
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise ValueError("DEPENDENCY_UNAVAILABLE")
+            raise ValueError("TIMEOUT")
         body = fetch(area_url(key, sid, bbox, days, start.isoformat()), min(10, remaining))
         end = start + timedelta(days=days)
         window = (datetime.combine(start, datetime.min.time(), timezone.utc), datetime.combine(end, datetime.min.time(), timezone.utc))
@@ -208,6 +214,8 @@ def prepare(data, key, fetch=None, deadline_seconds=95):
                 records[item["id"]] = item
                 if len(records) > MAX_RECORDS:
                     raise ValueError("CAPACITY_LIMIT")
+    except TimeoutError:
+        raise ValueError("TIMEOUT") from None
     finally:
         executor.shutdown(wait=True, cancel_futures=True)
     return Snapshot(polygon, list(records.values()), receipts, ranges, hashlib.sha256(body).hexdigest(), baseline_requested)

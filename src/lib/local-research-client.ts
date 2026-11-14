@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createResearchAreaSchema, createResearchWorkspaceSchema, researchAreaSchema, researchJobSchema, type ResearchAnalysisRequest, type ResearchJob } from "./research-contracts";
+import { createResearchAreaSchema, createResearchWorkspaceSchema, researchWorkspaceSchema, researchAreaSchema, researchJobSchema, type ResearchAnalysisRequest, type ResearchJob } from "./research-contracts";
 import { ResearchApiError } from "./research-client";
 import { combineResearchStages, contentHash, localBundleSchema, researchStages, type StageProgress } from "./research-stages";
 
@@ -9,6 +9,12 @@ const historyKey = "pyro-research-history-v1";
 const bundleSchema = localBundleSchema;
 type Bundle = z.infer<typeof bundleSchema>;
 let bundleCache: { id: string; promise: Promise<Bundle> } | undefined;
+let resultSelection = 0;
+
+function storage<T>(operation: () => T): T {
+  try { return operation(); }
+  catch { throw new ResearchApiError("STORAGE_UNAVAILABLE"); }
+}
 
 function database() {
   return new Promise<IDBDatabase>((resolve, reject) => {
@@ -41,7 +47,7 @@ async function readBundle(id: string): Promise<Bundle> {
     throw error instanceof ResearchApiError ? error : new ResearchApiError("STORAGE_UNAVAILABLE");
   } finally { db.close(); }
 }
-async function saveBundle(bundle: Bundle, recordHistory = true) {
+async function saveBundle(bundle: Bundle, recordHistory = true, signal?: AbortSignal) {
   const db = await database();
   try {
     await new Promise<void>((resolve, reject) => {
@@ -50,6 +56,7 @@ async function saveBundle(bundle: Bundle, recordHistory = true) {
       tx.oncomplete = () => resolve();
       tx.onerror = tx.onabort = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     });
+    signal?.throwIfAborted();
     if (bundleCache?.id === bundle.result.id) bundleCache = undefined;
     if (!recordHistory) return;
     const history = researchHistory();
@@ -58,6 +65,7 @@ async function saveBundle(bundle: Bundle, recordHistory = true) {
     localStorage.setItem("pyro-last-research-v1", bundle.result.id);
     if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-updated"));
   } catch (error) {
+    signal?.throwIfAborted();
     throw error instanceof ResearchApiError ? error : new ResearchApiError("STORAGE_UNAVAILABLE");
   } finally { db.close(); }
 }
@@ -69,30 +77,34 @@ async function request(body: unknown, signal: AbortSignal) {
 }
 export async function listResearchWorkspaces(signal: AbortSignal) {
   signal.throwIfAborted();
-  let workspace = localStorage.getItem(workspaceKey);
-  if (!workspace) {
-    workspace = JSON.stringify({ schemaVersion: "research-2", id: crypto.randomUUID(), name: "Local workspace", createdAt: new Date().toISOString(), createdBy: { id: "local", displayName: null } });
-    localStorage.setItem(workspaceKey, workspace);
-  }
-  return { items: [JSON.parse(workspace)], nextCursor: null };
+  return storage(() => {
+    let workspace = localStorage.getItem(workspaceKey);
+    if (!workspace) {
+      workspace = JSON.stringify({ schemaVersion: "research-2", id: crypto.randomUUID(), name: "Local workspace", createdAt: new Date().toISOString(), createdBy: { id: "local", displayName: null } });
+      localStorage.setItem(workspaceKey, workspace);
+    }
+    return { items: [researchWorkspaceSchema.parse(JSON.parse(workspace))], nextCursor: null };
+  });
 }
 export async function createResearchWorkspace(body: z.infer<typeof createResearchWorkspaceSchema>, signal: AbortSignal) {
   signal.throwIfAborted();
   const input = createResearchWorkspaceSchema.parse(body);
   const workspace = { schemaVersion: "research-2", id: crypto.randomUUID(), name: input.name, createdAt: new Date().toISOString(), createdBy: { id: "local", displayName: null } };
-  localStorage.setItem(workspaceKey, JSON.stringify(workspace));
+  storage(() => localStorage.setItem(workspaceKey, JSON.stringify(workspace)));
   return workspace;
 }
 export async function createResearchArea(workspaceId: string, body: z.infer<typeof createResearchAreaSchema>, signal: AbortSignal) {
   const area = researchAreaSchema.parse(await request({ action: "area", workspaceId, area: createResearchAreaSchema.parse(body) }, signal));
   if (area.workspaceId !== workspaceId || JSON.stringify(area.geometry) !== JSON.stringify(body.geometry)) throw new ResearchApiError("INVALID_RESPONSE");
-  const areas = JSON.parse(localStorage.getItem(areaKey) || "{}");
-  areas[area.id] = area;
-  localStorage.setItem(areaKey, JSON.stringify(areas));
+  storage(() => {
+    const areas = JSON.parse(localStorage.getItem(areaKey) || "{}");
+    areas[area.id] = area;
+    localStorage.setItem(areaKey, JSON.stringify(areas));
+  });
   return area;
 }
 export async function submitResearch(workspaceId: string, body: ResearchAnalysisRequest, signal: AbortSignal, options: { refresh?: boolean; onProgress?: (progress: StageProgress[]) => void } = {}) {
-  const area = researchAreaSchema.parse(JSON.parse(localStorage.getItem(areaKey) || "{}")[body.areaId]);
+  const area = storage(() => researchAreaSchema.parse(JSON.parse(localStorage.getItem(areaKey) || "{}")[body.areaId]));
   const stages = researchStages(body);
   const progress: StageProgress[] = stages.map(stage => ({ stage, status: "pending" }));
   const completed: Parameters<typeof combineResearchStages>[2] = [];
@@ -105,7 +117,7 @@ export async function submitResearch(workspaceId: string, body: ResearchAnalysis
     report();
     try {
       const key = `pyro-stage-v1-${await contentHash({ workspaceId, geometry: area.geometry, name: area.name, ...stage, baseline: body.baseline, quality: body.qualityPolicyVersion })}`;
-      const saved = options.refresh ? null : localStorage.getItem(key);
+      const saved = options.refresh ? null : storage(() => localStorage.getItem(key));
       let part: Bundle | undefined;
       if (saved) {
         try { part = await readBundle(saved); }
@@ -137,7 +149,7 @@ export async function submitResearch(workspaceId: string, body: ResearchAnalysis
   try { bundle = await combineResearchStages(area, body, completed); }
   catch { throw new ResearchApiError("INVALID_RESPONSE"); }
   signal.throwIfAborted();
-  await saveBundle(bundle);
+  await saveBundle(bundle, true, signal);
   const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(body)));
   const analysisKey = `sha256:${Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2, "0")).join("")}`;
   const now = new Date().toISOString();
@@ -160,16 +172,18 @@ export async function researchDetections(_workspace: string, id: string, signal:
   return { ...pages[index], nextCursor: index + 1 < pages.length ? String(index + 1) : null };
 }
 export async function lastResearchResult() {
-  const id = localStorage.getItem("pyro-last-research-v1");
+  const id = storage(() => localStorage.getItem("pyro-last-research-v1"));
   return id ? (await getBundle(id)).result : null;
 }
 const historySchema = z.array(z.object({ id: z.string(), name: z.string(), start: z.string(), end: z.string() }).strict());
 export function researchHistory() {
-  return historySchema.parse(JSON.parse(localStorage.getItem(historyKey) || "[]"));
+  return storage(() => historySchema.parse(JSON.parse(localStorage.getItem(historyKey) || "[]")));
 }
 export async function openResearchResult(id: string) {
+  const selection = ++resultSelection;
   const result = (await getBundle(id)).result;
-  localStorage.setItem("pyro-last-research-v1", id);
+  if (selection !== resultSelection) return result;
+  storage(() => localStorage.setItem("pyro-last-research-v1", id));
   if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-updated"));
   if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-selected"));
   return result;

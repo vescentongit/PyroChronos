@@ -13,7 +13,7 @@ registerHooks({ resolve(specifier, context, next) {
   return next(specifier, context);
 } });
 const { POST } = await import("../src/app/api/local-research/route.ts");
-const { submitResearch, getBundle } = await import("../src/lib/local-research-client.ts");
+const { submitResearch, getBundle, listResearchWorkspaces, createResearchWorkspace, createResearchArea, openResearchResult } = await import("../src/lib/local-research-client.ts");
 const { researchStages, combineResearchStages, availableSourceRanges } = await import("../src/lib/research-stages.ts");
 
 test("source date guidance uses actual snapshot availability, never observation dates", () => {
@@ -39,6 +39,25 @@ test("blocked IndexedDB reports storage failure instead of invalid input", async
   } finally { globalThis.indexedDB = previous; }
 });
 
+test("workspace storage failures retain a storage error code", async t => {
+  const previous = globalThis.localStorage;
+  try {
+    for (const access of ["getItem", "setItem"]) {
+      await t.test(access, async () => {
+        globalThis.localStorage = { getItem: () => null, setItem() {}, [access]() { throw new DOMException("Full or blocked", "QuotaExceededError"); } };
+        await assert.rejects(listResearchWorkspaces(new AbortController().signal), error => error.code === "STORAGE_UNAVAILABLE");
+      });
+    }
+    await t.test("create", async () => {
+      await assert.rejects(createResearchWorkspace({ requestId: crypto.randomUUID(), name: "Storage test" }, new AbortController().signal), error => error.code === "STORAGE_UNAVAILABLE");
+    });
+    await t.test("invalid saved workspace", async () => {
+      globalThis.localStorage = { getItem: () => '{"id":null}', setItem() {} };
+      await assert.rejects(listResearchWorkspaces(new AbortController().signal), error => error.code === "STORAGE_UNAVAILABLE");
+    });
+  } finally { globalThis.localStorage = previous; }
+});
+
 test("browser resumes saved months through real Next → Python HTTP analysis and retains provenance", async () => {
   const previous = { fetch: globalThis.fetch, db: globalThis.indexedDB, storage: globalThis.localStorage, url: process.env.PIPELINE_URL, data: process.env.RESEARCH_DATA_DIR };
   const server = spawn(process.env.RESEARCH_PYTHON || "python", ["-u", "-c", [
@@ -54,10 +73,10 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
   const exited = once(server, "exit");
   const lines = createInterface({ input: server.stdout });
   const stored = new Map(), metadata = new Map(), calls = [];
-  let storageFailure;
+  let storageFailure, abortFinal;
   const notify = callback => queueMicrotask(callback);
   globalThis.localStorage = { getItem: key => metadata.get(key) ?? null, setItem: (key, value) => {
-    if (storageFailure === "history" && key === "pyro-research-history-v1") throw new DOMException("Full", "QuotaExceededError");
+    if ((storageFailure === "history" && key === "pyro-research-history-v1") || storageFailure === key) throw new DOMException("Full", "QuotaExceededError");
     metadata.set(key, String(value));
   } };
   globalThis.indexedDB = { open() {
@@ -66,7 +85,7 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
         get(id) { const op = { result: structuredClone(stored.get(id)) }; notify(() => op.onsuccess()); return op; },
         put(value) {
           if (storageFailure === "put") throw new DOMException("Full", "QuotaExceededError");
-          stored.set(value.result.id, structuredClone(value)); notify(() => tx.oncomplete());
+          stored.set(value.result.id, structuredClone(value)); notify(() => { if (value.result.id.startsWith("staged-")) abortFinal?.abort(); tx.oncomplete(); });
         },
       }; } };
       return tx;
@@ -128,6 +147,15 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
       await assert.rejects(submitResearch("staged-test", { ...body, areaId: replacement.id }, new AbortController().signal, { refresh: true }), error => error.code === "STORAGE_UNAVAILABLE");
       assert.equal(metadata.get("pyro-last-research-v1"), lastComplete, "failed storage must preserve the previous complete result");
     }
+    storageFailure = undefined;
+    abortFinal = new AbortController();
+    await assert.rejects(submitResearch("staged-test", { ...body, areaId: replacement.id }, abortFinal.signal, { refresh: true }), error => error.name === "AbortError");
+    assert.equal(metadata.get("pyro-last-research-v1"), lastComplete, "cancellation during final IndexedDB commit must preserve the selected result");
+    abortFinal = undefined;
+    storageFailure = "pyro-last-research-v1";
+    await assert.rejects(openResearchResult(lastComplete), error => error.code === "STORAGE_UNAVAILABLE");
+    storageFailure = "pyro-local-areas-v1";
+    await assert.rejects(createResearchArea("staged-test", { requestId: crypto.randomUUID(), name: area.name, geometry: area.geometry }, new AbortController().signal), error => error.code === "STORAGE_UNAVAILABLE");
   } finally {
     globalThis.fetch = previous.fetch;
     globalThis.indexedDB = previous.db;

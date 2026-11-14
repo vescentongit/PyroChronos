@@ -7,17 +7,19 @@ registerHooks({ resolve(specifier, context, next) {
   if (context.parentURL?.includes("/src/lib/") && specifier.startsWith("./") && !/\.[a-z]+$/i.test(specifier)) return next(`${specifier}.ts`, context);
   return next(specifier, context);
 } });
-const { getBundle } = await import("../src/lib/local-research-client.ts");
+const { getBundle, openResearchResult } = await import("../src/lib/local-research-client.ts");
 const example = JSON.parse(readFileSync("src/lib/fixtures/research-demo.json", "utf8"));
 const records = new Map();
 let reads = 0;
+let delayedId, releaseRead;
 globalThis.indexedDB = { open() {
   const request = { result: {
     close() {},
     transaction() { return { objectStore() { return { get(id) {
       reads++;
       const operation = { result: structuredClone(records.get(id)) };
-      queueMicrotask(() => operation.onsuccess());
+      if (id === delayedId) releaseRead = () => operation.onsuccess();
+      else queueMicrotask(() => operation.onsuccess());
       return operation;
     } }; } }; },
   } };
@@ -53,4 +55,21 @@ test("failed reads are not cached and do not replace a recoverable stored result
   const result = await getBundle("cache-missing");
   assert.equal(result.result.id, "cache-missing");
   assert.equal(reads - before, 1);
+});
+
+test("rapid saved-result selections keep the latest choice when an earlier read is slow", async () => {
+  seed("selection-slow"); seed("selection-latest");
+  const previous = globalThis.localStorage;
+  const metadata = new Map();
+  globalThis.localStorage = { setItem: (key, value) => metadata.set(key, value) };
+  delayedId = "selection-slow";
+  try {
+    const earlier = openResearchResult("selection-slow");
+    await new Promise(resolve => setImmediate(resolve));
+    assert.ok(releaseRead);
+    await openResearchResult("selection-latest");
+    releaseRead();
+    await earlier;
+    assert.equal(metadata.get("pyro-last-research-v1"), "selection-latest");
+  } finally { globalThis.localStorage = previous; delayedId = undefined; }
 });

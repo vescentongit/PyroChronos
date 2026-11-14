@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from area_counts import count_source
 from area_query import Polygon
-from firms_on_demand import prepare, download
+from firms_on_demand import download, prepare
 from reference_baseline import window_covered
 from research_worker import analyze, produce
 
@@ -25,6 +25,24 @@ def data(geometry=GEOMETRY, start="2019-01-01", end="2019-01-02"):
 
 
 class OnDemandTests(unittest.TestCase):
+    def test_expired_fetch_budget_is_timeout_without_starting_a_request(self):
+        with patch("firms_on_demand.download") as fetch:
+            with self.assertRaisesRegex(ValueError, "^TIMEOUT$"):
+                prepare(data(), "test-key", deadline_seconds=0)
+            fetch.assert_not_called()
+
+    def test_deadline_while_waiting_for_parallel_requests_is_timeout(self):
+        import time
+
+        def slow_fetch(url, timeout):
+            if "data_availability" in url:
+                return AVAILABLE
+            time.sleep(0.03)
+            return MODIS.encode() if "/MODIS_SP/" in url else VIIRS.encode()
+
+        with self.assertRaisesRegex(ValueError, "^TIMEOUT$"):
+            prepare(data(), "test-key", fetch=slow_fetch, deadline_seconds=0.01)
+
     def test_transport_failures_return_safe_actionable_codes(self):
         import urllib.error
         errors = [(urllib.error.URLError(OSError("private-url-with-key")), "NETWORK_ERROR"),
@@ -36,6 +54,17 @@ class OnDemandTests(unittest.TestCase):
             with self.subTest(code=code), patch("urllib.request.OpenerDirector.open", side_effect=error):
                 with self.assertRaisesRegex(ValueError, f"^{code}$"):
                     download("https://example.test/private-key", 1)
+
+    def test_http_failure_closes_the_response_stream(self):
+        import io
+        import urllib.error
+
+        body = io.BytesIO(b"private response")
+        failure = urllib.error.HTTPError("https://example.test/private-key", 403, "denied", {}, body)
+        with patch("urllib.request.OpenerDirector.open", side_effect=failure):
+            with self.assertRaisesRegex(ValueError, "^UPSTREAM_DENIED$"):
+                download("https://example.test/private-key", 1)
+        self.assertTrue(body.closed)
 
     def fetch(self, url, timeout):
         if "data_availability" in url:
