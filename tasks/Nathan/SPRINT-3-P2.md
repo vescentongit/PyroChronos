@@ -36,6 +36,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N2
 
+**Status:** implementasi selesai, menunggu review Bagas. Benchmark `pipeline/harmonize_transfer.py`, hasil `pipeline/models/transfer-a34f51d0a650.json`, uraian di [harmonization.md](../../docs/data/harmonization.md). Model tidak diubah; domain gagal tetap terlihat.
+
 ### R2-P2-N3 — Eksperimen QA coverage terpisah
 
 - [ ] **Selesai dan direview** — estimasi 5 poin.

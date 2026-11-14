@@ -1,0 +1,1897 @@
+{
+ "id": "transfer-34fd878c3e0a0756",
+ "contentSha256": "34fd878c3e0a0756c399f5e198b5f7332f2ee85de529b0dbab88eec6f29f09f3",
+ "schema": "transfer-benchmark-1",
+ "transferConfig": {
+  "version": "transfer-1",
+  "requiredConfigHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+  "holdout": {
+   "start": "2012-02",
+   "end": "2012-12",
+   "role": "backward holdout: before the train period, never used for fitting, selection or testing"
+  },
+  "minimumCellMonths": {
+   "holdoutDomain": 200,
+   "seasonDomain": 100,
+   "region": 60
+  },
+  "thresholds": {
+   "minimumMaeReductionVersusRaw": 0.2,
+   "maximumAbsoluteRelativeBiasAggregated": 0.15
+  },
+  "seasons": {
+   "DJF": [
+    12,
+    1,
+    2
+   ],
+   "MAM": [
+    3,
+    4,
+    5
+   ],
+   "JJA": [
+    6,
+    7,
+    8
+   ],
+   "SON": [
+    9,
+    10,
+    11
+   ]
+  },
+  "regions": {
+   "rondonia_brazil": [
+    -65.0,
+    -14.0,
+    -59.0,
+    -8.0
+   ],
+   "cerrado_matopiba_brazil": [
+    -50.0,
+    -13.0,
+    -43.0,
+    -5.0
+   ],
+   "miombo_southern_africa": [
+    22.0,
+    -16.0,
+    34.0,
+    -8.0
+   ],
+   "sahel_savanna_west_africa": [
+    -5.0,
+    8.0,
+    15.0,
+    14.0
+   ],
+   "northern_australia": [
+    125.0,
+    -20.0,
+    145.0,
+    -11.0
+   ],
+   "siberia_baikal": [
+    100.0,
+    50.0,
+    120.0,
+    60.0
+   ],
+   "california_usa": [
+    -124.5,
+    32.0,
+    -114.0,
+    42.0
+   ],
+   "kalimantan_tengah_indonesia": [
+    111.0,
+    -3.5,
+    115.0,
+    0.0
+   ],
+   "papua_indonesia": [
+    131.0,
+    -9.0,
+    141.0,
+    -1.0
+   ]
+  },
+  "rule": "slices below their minimum cell-month count are reported as insufficient, never as pass or fail; the model is not refitted, retuned or re-selected from any result here"
+ },
+ "transferConfigHash": "d1390758cc5a6432da4eb7012d741e3162eae9332bdfbcacb755160ea2c2ff61",
+ "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+ "evaluationId": "evaluation-275ac4d8b7c6096b",
+ "pairsSha256": "e194422b2197a112c5b98bde604b0610318f9f21c8260a97b15da5b432d89a7e",
+ "holdoutCellMonths": 89715,
+ "labels": {
+  "fixtureOrReal": "real FIRMS archive data",
+  "status": "retrospective transfer benchmark of a frozen model; not an operational validation and not evidence for domains outside the table"
+ },
+ "limits": [
+  "the holdout is one partial year (February to December 2012, the first full VIIRS S-NPP months) and cannot support claims about later years",
+  "the same sensor pair, quality policy and 1-degree cell-month unit apply; a different satellite set needs a new configuration",
+  "named regions are boxes of 1-degree cells chosen before the results were seen; they are examples, not a sample of the globe",
+  "the retrain reference shows how much a domain-specific multiplier would differ; it is not part of the published method"
+ ],
+ "models": {
+  "ratio": 0.24575377326604025
+ },
+ "domains": {
+  "africa_north_of_equator": {
+   "validatedByFrozenConfig": true,
+   "holdout": {
+    "cellMonths": 10531,
+    "verdict": "pass",
+    "raw": {
+     "mae": 187.20938182508783,
+     "aggregateRelativeBias": 2.8353233916814986
+    },
+    "frozen": {
+     "mae": 15.582406701141739,
+     "relativeBias": -0.05745480479876492,
+     "aggregateRelativeBias": -0.05745480479876824
+    },
+    "maeReduction": 0.9167648194271557,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 64131,
+    "verdict": "pass",
+    "raw": {
+     "mae": 215.4776785018166,
+     "aggregateRelativeBias": 3.291820832072224
+    },
+    "frozen": {
+     "mae": 15.836865567203976,
+     "relativeBias": 0.05473116366353877,
+     "aggregateRelativeBias": 0.05473116366354059
+    },
+    "maeReduction": 0.9265034518781005,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 17537,
+     "verdict": "pass",
+     "raw": {
+      "mae": 523.0382619604266,
+      "aggregateRelativeBias": 3.1328731146474706
+     },
+     "frozen": {
+      "mae": 32.14764511439564,
+      "relativeBias": 0.01566916235438835,
+      "aggregateRelativeBias": 0.015669162354382454
+     },
+     "maeReduction": 0.9385367238834471,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 17425,
+     "verdict": "fail",
+     "raw": {
+      "mae": 149.08728837876615,
+      "aggregateRelativeBias": 3.9494025397773505
+     },
+     "frozen": {
+      "mae": 15.092952295595946,
+      "relativeBias": 0.21633434956279896,
+      "aggregateRelativeBias": 0.21633434956280165
+     },
+     "maeReduction": 0.8987643248480628,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "JJA": {
+     "cellMonths": 13508,
+     "verdict": "fail",
+     "raw": {
+      "mae": 22.121187444477346,
+      "aggregateRelativeBias": 4.069504646106549
+     },
+     "frozen": {
+      "mae": 3.8608582569402166,
+      "relativeBias": 0.24584989537042717,
+      "aggregateRelativeBias": 0.24584989537040908
+     },
+     "maeReduction": 0.8254678567038636,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "SON": {
+     "cellMonths": 15661,
+     "verdict": "pass",
+     "raw": {
+      "mae": 111.71815337462486,
+      "aggregateRelativeBias": 3.2500558717482644
+     },
+     "frozen": {
+      "mae": 8.729557897569025,
+      "relativeBias": 0.04446726707362696,
+      "aggregateRelativeBias": 0.04446726707362418
+     },
+     "maeReduction": 0.921860882641909,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.2748194072308109,
+    "holdout": {
+     "cellMonths": 10531,
+     "verdict": "pass",
+     "raw": {
+      "mae": 187.20938182508783,
+      "aggregateRelativeBias": 2.8353233916814986
+     },
+     "frozen": {
+      "mae": 14.796353489091999,
+      "relativeBias": 0.054021301040375176,
+      "aggregateRelativeBias": 0.05402130104037593
+     },
+     "maeReduction": 0.9209636111991629,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "confirmed",
+   "note": null
+  },
+  "africa_south_of_equator": {
+   "validatedByFrozenConfig": true,
+   "holdout": {
+    "cellMonths": 8595,
+    "verdict": "pass",
+    "raw": {
+     "mae": 434.05549738219895,
+     "aggregateRelativeBias": 2.8978311167464574
+    },
+    "frozen": {
+     "mae": 30.705907356015576,
+     "relativeBias": -0.04209329550577516,
+     "aggregateRelativeBias": -0.04209329550577466
+    },
+    "maeReduction": 0.9292581074512274,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 45898,
+    "verdict": "pass",
+    "raw": {
+     "mae": 403.09649657937166,
+     "aggregateRelativeBias": 2.924080740438472
+    },
+    "frozen": {
+     "mae": 36.47634240322918,
+     "relativeBias": -0.03564235143665118,
+     "aggregateRelativeBias": -0.03564235143664844
+    },
+    "maeReduction": 0.9095096516274316,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 10139,
+     "verdict": "fail",
+     "raw": {
+      "mae": 47.60765361475491,
+      "aggregateRelativeBias": 5.057544434640111
+     },
+     "frozen": {
+      "mae": 6.331674727222369,
+      "relativeBias": 0.4886644015395004,
+      "aggregateRelativeBias": 0.48866440153951246
+     },
+     "maeReduction": 0.8670030079940757,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "MAM": {
+     "cellMonths": 10778,
+     "verdict": "pass",
+     "raw": {
+      "mae": 125.00974206717387,
+      "aggregateRelativeBias": 3.1603319560522114
+     },
+     "frozen": {
+      "mae": 11.142420656099551,
+      "relativeBias": 0.02241727623911757,
+      "aggregateRelativeBias": 0.022417276239116705
+     },
+     "maeReduction": 0.9108675814232768,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 12381,
+     "verdict": "fail",
+     "raw": {
+      "mae": 799.334464098215,
+      "aggregateRelativeBias": 2.4443720828190334
+     },
+     "frozen": {
+      "mae": 79.38467648757286,
+      "relativeBias": -0.15353256411501537,
+      "aggregateRelativeBias": -0.15353256411501273
+     },
+     "maeReduction": 0.9006865335437122,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "SON": {
+     "cellMonths": 12600,
+     "verdict": "fail",
+     "raw": {
+      "mae": 537.6757142857143,
+      "aggregateRelativeBias": 3.856690358775162
+     },
+     "frozen": {
+      "mae": 40.24124001111842,
+      "relativeBias": 0.19354998125379247,
+      "aggregateRelativeBias": 0.19354998125379502
+     },
+     "maeReduction": 0.9251570436567371,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.2652771885870478,
+    "holdout": {
+     "cellMonths": 8595,
+     "verdict": "pass",
+     "raw": {
+      "mae": 434.05549738219895,
+      "aggregateRelativeBias": 2.8978311167464574
+     },
+     "frozen": {
+      "mae": 29.895073935142758,
+      "relativeBias": 0.034005680237613,
+      "aggregateRelativeBias": 0.03400568023761297
+     },
+     "maeReduction": 0.931126148348677,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "confirmed",
+   "note": null
+  },
+  "australia": {
+   "validatedByFrozenConfig": true,
+   "holdout": {
+    "cellMonths": 5336,
+    "verdict": "pass",
+    "raw": {
+     "mae": 274.80134932533736,
+     "aggregateRelativeBias": 3.4578566844112206
+    },
+    "frozen": {
+     "mae": 18.362290340068903,
+     "relativeBias": 0.0955351008732971,
+     "aggregateRelativeBias": 0.09553510087329668
+    },
+    "maeReduction": 0.9331797664562055,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 24159,
+    "verdict": "pass",
+    "raw": {
+     "mae": 160.38693654538682,
+     "aggregateRelativeBias": 3.4762647460439746
+    },
+    "frozen": {
+     "mae": 13.004083146870155,
+     "relativeBias": 0.1000589514780564,
+     "aggregateRelativeBias": 0.10005895147806045
+    },
+    "maeReduction": 0.9189205590743968,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 5851,
+     "verdict": "pass",
+     "raw": {
+      "mae": 83.11211758673731,
+      "aggregateRelativeBias": 3.522153555329359
+     },
+     "frozen": {
+      "mae": 8.271883581834556,
+      "relativeBias": 0.11133629951063043,
+      "aggregateRelativeBias": 0.11133629951062936
+     },
+     "maeReduction": 0.9004731942583237,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 5879,
+     "verdict": "fail",
+     "raw": {
+      "mae": 149.26058853546522,
+      "aggregateRelativeBias": 3.788706148884104
+     },
+     "frozen": {
+      "mae": 14.127723409796154,
+      "relativeBias": 0.1768426051505572,
+      "aggregateRelativeBias": 0.17684260515055755
+     },
+     "maeReduction": 0.9053486017413143,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "JJA": {
+     "cellMonths": 5899,
+     "verdict": "pass",
+     "raw": {
+      "mae": 127.1491778267503,
+      "aggregateRelativeBias": 3.4468786753684015
+     },
+     "frozen": {
+      "mae": 9.87564495482263,
+      "relativeBias": 0.09283721372807646,
+      "aggregateRelativeBias": 0.09283721372807566
+     },
+     "maeReduction": 0.9223302492110574,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "SON": {
+     "cellMonths": 6530,
+     "verdict": "pass",
+     "raw": {
+      "mae": 269.6696784073507,
+      "aggregateRelativeBias": 3.339191067035203
+     },
+     "frozen": {
+      "mae": 19.058734822854166,
+      "relativeBias": 0.0663725776461967,
+      "aggregateRelativeBias": 0.06637257764619685
+     },
+     "maeReduction": 0.9293256292831524,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.21324471671827502,
+    "holdout": {
+     "cellMonths": 5336,
+     "verdict": "pass",
+     "raw": {
+      "mae": 274.80134932533736,
+      "aggregateRelativeBias": 3.4578566844112206
+     },
+     "frozen": {
+      "mae": 16.085180798834504,
+      "relativeBias": -0.049385614162060346,
+      "aggregateRelativeBias": -0.04938561416206071
+     },
+     "maeReduction": 0.9414661505908718,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "confirmed",
+   "note": null
+  },
+  "boreal_eurasia": {
+   "validatedByFrozenConfig": true,
+   "holdout": {
+    "cellMonths": 9692,
+    "verdict": "pass",
+    "raw": {
+     "mae": 144.847915806851,
+     "aggregateRelativeBias": 3.1749468454862253
+    },
+    "frozen": {
+     "mae": 13.236590820977256,
+     "relativeBias": 0.026008940463393953,
+     "aggregateRelativeBias": 0.026008940463388516
+    },
+    "maeReduction": 0.9086173194329719,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 42595,
+    "verdict": "pass",
+    "raw": {
+     "mae": 73.23432327737997,
+     "aggregateRelativeBias": 3.12897816995285
+    },
+    "frozen": {
+     "mae": 8.124864536629232,
+     "relativeBias": 0.014711964999029352,
+     "aggregateRelativeBias": 0.014711964999022414
+    },
+    "maeReduction": 0.8890566038842777,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 2857,
+     "verdict": "fail",
+     "raw": {
+      "mae": 12.394119705985299,
+      "aggregateRelativeBias": 88.80904522613065
+     },
+     "frozen": {
+      "mae": 3.011702880133573,
+      "relativeBias": 21.070911737742552,
+      "aggregateRelativeBias": 21.070911737742062
+     },
+     "maeReduction": 0.7570055032888557,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "MAM": {
+     "cellMonths": 12574,
+     "verdict": "pass",
+     "raw": {
+      "mae": 65.58915221886433,
+      "aggregateRelativeBias": 3.2587109014500677
+     },
+     "frozen": {
+      "mae": 6.709460151558852,
+      "relativeBias": 0.04659427328057627,
+      "aggregateRelativeBias": 0.04659427328057256
+     },
+     "maeReduction": 0.8977047282274656,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 17105,
+     "verdict": "pass",
+     "raw": {
+      "mae": 117.52294650686933,
+      "aggregateRelativeBias": 2.987215825169327
+     },
+     "frozen": {
+      "mae": 12.603494281595502,
+      "relativeBias": -0.020126666138567346,
+      "aggregateRelativeBias": -0.020126666138569765
+     },
+     "maeReduction": 0.892757162271635,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "SON": {
+     "cellMonths": 10059,
+     "verdict": "pass",
+     "raw": {
+      "mae": 24.759717665771944,
+      "aggregateRelativeBias": 3.508165552859717
+     },
+     "frozen": {
+      "mae": 3.7306539593220873,
+      "relativeBias": 0.10789869512326432,
+      "aggregateRelativeBias": 0.10789869512326376
+     },
+     "maeReduction": 0.8493256664037258,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.20405095076783508,
+    "holdout": {
+     "cellMonths": 9692,
+     "verdict": "pass",
+     "raw": {
+      "mae": 144.847915806851,
+      "aggregateRelativeBias": 3.1749468454862253
+     },
+     "frozen": {
+      "mae": 13.029749291043572,
+      "relativeBias": -0.148098126773386,
+      "aggregateRelativeBias": -0.1480981267733687
+     },
+     "maeReduction": 0.9100453105005789,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "confirmed",
+   "note": null
+  },
+  "europe_mediterranean": {
+   "validatedByFrozenConfig": false,
+   "holdout": {
+    "cellMonths": 6224,
+    "verdict": "fail",
+    "raw": {
+     "mae": 28.311535989717225,
+     "aggregateRelativeBias": 2.1649896623018607
+    },
+    "frozen": {
+     "mae": 4.799465124418998,
+     "relativeBias": -0.22219184814129656,
+     "aggregateRelativeBias": -0.22219184814130472
+    },
+    "maeReduction": 0.8304766959248637,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "test": {
+    "cellMonths": 32542,
+    "verdict": "fail",
+    "raw": {
+     "mae": 17.942228504701617,
+     "aggregateRelativeBias": 2.3686914146721314
+    },
+    "frozen": {
+     "mae": 3.2335561680778926,
+     "relativeBias": -0.17213137387540778,
+     "aggregateRelativeBias": -0.17213137387540728
+    },
+    "maeReduction": 0.8197795682275162,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 5535,
+     "verdict": "pass",
+     "raw": {
+      "mae": 8.0453477868112,
+      "aggregateRelativeBias": 2.555054694073807
+     },
+     "frozen": {
+      "mae": 1.7282639121415748,
+      "relativeBias": -0.12633189476421403,
+      "aggregateRelativeBias": -0.12633189476421436
+     },
+     "maeReduction": 0.7851846858659447,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 9251,
+     "verdict": "pass",
+     "raw": {
+      "mae": 13.093179115771267,
+      "aggregateRelativeBias": 2.46355510996395
+     },
+     "frozen": {
+      "mae": 2.6010838422840767,
+      "relativeBias": -0.14881826281147856,
+      "aggregateRelativeBias": -0.14881826281148372
+     },
+     "maeReduction": 0.8013405438598968,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 9548,
+     "verdict": "fail",
+     "raw": {
+      "mae": 27.44648093841642,
+      "aggregateRelativeBias": 2.3047317530757296
+     },
+     "frozen": {
+      "mae": 4.7384904098798195,
+      "relativeBias": -0.18784970204953433,
+      "aggregateRelativeBias": -0.18784970204954143
+     },
+     "maeReduction": 0.8273552656709653,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "SON": {
+     "cellMonths": 8208,
+     "verdict": "fail",
+     "raw": {
+      "mae": 19.025462962962962,
+      "aggregateRelativeBias": 2.361607419815125
+     },
+     "frozen": {
+      "mae": 3.21085660445767,
+      "relativeBias": -0.17387229234130716,
+      "aggregateRelativeBias": -0.173872292341314
+     },
+     "maeReduction": 0.8312337202669773,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.32221227770300237,
+    "holdout": {
+     "cellMonths": 6224,
+     "verdict": "pass",
+     "raw": {
+      "mae": 28.311535989717225,
+      "aggregateRelativeBias": 2.1649896623018607
+     },
+     "frozen": {
+      "mae": 4.611279132846173,
+      "relativeBias": 0.019798527996740263,
+      "aggregateRelativeBias": 0.01979852799674085
+     },
+     "maeReduction": 0.8371236680863591,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "stays-unvalidated",
+   "note": null
+  },
+  "maritime_southeast_asia": {
+   "validatedByFrozenConfig": false,
+   "holdout": {
+    "cellMonths": 4277,
+    "verdict": "pass",
+    "raw": {
+     "mae": 70.23567921440262,
+     "aggregateRelativeBias": 3.5762186397023754
+    },
+    "frozen": {
+     "mae": 6.612570402514413,
+     "relativeBias": 0.12462299799724659,
+     "aggregateRelativeBias": 0.1246229979972456
+    },
+    "maeReduction": 0.9058516913842497,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 20843,
+    "verdict": "fail",
+    "raw": {
+     "mae": 33.269442978457995,
+     "aggregateRelativeBias": 4.099322058174093
+    },
+    "frozen": {
+     "mae": 4.110484348568468,
+     "relativeBias": 0.253177636895024,
+     "aggregateRelativeBias": 0.253177636895035
+    },
+    "maeReduction": 0.8764486573691657,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 4307,
+     "verdict": "fail",
+     "raw": {
+      "mae": 10.684467146505689,
+      "aggregateRelativeBias": 4.687831789320287
+     },
+     "frozen": {
+      "mae": 1.886475286470371,
+      "relativeBias": 0.3978061239279935,
+      "aggregateRelativeBias": 0.3978061239279935
+     },
+     "maeReduction": 0.82343758836047,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "MAM": {
+     "cellMonths": 5150,
+     "verdict": "fail",
+     "raw": {
+      "mae": 18.846796116504855,
+      "aggregateRelativeBias": 4.5916505791505795
+     },
+     "frozen": {
+      "mae": 2.8718676595854733,
+      "relativeBias": 0.37416922861150315,
+      "aggregateRelativeBias": 0.37416922861149343
+     },
+     "maeReduction": 0.8476203784541146,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "JJA": {
+     "cellMonths": 5597,
+     "verdict": "pass",
+     "raw": {
+      "mae": 40.20850455601215,
+      "aggregateRelativeBias": 3.529986384218359
+     },
+     "frozen": {
+      "mae": 4.920969440260632,
+      "relativeBias": 0.1132612467654487,
+      "aggregateRelativeBias": 0.11326124676544903
+     },
+     "maeReduction": 0.8776137164363943,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "SON": {
+     "cellMonths": 5789,
+     "verdict": "fail",
+     "raw": {
+      "mae": 56.194334081879425,
+      "aggregateRelativeBias": 4.370735855933691
+     },
+     "frozen": {
+      "mae": 6.083432685158566,
+      "relativeBias": 0.3198786018109301,
+      "aggregateRelativeBias": 0.31987860181092326
+     },
+     "maeReduction": 0.8917429526561426,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.15992239042828005,
+    "holdout": {
+     "cellMonths": 4277,
+     "verdict": "fail",
+     "raw": {
+      "mae": 70.23567921440262,
+      "aggregateRelativeBias": 3.5762186397023754
+     },
+     "frozen": {
+      "mae": 7.197032018324561,
+      "relativeBias": -0.2681601760163463,
+      "aggregateRelativeBias": -0.2681601760163436
+     },
+     "maeReduction": 0.8975302567181733,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "status": "stays-unvalidated",
+   "note": "status never upgrades an unvalidated domain; opening one requires a new configuration and a new unseen evaluation"
+  },
+  "north_america": {
+   "validatedByFrozenConfig": false,
+   "holdout": {
+    "cellMonths": 13338,
+    "verdict": "pass",
+    "raw": {
+     "mae": 51.63900134952767,
+     "aggregateRelativeBias": 2.9630282376273636
+    },
+    "frozen": {
+     "mae": 6.967799050115706,
+     "relativeBias": -0.026070857043207284,
+     "aggregateRelativeBias": -0.026070857043207746
+    },
+    "maeReduction": 0.8650671223683639,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 70778,
+    "verdict": "pass",
+    "raw": {
+     "mae": 83.43584164570912,
+     "aggregateRelativeBias": 3.5945707427712517
+    },
+    "frozen": {
+     "mae": 9.917367429907882,
+     "relativeBias": 0.12913309657377106,
+     "aggregateRelativeBias": 0.1291330965737894
+    },
+    "maeReduction": 0.881137803199497,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 14097,
+     "verdict": "pass",
+     "raw": {
+      "mae": 24.75299709157977,
+      "aggregateRelativeBias": 2.6519972451790634
+     },
+     "frozen": {
+      "mae": 4.120733967203683,
+      "relativeBias": -0.102507897040053,
+      "aggregateRelativeBias": -0.10250789704005435
+     },
+     "maeReduction": 0.8335258574160527,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 17814,
+     "verdict": "pass",
+     "raw": {
+      "mae": 88.67155046592568,
+      "aggregateRelativeBias": 3.0000304731141427
+     },
+     "frozen": {
+      "mae": 9.50758570054503,
+      "relativeBias": -0.016977418053052588,
+      "aggregateRelativeBias": -0.016977418053056068
+     },
+     "maeReduction": 0.8927774957064886,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 20957,
+     "verdict": "fail",
+     "raw": {
+      "mae": 147.0851744047335,
+      "aggregateRelativeBias": 4.193555804976867
+     },
+     "frozen": {
+      "mae": 16.566497728554133,
+      "relativeBias": 0.276335935740804,
+      "aggregateRelativeBias": 0.2763359357408128
+     },
+     "maeReduction": 0.8873679975184433,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "SON": {
+     "cellMonths": 17910,
+     "verdict": "pass",
+     "raw": {
+      "mae": 49.93969849246231,
+      "aggregateRelativeBias": 3.5854213019232866
+     },
+     "frozen": {
+      "mae": 7.107159165359029,
+      "relativeBias": 0.1268845869621361,
+      "aggregateRelativeBias": 0.1268845869621303
+     },
+     "maeReduction": 0.8576851807298805,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.1730697885653728,
+    "holdout": {
+     "cellMonths": 13338,
+     "verdict": "fail",
+     "raw": {
+      "mae": 51.63900134952767,
+      "aggregateRelativeBias": 2.9630282376273636
+     },
+     "frozen": {
+      "mae": 7.385228262049541,
+      "relativeBias": -0.31411954083525573,
+      "aggregateRelativeBias": -0.31411954083523225
+     },
+     "maeReduction": 0.8569835188705272,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "status": "stays-unvalidated",
+   "note": "status never upgrades an unvalidated domain; opening one requires a new configuration and a new unseen evaluation"
+  },
+  "other": {
+   "validatedByFrozenConfig": false,
+   "holdout": {
+    "cellMonths": 9792,
+    "verdict": "pass",
+    "raw": {
+     "mae": 31.672794117647058,
+     "aggregateRelativeBias": 2.477884495447175
+    },
+    "frozen": {
+     "mae": 6.162035730039681,
+     "relativeBias": -0.14529676226038438,
+     "aggregateRelativeBias": -0.14529676226039634
+    },
+    "maeReduction": 0.8054470436946265,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 51361,
+    "verdict": "pass",
+    "raw": {
+     "mae": 28.21668191818695,
+     "aggregateRelativeBias": 3.186428745063685
+    },
+    "frozen": {
+     "mae": 4.95747653994082,
+     "relativeBias": 0.02883066060882196,
+     "aggregateRelativeBias": 0.028830660608815638
+    },
+    "maeReduction": 0.8243068921315834,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 9393,
+     "verdict": "pass",
+     "raw": {
+      "mae": 18.309805174065794,
+      "aggregateRelativeBias": 3.4947871595170397
+     },
+     "frozen": {
+      "mae": 3.373241047944593,
+      "relativeBias": 0.104610904479061,
+      "aggregateRelativeBias": 0.10461090447906075
+     },
+     "maeReduction": 0.8157685996177345,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 14907,
+     "verdict": "pass",
+     "raw": {
+      "mae": 51.070839203058966,
+      "aggregateRelativeBias": 3.1680614735624557
+     },
+     "frozen": {
+      "mae": 7.06526659640286,
+      "relativeBias": 0.02431683433278986,
+      "aggregateRelativeBias": 0.024316834332787116
+     },
+     "maeReduction": 0.8616575191116171,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 13662,
+     "verdict": "fail",
+     "raw": {
+      "mae": 14.269945835163227,
+      "aggregateRelativeBias": 2.173368019517718
+     },
+     "frozen": {
+      "mae": 4.276636464234374,
+      "relativeBias": -0.22013283524172342,
+      "aggregateRelativeBias": -0.22013283524173924
+     },
+     "maeReduction": 0.7003046463080386,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "SON": {
+     "cellMonths": 13399,
+     "verdict": "fail",
+     "raw": {
+      "mae": 23.955817598328235,
+      "aggregateRelativeBias": 4.01166643214409
+     },
+     "frozen": {
+      "mae": 4.417252248498216,
+      "relativeBias": 0.23163593605016924,
+      "aggregateRelativeBias": 0.2316359360501656
+     },
+     "maeReduction": 0.8156083702688371,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    }
+   },
+   "retrainReference": null,
+   "status": "stays-unvalidated",
+   "note": "status never upgrades an unvalidated domain; opening one requires a new configuration and a new unseen evaluation"
+  },
+  "south_america": {
+   "validatedByFrozenConfig": true,
+   "holdout": {
+    "cellMonths": 14474,
+    "verdict": "pass",
+    "raw": {
+     "mae": 109.98169130855327,
+     "aggregateRelativeBias": 2.7874882079407772
+    },
+    "frozen": {
+     "mae": 9.005874552137122,
+     "relativeBias": -0.06921048169792295,
+     "aggregateRelativeBias": -0.06921048169792193
+    },
+    "maeReduction": 0.9181147839700776,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 77625,
+    "verdict": "pass",
+    "raw": {
+     "mae": 111.35908534621578,
+     "aggregateRelativeBias": 2.7839252948271307
+    },
+    "frozen": {
+     "mae": 10.478003569986324,
+     "relativeBias": -0.0700860810394304,
+     "aggregateRelativeBias": -0.07008608103941913
+    },
+    "maeReduction": 0.9059079594861059,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 18924,
+     "verdict": "pass",
+     "raw": {
+      "mae": 65.2284929190446,
+      "aggregateRelativeBias": 2.9224358176964222
+     },
+     "frozen": {
+      "mae": 6.607682966417484,
+      "relativeBias": -0.036046597407236286,
+      "aggregateRelativeBias": -0.03604659740723566
+     },
+     "maeReduction": 0.8986994383785885,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "MAM": {
+     "cellMonths": 17930,
+     "verdict": "pass",
+     "raw": {
+      "mae": 51.46899051868377,
+      "aggregateRelativeBias": 2.9773876529093437
+     },
+     "frozen": {
+      "mae": 6.257181841160559,
+      "relativeBias": -0.02254197655576744,
+      "aggregateRelativeBias": -0.02254197655576649
+     },
+     "maeReduction": 0.8784281219020773,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "JJA": {
+     "cellMonths": 19464,
+     "verdict": "pass",
+     "raw": {
+      "mae": 117.82054048499795,
+      "aggregateRelativeBias": 2.4901735273892114
+     },
+     "frozen": {
+      "mae": 12.785429035950026,
+      "relativeBias": -0.14227668629085857,
+      "aggregateRelativeBias": -0.14227668629085632
+     },
+     "maeReduction": 0.8914838704412666,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "SON": {
+     "cellMonths": 21307,
+     "verdict": "pass",
+     "raw": {
+      "mae": 196.82578495330173,
+      "aggregateRelativeBias": 2.889552121486254
+     },
+     "frozen": {
+      "mae": 15.359476861876896,
+      "relativeBias": -0.04412788982982192,
+      "aggregateRelativeBias": -0.04412788982982293
+     },
+     "maeReduction": 0.9219641020838757,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.24843978039069173,
+    "holdout": {
+     "cellMonths": 14474,
+     "verdict": "pass",
+     "raw": {
+      "mae": 109.98169130855327,
+      "aggregateRelativeBias": 2.7874882079407772
+     },
+     "frozen": {
+      "mae": 8.960401616568188,
+      "relativeBias": -0.05903726138685922,
+      "aggregateRelativeBias": -0.05903726138685812
+     },
+     "maeReduction": 0.9185282431106664,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "confirmed",
+   "note": null
+  },
+  "south_and_mainland_southeast_asia": {
+   "validatedByFrozenConfig": false,
+   "holdout": {
+    "cellMonths": 7456,
+    "verdict": "pass",
+    "raw": {
+     "mae": 136.83033798283262,
+     "aggregateRelativeBias": 3.4603270106737374
+    },
+    "frozen": {
+     "mae": 14.207880654361341,
+     "relativeBias": 0.09614219287351337,
+     "aggregateRelativeBias": 0.09614219287350738
+    },
+    "maeReduction": 0.8961642508246678,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 43085,
+    "verdict": "fail",
+    "raw": {
+     "mae": 120.77254264825345,
+     "aggregateRelativeBias": 4.091926353437182
+    },
+    "frozen": {
+     "mae": 14.274917251486173,
+     "relativeBias": 0.2513601145499449,
+     "aggregateRelativeBias": 0.25136011454997514
+    },
+    "maeReduction": 0.8818032895683793,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "seasons": {
+    "DJF": {
+     "cellMonths": 11562,
+     "verdict": "fail",
+     "raw": {
+      "mae": 121.07438159487978,
+      "aggregateRelativeBias": 3.8653024635339426
+     },
+     "frozen": {
+      "mae": 13.244707598103012,
+      "relativeBias": 0.1956664384940239,
+      "aggregateRelativeBias": 0.1956664384940272
+     },
+     "maeReduction": 0.8906068532117687,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "MAM": {
+     "cellMonths": 11998,
+     "verdict": "fail",
+     "raw": {
+      "mae": 271.63152192032004,
+      "aggregateRelativeBias": 4.307226269452949
+     },
+     "frozen": {
+      "mae": 31.43330412729355,
+      "relativeBias": 0.3042708812947059,
+      "aggregateRelativeBias": 0.3042708812947105
+     },
+     "maeReduction": 0.8842796156165036,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": false
+     }
+    },
+    "JJA": {
+     "cellMonths": 9140,
+     "verdict": "pass",
+     "raw": {
+      "mae": 14.041247264770242,
+      "aggregateRelativeBias": 3.268887910636659
+     },
+     "frozen": {
+      "mae": 3.401871749506126,
+      "relativeBias": 0.049095311688741525,
+      "aggregateRelativeBias": 0.04909531168874168
+     },
+     "maeReduction": 0.757722965392007,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    },
+    "SON": {
+     "cellMonths": 10385,
+     "verdict": "pass",
+     "raw": {
+      "mae": 40.08194511314396,
+      "aggregateRelativeBias": 3.6415399861964004
+     },
+     "frozen": {
+      "mae": 5.167993242299111,
+      "relativeBias": 0.14067596537297794,
+      "aggregateRelativeBias": 0.1406759653729725
+     },
+     "maeReduction": 0.8710643101847773,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "retrainReference": {
+    "role": "reference only: ratio refitted on this domain's train rows; never published",
+    "ratio": 0.19588346287188113,
+    "holdout": {
+     "cellMonths": 7456,
+     "verdict": "pass",
+     "raw": {
+      "mae": 136.83033798283262,
+      "aggregateRelativeBias": 3.4603270106737374
+     },
+     "frozen": {
+      "mae": 13.425196105743513,
+      "relativeBias": -0.12629569960823794,
+      "aggregateRelativeBias": -0.1262956996082421
+     },
+     "maeReduction": 0.901884360561706,
+     "checks": {
+      "maeReduction": true,
+      "aggregateBias": true
+     }
+    }
+   },
+   "status": "stays-unvalidated",
+   "note": "status never upgrades an unvalidated domain; opening one requires a new configuration and a new unseen evaluation"
+  }
+ },
+ "regions": {
+  "rondonia_brazil": {
+   "box": [
+    -65.0,
+    -14.0,
+    -59.0,
+    -8.0
+   ],
+   "domains": [
+    "south_america"
+   ],
+   "holdout": {
+    "cellMonths": 357,
+    "verdict": "pass",
+    "raw": {
+     "mae": 177.64705882352942,
+     "aggregateRelativeBias": 2.5351717503707563
+    },
+    "frozen": {
+     "mae": 13.469117657425029,
+     "relativeBias": -0.13121820320287444,
+     "aggregateRelativeBias": -0.13121820320287447
+    },
+    "maeReduction": 0.9241804635178062,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 1940,
+    "verdict": "pass",
+    "raw": {
+     "mae": 211.09278350515464,
+     "aggregateRelativeBias": 2.713706730449804
+    },
+    "frozen": {
+     "mae": 13.608999472611242,
+     "relativeBias": -0.08734255818847095,
+     "aggregateRelativeBias": -0.08734255818847123
+    },
+    "maeReduction": 0.9355307213887825,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "cerrado_matopiba_brazil": {
+   "box": [
+    -50.0,
+    -13.0,
+    -43.0,
+    -5.0
+   ],
+   "domains": [
+    "south_america"
+   ],
+   "holdout": {
+    "cellMonths": 615,
+    "verdict": "pass",
+    "raw": {
+     "mae": 510.23252032520327,
+     "aggregateRelativeBias": 2.888998406367162
+    },
+    "frozen": {
+     "mae": 28.32051268756468,
+     "relativeBias": -0.044263967409652535,
+     "aggregateRelativeBias": -0.04426396740965249
+    },
+    "maeReduction": 0.9444948889782363,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 3352,
+    "verdict": "pass",
+    "raw": {
+     "mae": 244.8782816229117,
+     "aggregateRelativeBias": 2.543869731205676
+    },
+    "frozen": {
+     "mae": 22.246890896515634,
+     "relativeBias": -0.1290806415928975,
+     "aggregateRelativeBias": -0.12908064159289728
+    },
+    "maeReduction": 0.9091512291368753,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "miombo_southern_africa": {
+   "box": [
+    22.0,
+    -16.0,
+    34.0,
+    -8.0
+   ],
+   "domains": [
+    "africa_south_of_equator"
+   ],
+   "holdout": {
+    "cellMonths": 935,
+    "verdict": "pass",
+    "raw": {
+     "mae": 923.2780748663101,
+     "aggregateRelativeBias": 2.546470123188748
+    },
+    "frozen": {
+     "mae": 67.40580791385806,
+     "relativeBias": -0.12844158545108683,
+     "aggregateRelativeBias": -0.1284415854510866
+    },
+    "maeReduction": 0.926992950716805,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 4976,
+    "verdict": "pass",
+    "raw": {
+     "mae": 833.8647508038586,
+     "aggregateRelativeBias": 2.561323462777378
+    },
+    "frozen": {
+     "mae": 71.60958344479886,
+     "relativeBias": -0.1247913212015793,
+     "aggregateRelativeBias": -0.12479132120157896
+    },
+    "maeReduction": 0.9141232635439187,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "sahel_savanna_west_africa": {
+   "box": [
+    -5.0,
+    8.0,
+    15.0,
+    14.0
+   ],
+   "domains": [
+    "africa_north_of_equator"
+   ],
+   "holdout": {
+    "cellMonths": 932,
+    "verdict": "pass",
+    "raw": {
+     "mae": 300.7575107296137,
+     "aggregateRelativeBias": 3.273058507532407
+    },
+    "frozen": {
+     "mae": 25.185157345888115,
+     "relativeBias": 0.05012025161264403,
+     "aggregateRelativeBias": 0.05012025161264353
+    },
+    "maeReduction": 0.916260919686458,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 5672,
+    "verdict": "pass",
+    "raw": {
+     "mae": 343.41343441466853,
+     "aggregateRelativeBias": 3.638135958890676
+    },
+    "frozen": {
+     "mae": 25.788141671236634,
+     "relativeBias": 0.13983941281828566,
+     "aggregateRelativeBias": 0.13983941281828718
+    },
+    "maeReduction": 0.9249064273935839,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "northern_australia": {
+   "box": [
+    125.0,
+    -20.0,
+    145.0,
+    -11.0
+   ],
+   "domains": [
+    "australia",
+    "maritime_southeast_asia"
+   ],
+   "holdout": {
+    "cellMonths": 1216,
+    "verdict": "pass",
+    "raw": {
+     "mae": 606.608552631579,
+     "aggregateRelativeBias": 3.50626640295158
+    },
+    "frozen": {
+     "mae": 33.23159509678759,
+     "relativeBias": 0.10743197186733754,
+     "aggregateRelativeBias": 0.10743197186733744
+    },
+    "maeReduction": 0.9452173976897905,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 5834,
+    "verdict": "pass",
+    "raw": {
+     "mae": 398.8152211175866,
+     "aggregateRelativeBias": 3.527477312762965
+    },
+    "frozen": {
+     "mae": 26.350342492571713,
+     "relativeBias": 0.11264463298789025,
+     "aggregateRelativeBias": 0.11264463298789087
+    },
+    "maeReduction": 0.9339284433058221,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "siberia_baikal": {
+   "box": [
+    100.0,
+    50.0,
+    120.0,
+    60.0
+   ],
+   "domains": [
+    "boreal_eurasia"
+   ],
+   "holdout": {
+    "cellMonths": 800,
+    "verdict": "pass",
+    "raw": {
+     "mae": 97.31875,
+     "aggregateRelativeBias": 3.1293572436026595
+    },
+    "frozen": {
+     "mae": 7.944445667693127,
+     "relativeBias": 0.014805123778808917,
+     "aggregateRelativeBias": 0.014805123778810117
+    },
+    "maeReduction": 0.9183667518572409,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 4379,
+    "verdict": "pass",
+    "raw": {
+     "mae": 108.57844256679607,
+     "aggregateRelativeBias": 3.509411729831478
+    },
+    "frozen": {
+     "mae": 11.470363140952756,
+     "relativeBias": 0.10820494781622815,
+     "aggregateRelativeBias": 0.1082049478162273
+    },
+    "maeReduction": 0.8943587431372823,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "california_usa": {
+   "box": [
+    -124.5,
+    32.0,
+    -114.0,
+    42.0
+   ],
+   "domains": [
+    "north_america"
+   ],
+   "holdout": {
+    "cellMonths": 567,
+    "verdict": "pass",
+    "raw": {
+     "mae": 58.4973544973545,
+     "aggregateRelativeBias": 2.843828064432768
+    },
+    "frozen": {
+     "mae": 5.438762279824751,
+     "relativeBias": -0.05536474937974727,
+     "aggregateRelativeBias": -0.05536474937974724
+    },
+    "maeReduction": 0.9070255001006804,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   },
+   "test": {
+    "cellMonths": 3152,
+    "verdict": "pass",
+    "raw": {
+     "mae": 76.82265228426395,
+     "aggregateRelativeBias": 3.0152910226899046
+    },
+    "frozen": {
+     "mae": 6.990223077053599,
+     "relativeBias": -0.013227080412698329,
+     "aggregateRelativeBias": -0.013227080412698232
+    },
+    "maeReduction": 0.9090083084974997,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "kalimantan_tengah_indonesia": {
+   "box": [
+    111.0,
+    -3.5,
+    115.0,
+    0.0
+   ],
+   "domains": [
+    "maritime_southeast_asia"
+   ],
+   "holdout": {
+    "cellMonths": 159,
+    "verdict": "fail",
+    "raw": {
+     "mae": 211.59119496855345,
+     "aggregateRelativeBias": 3.716384929842006
+    },
+    "frozen": {
+     "mae": 18.885605709173092,
+     "relativeBias": 0.1590693926837615,
+     "aggregateRelativeBias": 0.15906939268376166
+    },
+    "maeReduction": 0.9107448411925654,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "test": {
+    "cellMonths": 767,
+    "verdict": "pass",
+    "raw": {
+     "mae": 56.827900912646676,
+     "aggregateRelativeBias": 3.3338189066932453
+    },
+    "frozen": {
+     "mae": 5.0886753103701725,
+     "relativeBias": 0.06505234897157029,
+     "aggregateRelativeBias": 0.06505234897157035
+    },
+    "maeReduction": 0.910454631815589,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": true
+    }
+   }
+  },
+  "papua_indonesia": {
+   "box": [
+    131.0,
+    -9.0,
+    141.0,
+    -1.0
+   ],
+   "domains": [
+    "maritime_southeast_asia"
+   ],
+   "holdout": {
+    "cellMonths": 318,
+    "verdict": "fail",
+    "raw": {
+     "mae": 26.861635220125788,
+     "aggregateRelativeBias": 3.755516328331862
+    },
+    "frozen": {
+     "mae": 2.945910575619596,
+     "relativeBias": 0.1686860815158207,
+     "aggregateRelativeBias": 0.16868608151582057
+    },
+    "maeReduction": 0.8903301846116798,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   },
+   "test": {
+    "cellMonths": 1507,
+    "verdict": "fail",
+    "raw": {
+     "mae": 19.969475779694758,
+     "aggregateRelativeBias": 3.832796599252866
+    },
+    "frozen": {
+     "mae": 2.40438769375578,
+     "relativeBias": 0.18767799969367782,
+     "aggregateRelativeBias": 0.18767799969367938
+    },
+    "maeReduction": 0.8795968547055905,
+    "checks": {
+     "maeReduction": true,
+     "aggregateBias": false
+    }
+   }
+  }
+ }
+}
