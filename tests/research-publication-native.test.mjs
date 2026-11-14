@@ -3,7 +3,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, unlink, readFile } from "node:fs/promises";
 import { registerHooks } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -105,6 +105,72 @@ native(
 				.status,
 			"succeeded",
 		);
+	},
+);
+
+native(
+	"repeat reconciliation retains private orphans and restores only missing verified objects without changing history",
+	async () => {
+		const { loadInspectionModule } = await import(
+			"./helpers/research-inspection-fixtures.mjs"
+		);
+		const { reconcileResearchObjects } =
+			await loadInspectionModule("research-recovery");
+		await publishResearchResult({ database, storage }, request);
+		const backupRoot = await mkdtemp(path.join(tmpdir(), "recovery-backup-"));
+		try {
+			const backup = new FileResearchArtifactStorage(backupRoot);
+			const artifacts = await client.p1AnalysisArtifact.findMany();
+			for (const row of artifacts)
+				await backup.put(
+					row.objectKey,
+					await storage.read(row.objectKey, row.checksum, Number(row.bytes)),
+				);
+			await storage.put(
+				"research/uncommitted.json",
+				Buffer.from("synthetic orphan"),
+			);
+			await unlink(path.join(root, artifacts[0].objectKey));
+			const counts = await Promise.all([
+				client.analysisResult.count(),
+				client.analysisManifest.count(),
+				client.p1AnalysisJobAttempt.count(),
+				client.p1InspectionReport.count(),
+			]);
+			const first = await reconcileResearchObjects(database, root, backupRoot);
+			assert.ok(first.some((row) => row.status === "restored"));
+			const second = await reconcileResearchObjects(database, root, backupRoot);
+			assert.deepEqual(
+				await reconcileResearchObjects(database, root, backupRoot),
+				second,
+			);
+			assert.ok(
+				second.some(
+					(row) =>
+						row.key === "research/uncommitted.json" &&
+						row.status === "unreferenced-retained",
+				),
+			);
+			assert.equal(
+				(
+					await readFile(path.join(root, "research/uncommitted.json"))
+				).toString(),
+				"synthetic orphan",
+			);
+			assert.deepEqual(
+				await Promise.all([
+					client.analysisResult.count(),
+					client.analysisManifest.count(),
+					client.p1AnalysisJobAttempt.count(),
+					client.p1InspectionReport.count(),
+				]),
+				counts,
+			);
+			await publishResearchResult({ database, storage }, request);
+			assert.equal(await client.analysisResult.count(), 1);
+		} finally {
+			await rm(backupRoot, { recursive: true, force: true });
+		}
 	},
 );
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
@@ -75,6 +75,90 @@ const body = (changes = {}) => ({
 });
 const create = (input = body(), dependencies = f.dependencies) =>
 	api.createResearchExport(dependencies, f.workspace, f.user, input);
+
+native(
+	"repeated export object recovery preserves ready export, attempts and report history",
+	async () => {
+		const { loadInspectionModule } = await import(
+			"./helpers/research-inspection-fixtures.mjs"
+		);
+		const { reconcileResearchObjects } =
+			await loadInspectionModule("research-recovery");
+		const created = await create();
+		assert.equal(
+			(await worker.runResearchExportOnce(f.dependencies)).status,
+			"ready",
+		);
+		const backupRoot = await mkdtemp(path.join(tmpdir(), "export-backup-"));
+		try {
+			const backup = new Storage(backupRoot);
+			const rows = [
+				...(await client.p1AnalysisArtifact.findMany()),
+				...(await client.researchExportArtifact.findMany()),
+			];
+			for (const row of rows)
+				await backup.put(
+					row.objectKey,
+					await storage.read(row.objectKey, row.checksum, Number(row.bytes)),
+				);
+			const csv = rows.find((row) => row.kind === "csv");
+			await unlink(path.join(root, csv.objectKey));
+			const counts = await Promise.all([
+				client.researchExport.count(),
+				client.researchExportAttempt.count(),
+				client.p1InspectionReport.count(),
+				client.inspectionAuditEvent.count(),
+			]);
+			assert.ok(
+				(await reconcileResearchObjects(db, root, backupRoot)).some(
+					(row) => row.status === "restored",
+				),
+			);
+			const report = await reconcileResearchObjects(db, root, backupRoot);
+			assert.deepEqual(
+				await reconcileResearchObjects(db, root, backupRoot),
+				report,
+			);
+			assert.equal(
+				(
+					await api.readResearchExport(
+						f.dependencies,
+						f.workspace,
+						f.user,
+						created.value.id,
+					)
+				).status,
+				"ready",
+			);
+			assert.equal(
+				(
+					await api.getResearchExportManifest(
+						f.dependencies,
+						f.workspace,
+						f.user,
+						created.value.id,
+					)
+				).exportId,
+				created.value.id,
+			);
+			assert.equal(
+				(await worker.runResearchExportOnce(f.dependencies)).status,
+				"idle",
+			);
+			assert.deepEqual(
+				await Promise.all([
+					client.researchExport.count(),
+					client.researchExportAttempt.count(),
+					client.p1InspectionReport.count(),
+					client.inspectionAuditEvent.count(),
+				]),
+				counts,
+			);
+		} finally {
+			await rm(backupRoot, { recursive: true, force: true });
+		}
+	},
+);
 
 native(
 	"PostgreSQL export creation and worker claims are atomic under concurrency",

@@ -27,6 +27,7 @@ import {
   researchDays,
   researchDetections,
   lastResearchResult,
+  recoverLocalResearch,
   researchHistory,
   openResearchResult,
 } from "@/lib/local-research-client";
@@ -258,8 +259,10 @@ function ResearchPanel({
   }, [draftLoaded, name, start, end, compare, compareStart, compareEnd, years, policy, polygon]);
   useEffect(() => {
     let active = true;
-    try { setHistory(researchHistory()); } catch { setError("STORAGE_UNAVAILABLE"); }
-    lastResearchResult().then(saved => {
+    recoverLocalResearch().then(() => {
+      if (active) setHistory(researchHistory());
+      return lastResearchResult();
+    }).then(saved => {
       if (active && saved) { publishResult(saved, "saved-local-result"); setStatus("succeeded"); }
     }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
     return () => { active = false; };

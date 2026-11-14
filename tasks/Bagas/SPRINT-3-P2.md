@@ -61,7 +61,9 @@ deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum d
 - [x] Timeout, transient failure, kontrol stop dan handler terminasi runtime diuji dengan PostgreSQL native terisolasi; retry menghormati backoff.
 - [x] Pengajuan/laporan duplikat server serta operation ID laporan lokal dibedakan dari pengiriman ulang analisis anonim; abort/timeout klien tidak menimpa hasil lama.
 - [x] Verifikasi Tahap 4: 276/276 Node dan 163/163 Python tanpa skip dengan PostgreSQL native; typecheck, lint, contracts, ruff helper dan diff check lulus.
-- [ ] Tahap 5: pemulihan metadata/result/artefak yatim dan prosedur pemulihan berulang tanpa menghapus data pengguna.
+- [x] Tahap 5: [pemulihan berulang](../../docs/bagas-sprint-3-recovery.md), audit orphan privat tanpa delete, restore objek referensi hilang dari backup terverifikasi tanpa overwrite, serta repair indeks browser tanpa mengubah bundle/laporan.
+- [x] Rekonsiliasi analisis/ekspor native dan pemulihan browser berulang diuji; metadata/count histori tetap, orphan dipertahankan, worker memakai reclaim/retry yang sudah diuji Tahap 4.
+- [x] Verifikasi Tahap 5: 280/280 tes Node tanpa skip dengan PostgreSQL native; typecheck, lint, contracts, build dan diff check lulus. Runbook langkah berulang dan batas restore didokumentasikan.
 - [ ] Review manusia Orkhan; B2 belum dinyatakan selesai/direview penuh.
 
 ### R2-P2-B3 — Review isolasi dan retensi workspace

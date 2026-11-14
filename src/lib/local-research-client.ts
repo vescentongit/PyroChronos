@@ -116,8 +116,61 @@ export async function researchDetections(_workspace: string, id: string, signal:
   return { ...pages[index], nextCursor: index + 1 < pages.length ? String(index + 1) : null };
 }
 export async function lastResearchResult() {
-  const id = localStorage.getItem("pyro-last-research-v1");
-  return id ? (await getBundle(id)).result : null;
+  let id = localStorage.getItem("pyro-last-research-v1");
+  if (!id) { await recoverLocalResearch(); id = localStorage.getItem("pyro-last-research-v1"); }
+  if(!id)return null;
+  try {return (await getBundle(id)).result;}
+  catch(error) {
+    if(!(error instanceof ResearchApiError)||error.code!=="INVALID_RESPONSE")throw error;
+    await recoverLocalResearch();
+    const repaired=localStorage.getItem("pyro-last-research-v1");
+    return repaired&&repaired!==id?(await getBundle(repaired)).result:null;
+  }
+}
+
+// Rebuild only secondary indexes; persisted bundles/reports are never rewritten.
+export async function recoverLocalResearch() {
+  const db=await database();
+  const summaries: {id:string;name:string;start:string;end:string}[]=[];
+  let invalid=0;
+  try {
+    await new Promise<void>((resolve,reject)=>{
+      const tx=db.transaction("results");
+      const cursor=tx.objectStore("results").openCursor();
+      cursor.onsuccess=()=>{
+        const item=cursor.result;
+        if(!item)return;
+        const parsed=bundleSchema.safeParse(item.value);
+        if(parsed.success){const r=parsed.data.result;summaries.push({id:r.id,name:r.area.name,start:r.primary.period.start,end:r.primary.period.end});}
+        else invalid++;
+        item.continue();
+      };
+      tx.oncomplete=()=>resolve();tx.onerror=tx.onabort=()=>reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
+    });
+  } finally {db.close();}
+  const raw=localStorage.getItem(historyKey);
+  let history:ReturnType<typeof researchHistory>=[];
+  try {history=researchHistory();}catch {
+    // Keep damaged text verbatim for manual export; never erase it during repair.
+    const backupKey=`${historyKey}-recovery-backup`;
+    if(raw!==null&&localStorage.getItem(backupKey)!==raw) {
+      if(localStorage.getItem(backupKey)!==null)throw new ResearchApiError("STORAGE_UNAVAILABLE");
+      localStorage.setItem(backupKey,raw);
+    }
+  }
+  const merged=new Map(history.map(row=>[row.id,row]));
+  for(const summary of summaries.sort((a,b)=>a.id.localeCompare(b.id)))merged.set(summary.id,summary);
+  localStorage.setItem(historyKey,JSON.stringify([...merged.values()]));
+  const old=localStorage.getItem("pyro-last-research-v1");
+  if(summaries.length&&!summaries.some(row=>row.id===old)) {
+    if(old) {
+      const key="pyro-last-research-v1-recovery-backup";
+      if(localStorage.getItem(key)===null)localStorage.setItem(key,old);
+      else if(localStorage.getItem(key)!==old)localStorage.setItem(`${key}:${encodeURIComponent(old)}`,old);
+    }
+    localStorage.setItem("pyro-last-research-v1",summaries[0].id);
+  }
+  return {valid:summaries.length,invalidRetained:invalid};
 }
 const historySchema = z.array(z.object({ id: z.string(), name: z.string(), start: z.string(), end: z.string() }).strict());
 export function researchHistory() {

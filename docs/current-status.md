@@ -32,6 +32,17 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 5: [rekonsiliasi dan pemulihan berulang](bagas-sprint-3-recovery.md)
+menambahkan audit objek privat tanpa delete/metadata write, restore file hilang
+dari backup checksum-valid tanpa overwrite, serta pemulihan indeks browser sebelum
+riwayat dimuat. Orphan tetap privat untuk review retensi; metadata yang tidak
+commit dipulihkan lewat retry/lease worker, bukan ditebak dari file. Restore database
+yang benar-benar hilang tetap memerlukan backup terverifikasi. Review manusia
+Orkhan atas B2 tetap terbuka.
+Verifikasi Tahap 5: 280 tes Node tanpa skip termasuk native; typecheck, lint,
+contracts, build dan diff check lulus. Pemulihan tidak menghapus histori; orphan
+dipertahankan untuk review retensi.
+
 Bagas Sprint 3 Tahap 4 (B2 bagian 1): [ketahanan proses](bagas-sprint-3-process-resilience.md)
 memiliki bukti subprocess crash/restart, rollback publikasi yang dimatikan,
 stale lease fencing, timeout/retry dan kontrol terminasi runtime pada PostgreSQL

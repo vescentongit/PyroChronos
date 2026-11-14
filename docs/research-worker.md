@@ -122,11 +122,17 @@ from the latest immutable attempt, so restarting a worker does not erase it.
 
 ## Tests
 
+Stage 5 adds the [repeatable recovery runbook](bagas-sprint-3-recovery.md) and
+`node scripts/research-reconcile.mjs`: retain unreferenced private files, verify
+metadata references, optionally restore missing files from a verified backup.
+No history rows are deleted or recreated by the reconciler. Expired jobs/exports
+continue through their normal fenced worker claims.
+
 Sprint 3 Stage 4 adds native subprocess crash barriers before publication and
 inside the atomic publisher transaction, plus runtime timeout/transient/stop/signal
 checks followed by real CLI retries. See [process resilience evidence and platform
 limits](bagas-sprint-3-process-resilience.md). Orphan reconciliation and repeatable
-user-data recovery remain Stage 5 work.
+user-data recovery are covered by the Stage 5 runbook above.
 
 Unit tests cover orchestration, timeout/cancellation, lease loss, publication
 races, configuration and secret-safe failures. Native integration tests execute
