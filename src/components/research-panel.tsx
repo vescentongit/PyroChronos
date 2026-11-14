@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { memo, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import type { FeatureCollection, Point } from "geojson";
 import type { Language } from "@/lib/regions";
@@ -137,7 +137,7 @@ export type ResearchOverlay = {
   onSelect?: (id: string) => void;
 };
 
-export default function ResearchPanel({
+function ResearchPanel({
   language,
   vertices,
   setVertices,
@@ -509,7 +509,14 @@ export default function ResearchPanel({
       if (page.analysisId !== result.id || page.periodRole !== "primary")
         throw new ResearchApiError("INVALID_RESPONSE");
       if (controller.signal.aborted) return;
-      setObservations(current => [...current, ...page.observations.filter(point => !current.some(item => item.id === point.id))]);
+      setObservations(current => {
+        const ids = new Set(current.map(point => point.id));
+        return [...current, ...page.observations.filter(point => {
+          if (ids.has(point.id)) return false;
+          ids.add(point.id);
+          return true;
+        })];
+      });
       const seen = new Set(points.map((point) => point.id));
       const next = [
         ...points,
@@ -1036,6 +1043,8 @@ export default function ResearchPanel({
     </div>
   );
 }
+
+export default memo(ResearchPanel);
 
 function CoordinateEditor({
   vertices,

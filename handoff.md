@@ -16,6 +16,6 @@ O1–O4 lokal kini tersedia: kalender/perbandingan/anomali, heatmap zoom → tit
 
 ## Pekerjaan berikutnya
 
-Siapkan review Nathan dan demonstrasi atas dataset aktif yang sudah tersedia; checklist sprint penuh tetap menunggu bukti manusia/integrasi tersebut. Berikutnya dapat mengerjakan P2 benchmark dan audit pengguna sesuai tracker. Jangan mengarang sinkronisasi lintas perangkat, identitas terverifikasi, cakupan arsip atau validasi domain. Script browser baru: scripts/research-sprint2-browser-check.mjs; screenshot/unduhan/results.json di .cache/sprint2-acceptance.
+Sprint 3 O1/O3 otomatis kini sudah dikerjakan: benchmark 20.000 titik/312 bulan/500 vertex, cache satu bundle aktif, Set dedup, memo panel serta normalisasi warna pecahan. Bukti dan cara mengulang ada di docs/orkhan-sprint-3-progress.md; artefak lokal .cache/sprint3-acceptance. Build dan 125 tes Node lulus (dua native skip), acceptance edge ID/EN dan regresi Sprint 2 lulus. Pengguna menyatakan peneliti belum tersedia dan memilih pengujian otomatis; O2 tetap terbuka. Siapkan review Nathan, demonstrasi dataset aktif dan O4 integrasi/reproduksibilitas/kesiapan rilis lintas tim. Jangan mengarang sinkronisasi, identitas terverifikasi, cakupan arsip atau validasi domain.
 
 Tidak ada migrasi atau penulisan database remote dalam kelanjutan ini. Jangan mencetak .env atau mengganti/menghapus dataset pengguna. Periksa git status sebelum mengedit; perubahan belum di-commit.

@@ -10,7 +10,7 @@ export function ResearchSummary({ result, english, onMonth }: {
   const t = (id: string, en: string) => english ? en : id;
   const locale = english ? "en" : "id";
   const [layer, setLayer] = useState<"count" | "anomaly">("count");
-  const maximum = Math.max(1, ...result.months.map(month => month.metric.harmonizedCount ?? 0));
+  const maximum = Math.max(0, ...result.months.map(month => month.metric.harmonizedCount ?? 0)) || 1;
   const number = (value: number | null) => value === null ? "—" : value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const status = (value: string) => ({
     assessed: t("Dapat dinilai", "Assessed"),
@@ -34,7 +34,7 @@ export function ResearchSummary({ result, english, onMonth }: {
       <button className="outline" type="button" aria-pressed={layer === "count"} onClick={() => setLayer("count")}>{t("Jumlah deteksi", "Detection count")}</button>
       <button className="outline" type="button" aria-pressed={layer === "anomaly"} onClick={() => setLayer("anomaly")}>{t("Anomali", "Anomaly")}</button>
     </div>
-    <p>{layer === "count" ? t("Skala jumlah: biru muda → biru tua mengikuti estimasi minimum → maksimum hasil ini. Angka dan status tetap ditampilkan.", "Count scale: light → dark blue follows minimum → maximum estimates in this result. Numbers and status remain visible.") : t("Skala anomali: biru → putih → merah untuk persentil 0 → 50 → 100. Referensi belum cukup dan nilai hilang ditampilkan sebagai —.", "Anomaly scale: blue → white → red for percentiles 0 → 50 → 100. Insufficient history and missing values show a dash.")}</p>
+    <p>{layer === "count" ? t("Skala jumlah: biru muda → biru tua mengikuti 0 → estimasi maksimum hasil ini. Angka dan status tetap ditampilkan.", "Count scale: light → dark blue follows 0 → the maximum estimate in this result. Numbers and status remain visible.") : t("Skala anomali: biru → putih → merah untuk persentil 0 → 50 → 100. Referensi belum cukup dan nilai hilang ditampilkan sebagai —.", "Anomaly scale: blue → white → red for percentiles 0 → 50 → 100. Insufficient history and missing values show a dash.")}</p>
     <div className="table-scroll">
       <table>
         <caption>{layer === "count" ? t("Kalender tahun × bulan · estimasi setara MODIS. Pilih bulan untuk detail harian.", "Year × month calendar · MODIS-equivalent estimates. Select a month for daily detail.") : t("Kalender anomali · persentil historis. Pilih bulan untuk detail harian.", "Anomaly calendar · historical percentile. Select a month for daily detail.")}</caption>
