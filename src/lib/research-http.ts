@@ -1,4 +1,5 @@
 import { errorPayload, fail, ResearchFailure } from "./research-store.ts";
+import { backpressureHeaders, capacityPolicy } from "./research-capacity.ts";
 
 export interface ResearchHttpDependencies {
 	session(): Promise<{ user?: { id?: string } } | null>;
@@ -6,6 +7,7 @@ export interface ResearchHttpDependencies {
 }
 const errorStatuses = new Map([
 	["INVALID_REQUEST", 400],
+	["PAYLOAD_TOO_LARGE", 413],
 	["UNAUTHENTICATED", 401],
 	["FORBIDDEN", 403],
 	["NOT_FOUND", 404],
@@ -45,13 +47,39 @@ export async function withPrivateResearchRequest(
 			status,
 			headers: {
 				...privateHeaders,
-				...(status === 429 ? { "Retry-After": "60" } : {}),
+				...backpressureHeaders(code),
 			},
 		});
 	}
 }
 export async function researchRequestBody(request: Request): Promise<unknown> {
-	return request.json().catch(() => fail("INVALID_REQUEST"));
+	if (
+		Number(request.headers.get("content-length") || 0) >
+		capacityPolicy.requestBytes
+	)
+		return fail("PAYLOAD_TOO_LARGE", 413);
+	if (!request.body) return fail("INVALID_REQUEST");
+	const reader = request.body.getReader();
+	const chunks: Uint8Array[] = [];
+	let size = 0;
+	try {
+		for (;;) {
+			const part = await reader.read();
+			if (part.done) break;
+			size += part.value.byteLength;
+			if (size > capacityPolicy.requestBytes) {
+				await reader.cancel();
+				return fail("PAYLOAD_TOO_LARGE", 413);
+			}
+			chunks.push(part.value);
+		}
+		return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+	} catch (error) {
+		if (error instanceof ResearchFailure) throw error;
+		return fail("INVALID_REQUEST");
+	} finally {
+		reader.releaseLock();
+	}
 }
 export function researchListQuery(request: Request): Record<string, string> {
 	const query = new URL(request.url).searchParams;

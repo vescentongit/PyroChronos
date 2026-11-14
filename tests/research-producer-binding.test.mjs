@@ -34,7 +34,8 @@ test("producer uses the runtime binding, strips local paths, and bounds response
       [Response.json({ code: "CAPACITY_LIMIT" }, { status: 503 }), "CAPACITY_LIMIT"],
       [Response.json({ detail: "private server details" }, { status: 500 }), "PRODUCER_FAILED"],
       [new Response("not JSON"), "PRODUCER_FAILED"],
-      [new Response("x".repeat(maxHostedBundleBytes + 1)), "CAPACITY_LIMIT"],
+      [new Response("x".repeat(maxHostedBundleBytes + 1)), "PAYLOAD_TOO_LARGE"],
+      [Response.json({code:"PAYLOAD_TOO_LARGE"},{status:413}),"PAYLOAD_TOO_LARGE"],
     ]) {
       globalThis.fetch = async () => response;
       await assert.rejects(researchProducer({ action: "fingerprint" }, signal), { message: expected });

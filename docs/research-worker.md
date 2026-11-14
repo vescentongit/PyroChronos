@@ -104,6 +104,10 @@ The worker never loads `.env`, creates identities, or supplies demo data.
 
 ## Policy
 
+Stage 3 retains these worker lease/time defaults and adds explicit submission
+guards and HTTP backoff in [research-capacity-1](bagas-sprint-3-backpressure.md).
+Submission backpressure does not run in the result/export read path.
+
 Sprint 3 B1 records measured synthetic producer/queue capacity, current anonymous
 vs legacy guards and reproduction commands in [the capacity report](bagas-sprint-3-capacity.md).
 The local measurements retain existing limits; they do not establish a deployment

@@ -1,5 +1,9 @@
 # Bagas Sprint 3 — Tahap 1 dan R2-P2-B1
 
+Kelanjutan implementasi: [Tahap 3 — policy kapasitas dan backpressure](bagas-sprint-3-backpressure.md).
+Angka dan deskripsi guard di laporan ini adalah snapshot saat benchmark Tahap 2;
+perubahan sesudahnya dicatat pada laporan Tahap 3 tersebut.
+
 Tanggal pengukuran: 14 November 2026. Branch `Bagas-SPRINT-3-P2`.
 Tahap 1 selesai sebagai penyelarasan dokumen; Tahap 2 memiliki bukti lokal,
 tetapi checkbox **selesai dan direview** B1 tetap terbuka untuk review Orkhan.

@@ -45,7 +45,9 @@ test("anonymous analysis rejects cross-origin and oversized requests", async () 
   const cross = await POST(new Request("http://localhost/api/local-research", { method: "POST", headers: { host: "localhost", origin: "https://other.example", "content-type": "application/json" }, body: "{}" }));
   assert.equal(cross.status, 403);
   const oversized = await POST(new Request("http://localhost/api/local-research", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ value: "x".repeat(100_000) }) }));
-  assert.equal(oversized.status, 400);
+  assert.equal(oversized.status, 413);
+  assert.equal((await oversized.json()).code, "PAYLOAD_TOO_LARGE");
+  assert.equal(oversized.headers.get("Retry-After"), null);
 });
 
 test("anonymous route validates a bundle received over the real Python HTTP adapter", async () => {

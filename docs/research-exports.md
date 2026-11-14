@@ -118,6 +118,13 @@ failure aborts rather than inserting an error JSON document into CSV.
 
 ## Verification
 
+Sprint 3 B1 adds a five-active-export guard per workspace after ready/queued cache
+reuse, retaining the existing receipt quota and size guards. CSV output is bounded
+before storage; overflow remains a terminal capacity error even when storage
+sanitizes stream exceptions. Terminal export DTO errors have retryable=false.
+Old status/download/manifest reads use neither submission capacity nor receipt
+quota. See [the backpressure policy and regression evidence](bagas-sprint-3-backpressure.md).
+
 Unit/Python, service/API, manifest-security and guarded native PostgreSQL tests cover
 formatting, missing versus zero, deduplication, access, retries, snapshot races,
 lease expiry, publication rollback and immutable history. Native tests require a

@@ -32,6 +32,15 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 3: [policy kapasitas dan backpressure](bagas-sprint-3-backpressure.md)
+diterapkan. Satu analisis anonim/proses dan lima analisis aktif/workspace
+dipertahankan; kuota anonim 30 admission/menit/proses dan guard lima ekspor
+aktif/workspace ditambahkan sebagai kebijakan konservatif. Error v2 dan
+Retry-After eksplisit, body dibatasi, hasil/ekspor lama tetap terbaca saat penuh,
+dan request anonim yang ditolak tidak menimpa penyimpanan lama. Regresi terbaru:
+268 tes Node dan 163 tes Python tanpa skip dengan PostgreSQL native uji;
+typecheck/lint/contracts lulus. Review manusia Orkhan masih terbuka.
+
 Bagas Sprint 3 Tahap 1/2 (14 November 2026): matriks anonim vs legacy dan
 benchmark sintetis terukur tersedia pada [laporan kapasitas](bagas-sprint-3-capacity.md).
 Pengukuran memakai producer/route aktual serta PostgreSQL 16 lokal sementara,

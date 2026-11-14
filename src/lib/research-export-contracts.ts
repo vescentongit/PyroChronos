@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { capacityPolicy } from "./research-capacity.ts";
 import { exportProducerMetadataSchema } from "./research-producer-contracts.ts";
 import {
 	researchExportSchema,
@@ -127,8 +128,12 @@ export const researchExportManifestSchema = z
 					.number()
 					.int()
 					.nonnegative()
-					.max(64 * 1024 * 1024),
-				rowCount: z.number().int().nonnegative().max(1_000_000),
+					.max(capacityPolicy.exportObjectBytes),
+				rowCount: z
+					.number()
+					.int()
+					.nonnegative()
+					.max(capacityPolicy.uniqueExportObservations),
 			})
 			.strict(),
 	})
@@ -222,7 +227,7 @@ export const exportArtifactSchema = z.object({
 		.number()
 		.int()
 		.nonnegative()
-		.max(64 * 1024 * 1024),
+		.max(capacityPolicy.exportObjectBytes),
 	rowCount: z.number().int().nonnegative().nullable(),
 });
 export type ResearchExportArtifact = z.infer<typeof exportArtifactSchema>;
@@ -244,7 +249,10 @@ export function exportWire(row: ResearchExportRecord) {
 				: null,
 		error:
 			row.status === "failed"
-				? errorPayload(row.error?.code ?? "DEPENDENCY_UNAVAILABLE")
+				? {
+						...errorPayload(row.error?.code ?? "DEPENDENCY_UNAVAILABLE"),
+						retryable: false,
+					}
 				: null,
 	});
 }

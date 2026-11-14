@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { capacityPolicy } from "./research-capacity.ts";
 import type { LocationDatabase } from "./monitoring-locations.ts";
 import {
 	createResearchAnalysisSchema,
@@ -137,7 +138,10 @@ export async function submitP1Analysis(
 						"SELECT count(*)::int AS count FROM \"P1AnalysisJob\" WHERE \"workspaceId\"=$1 AND status IN ('queued','running')",
 						[workspaceId],
 					);
-					if (Number(capacity.count) >= 5) return fail("CAPACITY_LIMIT", 503);
+					if (
+						Number(capacity.count) >= capacityPolicy.activeAnalysesPerWorkspace
+					)
+						return fail("CAPACITY_LIMIT", 503);
 					const frozen = analysisJobInputSchema.parse({
 						area,
 						request: input,

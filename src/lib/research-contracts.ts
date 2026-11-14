@@ -118,6 +118,7 @@ export const researchErrorSchema = z
     error: z.string().min(1),
     code: z.enum([
       "INVALID_REQUEST",
+      "PAYLOAD_TOO_LARGE",
       "UNAUTHENTICATED",
       "FORBIDDEN",
       "NOT_FOUND",

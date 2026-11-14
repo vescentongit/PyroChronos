@@ -57,7 +57,11 @@ async function saveBundle(bundle: Bundle) {
 async function request(body: unknown, signal: AbortSignal) {
   const response = await fetch("/api/local-research", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.any([signal, AbortSignal.timeout(250_000)]) });
   const value = await response.json().catch(() => null);
-  if (!response.ok) throw new ResearchApiError(typeof value?.code === "string" ? value.code : "DEPENDENCY_UNAVAILABLE");
+  if (!response.ok) {
+    const retry = response.headers.get("Retry-After");
+    const seconds = retry && /^\d+$/.test(retry) ? Number(retry) : 2;
+    throw new ResearchApiError(typeof value?.code === "string" ? value.code : response.status === 429 ? "RATE_LIMITED" : "DEPENDENCY_UNAVAILABLE", Number.isSafeInteger(seconds) ? Math.max(2, seconds) : 2);
+  }
   return value;
 }
 export async function listResearchWorkspaces(signal: AbortSignal) {

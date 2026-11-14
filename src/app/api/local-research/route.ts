@@ -3,17 +3,19 @@ import { researchProducer as producer, maxHostedBundleBytes } from "@/lib/resear
 import { z } from "zod";
 import { createResearchAnalysisSchema, createResearchAreaSchema, researchAreaSchema } from "@/lib/research-contracts";
 import { validateResearchGeometry } from "@/lib/research-server-geometry";
-import { validateProducerBundle } from "@/lib/research-store";
+import { validateProducerBundle, errorPayload, ResearchFailure } from "@/lib/research-store";
+import { researchRequestBody } from "@/lib/research-http";
+import { backpressureHeaders, createAnonymousAdmission } from "@/lib/research-capacity";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 const areaInput = z.object({ action: z.literal("area"), workspaceId: z.string().min(1).max(200), area: createResearchAreaSchema }).strict();
 const analysisInput = z.object({ action: z.literal("analyze"), workspaceId: z.string().min(1).max(200), area: researchAreaSchema, request: createResearchAnalysisSchema }).strict();
-let running = false;
+const admission = createAnonymousAdmission();
 
 export async function POST(req: Request) {
-  const error = (code: string, status: number) => Response.json({ code }, { status, headers: { "Cache-Control": "no-store" } });
-  if (Number(req.headers.get("content-length") || 0) > 100_000) return error("INVALID_REQUEST", 400);
+  let requestId: string | null = null;
+  const error = (code: string, status: number) => Response.json(errorPayload(code, requestId), { status, headers: { "Cache-Control": "no-store", ...backpressureHeaders(code) } });
   if (!req.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return error("INVALID_REQUEST", 400);
   const origin = req.headers.get("origin"), host = req.headers.get("host");
   if (origin) {
@@ -22,18 +24,8 @@ export async function POST(req: Request) {
   }
   let raw: unknown;
   try {
-    if (!req.body) return error("INVALID_REQUEST", 400);
-    const reader = req.body.getReader(), chunks: Uint8Array[] = [];
-    let size = 0;
-    for (;;) {
-      const part = await reader.read();
-      if (part.done) break;
-      size += part.value.byteLength;
-      if (size > 100_000) { await reader.cancel(); return error("INVALID_REQUEST", 400); }
-      chunks.push(part.value);
-    }
-    raw = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch { return error("INVALID_REQUEST", 400); }
+    raw = await researchRequestBody(req);
+  } catch (reason) { return reason instanceof ResearchFailure ? error(reason.code, reason.status) : error("INVALID_REQUEST", 400); }
   const area = areaInput.safeParse(raw);
   if (area.success) {
     try {
@@ -44,6 +36,7 @@ export async function POST(req: Request) {
   const input = analysisInput.safeParse(raw);
   if (!input.success) return error("INVALID_REQUEST", 400);
   const { request, workspaceId } = input.data;
+  requestId = request.requestId;
   const submittedArea = input.data.area;
   try {
     const geometry = validateResearchGeometry(submittedArea.geometry);
@@ -51,8 +44,8 @@ export async function POST(req: Request) {
   } catch { return error("INVALID_REQUEST", 400); }
   const root = process.env.RESEARCH_DATA_DIR;
   if (!root && !process.env.PIPELINE_URL) { console.warn("[local-research] dataset not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
-  if (running) return error("CAPACITY_LIMIT", 503);
-  running = true;
+  const slot = admission.acquire();
+  if (slot.code) return error(slot.code, slot.code === "RATE_LIMITED" ? 429 : 503);
   let stage = "fingerprint";
   try {
     const fingerprint = await producer({ action: "fingerprint", root }, req.signal);
@@ -62,12 +55,12 @@ export async function POST(req: Request) {
     const rawBundle = await producer({ root, run }, req.signal);
     stage = "validation";
     const bundle = validateProducerBundle(run, rawBundle);
-    if (process.env.PIPELINE_URL && Buffer.byteLength(JSON.stringify(bundle)) > maxHostedBundleBytes) return error("CAPACITY_LIMIT", 503);
+    if (process.env.PIPELINE_URL && Buffer.byteLength(JSON.stringify(bundle)) > maxHostedBundleBytes) return error("PAYLOAD_TOO_LARGE", 413);
     return Response.json(bundle, { headers: { "Cache-Control": "private, no-store" } });
   } catch (reason) {
-    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT"].includes(reason.message) ? reason.message : "UNAVAILABLE";
+    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT", "PAYLOAD_TOO_LARGE"].includes(reason.message) ? reason.message : "UNAVAILABLE";
     console.warn(`[local-research] ${stage} ${known}`);
-    return error(known === "CAPACITY_LIMIT" ? known : "DEPENDENCY_UNAVAILABLE", 503);
+    return known === "PAYLOAD_TOO_LARGE" ? error(known, 413) : error(known === "CAPACITY_LIMIT" ? known : "DEPENDENCY_UNAVAILABLE", 503);
   }
-  finally { running = false; }
+  finally { slot.release(); }
 }

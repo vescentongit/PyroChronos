@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { capacityPolicy } from "./research-capacity.ts";
+
 import type { LocationDatabase } from "./monitoring-locations.ts";
 import { fail, ResearchFailure } from "./research-store.ts";
 import {
@@ -36,6 +38,42 @@ import {
 	type ResearchExportStorage,
 } from "./research-export-storage.ts";
 import { assertExportCsvSafe } from "./research-export-security.ts";
+
+export async function* boundExportStream(
+	source: AsyncIterable<Uint8Array>,
+	maxBytes: number = capacityPolicy.exportObjectBytes,
+): AsyncGenerator<Uint8Array> {
+	let bytes = 0;
+	for await (const chunk of source) {
+		bytes += chunk.byteLength;
+		if (bytes > maxBytes) return fail("CAPACITY_LIMIT", 503);
+		yield chunk;
+	}
+}
+
+export async function storeBoundedExport(
+	storage: ResearchExportStorage,
+	key: string,
+	source: AsyncIterable<Uint8Array>,
+	maxBytes: number = capacityPolicy.exportObjectBytes,
+) {
+	// Storage sanitizes producer exceptions. Preserve the domain failure so size
+	// overflow terminates the export instead of scheduling pointless retries.
+	let sourceFailure: unknown;
+	async function* bounded() {
+		try {
+			yield* boundExportStream(source, maxBytes);
+		} catch (error) {
+			sourceFailure = error;
+			throw error;
+		}
+	}
+	try {
+		return await storage.putStream(key, bounded());
+	} catch (error) {
+		throw sourceFailure ?? error;
+	}
+}
 
 async function publishExport(
 	db: LocationDatabase,
@@ -186,7 +224,10 @@ export async function runResearchExportOnce(
 				dependencies.database,
 				dependencies.storage,
 				source.result,
-				{ periodRole: job.periodRole, maxBytes: 256 * 1024 * 1024 },
+				{
+					periodRole: job.periodRole,
+					maxBytes: capacityPolicy.exportInputBytes,
+				},
 			)) {
 				signal.throwIfAborted();
 				assertPublicationMetadataSafe(observation, secrets);
@@ -221,7 +262,8 @@ export async function runResearchExportOnce(
 		).slice(7);
 		const csvKey = `exports/${scope}/data.csv`,
 			manifestKey = `exports/${scope}/manifest.json`;
-		const csv = await dependencies.storage.putStream(
+		const csv = await storeBoundedExport(
+			dependencies.storage,
 			csvKey,
 			(dependencies.formatter ?? formatResearchExport)({
 				job,
@@ -241,6 +283,8 @@ export async function runResearchExportOnce(
 			rowCount,
 		});
 		const manifestBytes = Buffer.from(canonicalJson(manifest));
+		if (manifestBytes.byteLength > capacityPolicy.exportObjectBytes)
+			return fail("CAPACITY_LIMIT", 503);
 		await dependencies.storage.put(manifestKey, manifestBytes);
 		const artifacts = [
 			{ kind: "csv", objectKey: csvKey, ...csv, rowCount },

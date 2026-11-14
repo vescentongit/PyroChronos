@@ -47,7 +47,7 @@ class ServiceTests(unittest.TestCase):
             with patch.object(service, "produce", side_effect=ValueError("secret path /private")):
                 self.assertEqual(self.call({"action": "produce", "run": run}), (503, {"code": "DEPENDENCY_UNAVAILABLE"}))
             with patch.object(service, "fingerprint", return_value="x" * service.MAX_RESPONSE_BYTES):
-                self.assertEqual(self.call({"action": "fingerprint"}), (503, {"code": "CAPACITY_LIMIT"}))
+                self.assertEqual(self.call({"action": "fingerprint"}), (413, {"code": "PAYLOAD_TOO_LARGE"}))
             service._running.acquire()
             try:
                 self.assertEqual(self.call({"action": "fingerprint"}), (503, {"code": "CAPACITY_LIMIT"}))

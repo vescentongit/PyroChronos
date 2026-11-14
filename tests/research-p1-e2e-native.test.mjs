@@ -133,6 +133,145 @@ const run = () =>
 	);
 
 native(
+	"PostgreSQL analysis backpressure and receipt quota preserve old analysis and export reads",
+	async () => {
+		register();
+		const original = input();
+		const first = await store.submitAnalysis(db, "e2e", "e2e-user", original);
+		assert.equal(run().status, "succeeded");
+		const completed = await reads.readResearchJob(
+			db,
+			"e2e",
+			"e2e-user",
+			first.value.id,
+		);
+		const old = await reads.readResearchAnalysis(
+			db,
+			"e2e",
+			"e2e-user",
+			completed.resultId,
+		);
+		const services = { database: db, storage };
+		const exported = await exportsService.createResearchExport(
+			services,
+			"e2e",
+			"e2e-user",
+			{
+				requestId: randomUUID(),
+				analysisId: old.id,
+				periodRole: "primary",
+				kind: "raw-hotspots-csv",
+			},
+		);
+		assert.equal(
+			(await exportWorker.runResearchExportOnce(services)).status,
+			"ready",
+		);
+		const deps = {
+			session: async () => ({ user: { id: "e2e-user" } }),
+			enabled: () => true,
+			database: () => db,
+			artifacts: () => storage,
+		};
+		const handlers = createResearchAnalysisHandlers(deps);
+		const context = {
+			params: Promise.resolve({ workspaceId: "e2e", analysisId: old.id }),
+		};
+		const post = (body) =>
+			handlers.POST(
+				new Request("http://localhost/analyses", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(body),
+				}),
+				context,
+			);
+		const burst = await Promise.all(
+			Array.from({ length: 6 }, (_, i) =>
+				post(
+					input({ period: { start: "2019-01-01", end: `2019-01-${10 + i}` } }),
+				),
+			),
+		);
+		assert.equal(burst.filter((response) => response.status === 202).length, 5);
+		const rejected = burst.find((response) => response.status === 503);
+		assert.ok(rejected);
+		assert.equal(rejected.headers.get("Retry-After"), "2");
+		assert.equal((await rejected.json()).code, "CAPACITY_LIMIT");
+		const hit = await store.submitAnalysis(db, "e2e", "e2e-user", {
+			...original,
+			requestId: randomUUID(),
+		});
+		assert.equal(hit.value.resultId, old.id);
+		async function readOld() {
+			const response = await handlers.resultGET(
+				new Request("http://localhost/analysis"),
+				context,
+			);
+			assert.equal(response.status, 200);
+			assert.equal(response.headers.get("Retry-After"), null);
+			assert.deepEqual(await response.json(), old);
+			for (const [method, query] of [
+				["daysGET", "periodRole=primary&month=2019-09"],
+				["detectionsGET", "periodRole=primary"],
+			]) {
+				assert.equal(
+					(
+						await handlers[method](
+							new Request(`http://localhost/analysis?${query}`),
+							context,
+						)
+					).status,
+					200,
+				);
+			}
+			assert.equal(
+				(
+					await exportsService.readResearchExport(
+						services,
+						"e2e",
+						"e2e-user",
+						exported.value.id,
+					)
+				).status,
+				"ready",
+			);
+			const download = await exportsService.getResearchExportDownload(
+				services,
+				"e2e",
+				"e2e-user",
+				exported.value.id,
+			);
+			let bytes = 0;
+			for await (const chunk of download.content) bytes += chunk.length;
+			assert.ok(bytes > 0);
+			assert.equal(
+				(
+					await exportsService.getResearchExportManifest(
+						services,
+						"e2e",
+						"e2e-user",
+						exported.value.id,
+					)
+				).analysisId,
+				old.id,
+			);
+		}
+		await readOld();
+		for (let i = 0; i < 23; i++)
+			await store.submitAnalysis(db, "e2e", "e2e-user", {
+				...original,
+				requestId: randomUUID(),
+			});
+		const limited = await post({ ...original, requestId: randomUUID() });
+		assert.equal(limited.status, 429);
+		assert.equal(limited.headers.get("Retry-After"), "60");
+		assert.equal((await limited.json()).code, "RATE_LIMITED");
+		await readOld();
+	},
+);
+
+native(
 	"PostgreSQL private publisher rejects incomplete or inconsistent daily series before committing",
 	async () => {
 		register();
@@ -246,9 +385,18 @@ native(
 			artifacts: () => storage,
 		});
 		t.mock.method(globalThis, "fetch", async (url, options) => {
-			const uri = new URL(url, "http://localhost"), request = new Request(uri, options);
-			const params = Promise.resolve({ workspaceId: "e2e", jobId: uri.pathname.split("/").at(-1), analysisId: uri.pathname.split("/").at(-1) });
-			return request.method === "POST" ? handlers.POST(request, { params }) : uri.pathname.includes("/jobs/") ? handlers.jobGET(request, { params }) : handlers.resultGET(request, { params });
+			const uri = new URL(url, "http://localhost"),
+				request = new Request(uri, options);
+			const params = Promise.resolve({
+				workspaceId: "e2e",
+				jobId: uri.pathname.split("/").at(-1),
+				analysisId: uri.pathname.split("/").at(-1),
+			});
+			return request.method === "POST"
+				? handlers.POST(request, { params })
+				: uri.pathname.includes("/jobs/")
+					? handlers.jobGET(request, { params })
+					: handlers.resultGET(request, { params });
 		});
 		const responses = await Promise.all(
 			Array.from({ length: 3 }, () =>
@@ -371,8 +519,15 @@ native(
 			}),
 		);
 		assert.equal(sharedFollowup.value.id, followup.value.id);
-		const consumerInput = input({ monitoringLocationId: location.id, period: { start: "2019-10-01", end: "2019-10-31" } });
-		const consumerQueued = await consumer.submitResearch("e2e", consumerInput, new AbortController().signal);
+		const consumerInput = input({
+			monitoringLocationId: location.id,
+			period: { start: "2019-10-01", end: "2019-10-31" },
+		});
+		const consumerQueued = await consumer.submitResearch(
+			"e2e",
+			consumerInput,
+			new AbortController().signal,
+		);
 		assert.equal(run().status, "succeeded");
 		const next = await reads.readResearchJob(
 			db,
@@ -380,7 +535,18 @@ native(
 			"e2e-user",
 			followup.value.id,
 		);
-		assert.equal((await consumer.watchResearch("e2e", consumerQueued, consumerInput, new AbortController().signal, () => {})).id, next.resultId);
+		assert.equal(
+			(
+				await consumer.watchResearch(
+					"e2e",
+					consumerQueued,
+					consumerInput,
+					new AbortController().signal,
+					() => {},
+				)
+			).id,
+			next.resultId,
+		);
 		assert.ok(
 			await client.monitoringLocationAnalysis.findUnique({
 				where: {

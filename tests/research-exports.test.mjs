@@ -120,6 +120,21 @@ test("worker publishes verified CSV and protected manifest, ready dedup returns 
 	assert.equal((await run()).status, "idle");
 });
 
+test("terminal export capacity failure does not advertise an automatic retry", async () => {
+	const created = await create();
+	const claim = await exportQueue.claimResearchExport(db);
+	await exportQueue.failResearchExport(db, claim, "CAPACITY_LIMIT");
+	const failed = await api.readResearchExport(
+		f.dependencies,
+		f.workspace,
+		f.user,
+		created.value.id,
+	);
+	assert.equal(failed.status, "failed");
+	assert.equal(failed.error.code, "CAPACITY_LIMIT");
+	assert.equal(failed.error.retryable, false);
+});
+
 test("aggregate exports preserve unsupported null estimates and comparison is isolated", async () => {
 	const primary = await create(body({ kind: "harmonized-aggregates-csv" }));
 	await run();

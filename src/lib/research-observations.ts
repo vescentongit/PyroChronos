@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { capacityPolicy } from "./research-capacity.ts";
 import {
 	researchAnalysisResultSchema,
 	researchDetectionsPageSchema,
@@ -21,7 +22,10 @@ export type ResearchObservation = z.infer<
 >["observations"][number];
 export const researchObservationPagesSchema = z.union([
 	researchDetectionsPageSchema,
-	z.array(researchDetectionsPageSchema).min(1).max(128),
+	z
+		.array(researchDetectionsPageSchema)
+		.min(1)
+		.max(capacityPolicy.observationArtifacts),
 ]);
 
 export async function readPublishedAnalysis(
@@ -73,7 +77,7 @@ export async function* iterateObservationArtifacts(
 		maxObservations?: number;
 	} = {},
 ): AsyncGenerator<ResearchObservation> {
-	if (!rows.length || rows.length > 128)
+	if (!rows.length || rows.length > capacityPolicy.observationArtifacts)
 		return fail("DEPENDENCY_UNAVAILABLE", 503);
 	let totalBytes = 0;
 	const seen = new Map<string, string>();
@@ -87,7 +91,7 @@ export async function* iterateObservationArtifacts(
 			return fail("DEPENDENCY_UNAVAILABLE", 503);
 		const artifact = metadata.data;
 		totalBytes += artifact.bytes;
-		if (totalBytes > (options.maxBytes ?? 64 * 1024 * 1024))
+		if (totalBytes > (options.maxBytes ?? capacityPolicy.exportObjectBytes))
 			return fail("DEPENDENCY_UNAVAILABLE", 503);
 		let document: unknown;
 		try {
@@ -140,7 +144,10 @@ export async function* iterateObservationArtifacts(
 					return fail("DEPENDENCY_UNAVAILABLE", 503);
 				if (previous) continue;
 				seen.set(observation.id, checksum);
-				if (seen.size > (options.maxObservations ?? 1_000_000))
+				if (
+					seen.size >
+					(options.maxObservations ?? capacityPolicy.uniqueExportObservations)
+				)
 					return fail("CAPACITY_LIMIT", 503);
 				yield observation;
 			}

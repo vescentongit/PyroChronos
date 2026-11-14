@@ -131,6 +131,7 @@
               "type": "string",
               "enum": [
                 "INVALID_REQUEST",
+                "PAYLOAD_TOO_LARGE",
                 "UNAUTHENTICATED",
                 "FORBIDDEN",
                 "NOT_FOUND",

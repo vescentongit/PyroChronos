@@ -33,6 +33,17 @@ tarif deployment terpisah dan belum ditentukan. Guard tidak dinaikkan, polygon
 tetap utuh; hasil lama terbaca saat kapasitas penuh. Review Orkhan dan validasi
 deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum dicentang.
 
+**Tahap 3 — penerapan policy dan backpressure:**
+[kontrak, batas operasional dan bukti uji](../../docs/bagas-sprint-3-backpressure.md).
+
+- [x] Matriks anonim/legacy dan benchmark aktual berlabel sintetis terdokumentasi; komponen tarif eksternal dipisahkan, tanpa ETA buatan.
+- [x] Policy `research-capacity-1`: concurrency/kuota submission, bounded JSON request/producer dan batas antrean/ukuran ekspor eksplisit, tanpa memotong polygon.
+- [x] Error v2, 413 PAYLOAD_TOO_LARGE dan header Retry-After untuk 429/503 didokumentasikan untuk Orkhan; schema terkait diperbarui.
+- [x] Penolakan kapasitas/kuota tidak memblokir analisis maupun status/CSV/manifest ekspor lama; regresi PGlite dan PostgreSQL native lulus.
+- [x] Penolakan request anonim tidak mengubah bundle IndexedDB, riwayat localStorage atau penunjuk hasil terakhir; regresi test double lulus.
+- [x] Suite Node 268/268 dan Python 163/163 tanpa skip, typecheck, lint, contract checks dan diff check lulus.
+- [ ] Review manusia Orkhan atas B1; checkbox gabungan “selesai dan direview” tetap menunggu review ini.
+
 ### R2-P2-B2 — Ketahanan antrean dan pemulihan
 
 - [ ] **Selesai dan direview** — estimasi 4 poin.
