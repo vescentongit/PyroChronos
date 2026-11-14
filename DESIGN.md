@@ -235,6 +235,10 @@ Sprint 3 normalizes the count ramp from zero to the actual positive maximum, inc
 
 ## Do's and Don'ts
 
+Relative hotspot density uses the requested green → yellow → orange → red data scale (low → high) consistently in MapLibre, the Canvas fallback, and the legend. The legend also names both endpoints in Indonesian/English and retains “not a danger rating.” This is a data-visualization exception to the brand palette; green does not mean safe. Calendar count and anomaly scales keep their separate meanings.
+
+Keep density kernels compact so they do not obscure the satellite map: MapLibre radii are 4/8/14 screen pixels at zoom 0/7/14 with 0.6 layer opacity; the fallback uses 3–10 pixel kernels. This reduces visual smoothing and does not change sensor resolution, observation coordinates, or the meaning of an original detection.
+
 ### Do:
 
 - **Do** use the five pinned NASA colors and the locally served Plus Jakarta Sans family.

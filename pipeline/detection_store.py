@@ -148,6 +148,8 @@ class BlockBuilder:
 
 
 def month_path(root, source_id, month):
+    if hasattr(root, "month_path"):
+        return root.month_path(source_id, month)
     return Path(root) / source_id / month[:4] / f"{month}.pcd"
 
 
@@ -204,6 +206,8 @@ class StoreError(RuntimeError):
 
 def source_coverage(store_dir, source_id):
     """Latest committed archive manifest entry per year."""
+    if hasattr(store_dir, "source_coverage"):
+        return store_dir.source_coverage(source_id)
     manifest = Path(store_dir) / source_id / "manifest.jsonl"
     years = {}
     if manifest.exists():
@@ -225,6 +229,9 @@ def read_header(path):
 
 def iter_tiles(path, tiles, start_minute, end_minute):
     """Yield raw records (latE5, lonE5, minute, frp, flags, conf) from the listed tiles within [start, end)."""
+    if hasattr(path, "iter_tiles"):
+        yield from path.iter_tiles(tiles, start_minute, end_minute)
+        return
     header, base = read_header(path)
     if header["recordFormat"] != RECORD.format:
         raise StoreError(f"{path}: unsupported record format {header['recordFormat']}")

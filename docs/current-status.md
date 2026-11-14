@@ -1,4 +1,4 @@
-# Keputusan dan status aktif — 13 November 2026
+# Keputusan dan status aktif — 14 November 2026
 
 Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual dan kolaborasi workspace server pada dokumen/rencana lama. Keputusan pengguna: seluruh fitur web harus dapat diakses dan digunakan tanpa login.
 
@@ -11,6 +11,10 @@ API Auth.js/Google, workspace server dan laporan koordinator dipertahankan sebag
 ## Analisis aktif
 
 Browser mengirim polygon dan periode secara eksplisit ke `/api/local-research`. Server memvalidasi geometri dan menjalankan Python terhadap `RESEARCH_DATA_DIR`; hasil divalidasi lalu disimpan di IndexedDB. Request ini menunggu proses selesai, belum menggunakan antrean persisten. Batas: satu analisis per proses server, timeout producer 120 detik per pemanggilan dan maksimum 100.000 observasi per bundle. Ini batas implementasi, bukan SLA global.
+
+Konfigurasi Vercel kini menyediakan `app` publik dan `pipeline` internal melalui binding. Untuk hosting, adapter dataset privat Vercel Blob dan workflow GitHub Actions harian sudah ditambahkan: arsip FIRMS standard MODIS/S-NPP diproses per tahun, terbit sebagai snapshot immutable, lalu tile sesuai kueri dibaca dengan verifikasi checksum. Jalur lokal tetap tersedia. Aktivasi memerlukan proyek/store dan secret; store cloud, backfill global, jadwal aktif dan deployment belum diverifikasi atau diklaim berjalan. Hosted bundle dibatasi 4 MB. [Panduan aktivasi dan batas cakupan](vercel-deployment.md).
+
+Peta density memakai gradasi hijau → kuning → oranye → merah (rendah → tinggi), radius kernel 4–14 px dan opacity 0,6; fallback 3–10 px. Label ID/EN menjelaskan kedua ujung skala dan bahwa density bukan tingkat bahaya. Titik asli serta skala kalender/anomali tetap memiliki arti masing-masing.
 
 Jalur anonim kini memuat model harmonisasi dan kebijakan baseline dari `pipeline/models`. Kalender tahun × bulan membuka detail harian; ringkasan perbandingan menampilkan durasi, estimasi, laju per hari dan persentase total bila dua estimasi lengkap dengan pembanding positif. Tabel anomali menampilkan median, delta, persentil dan tahun referensi aktual. Hasil lama di browser tidak dihitung ulang otomatis.
 
