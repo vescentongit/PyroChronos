@@ -26,6 +26,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N4
 
+**Status:** implementasi selesai sebagai snapshot beku dan pembanding; **revisi belum terukur** (ditambah sensitivitas skala asumsi terhadap penilaian periode berjalan) karena FIRMS tidak menyimpan NRT dan standard untuk tanggal yang sama. Lihat [catatan](../../docs/data/sprint-3-nrt-qa-reproducibility.md). Menunggu review Bagas.
+
 ### R2-P2-N2 — Benchmark transfer lintas domain
 
 - [ ] **Selesai dan direview** — estimasi 6 poin.
@@ -35,6 +37,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 **Kriteria selesai:** Domain gagal tetap terlihat dan status dukungan dapat diperbarui tanpa mengarang generalisasi global.
 
 **Dependensi integrasi:** R2-P1-N2
+
+**Status:** implementasi selesai, menunggu review Bagas. Benchmark `pipeline/harmonize_transfer.py`, hasil `pipeline/models/transfer-a34f51d0a650.json`, uraian di [harmonization.md](../../docs/data/harmonization.md). Model tidak diubah; domain gagal tetap terlihat.
 
 ### R2-P2-N3 — Eksperimen QA coverage terpisah
 
@@ -46,6 +50,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N4
 
+**Status:** keputusan no-go terdokumentasi (FireMask/QA tidak ada di jalur data); coverage tetap null. Menunggu review Bagas.
+
 ### R2-P2-N4 — Paket reproduksibilitas ilmiah
 
 - [ ] **Selesai dan direview** — estimasi 4 poin.
@@ -55,6 +61,8 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 **Kriteria selesai:** Anggota lain dapat mereproduksi satu hasil; klaim presentasi ditautkan ke run, bukan angka target paper.
 
 **Dependensi integrasi:** R2-P2-N1, R2-P2-N2
+
+**Status:** `pipeline/reproduce_check.py` mereproduksi evaluasi dan benchmark transfer, enam pemeriksaan OK. Menunggu review Bagas.
 
 ## Checklist sebelum membuat PR
 

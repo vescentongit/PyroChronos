@@ -109,6 +109,35 @@ days.append(daily_page(counts, run["id"], month, role, harmonized=(built["harmon
 
 Tanpa perubahan itu worker tetap menerbitkan hitungan mentah dengan estimasi `null`, sama seperti sebelum Sprint 2.
 
+## Benchmark transfer model beku (Sprint 3, R2-P2-N2)
+
+Model `a34f51d0a650` tidak diubah. Skrip `pipeline/harmonize_transfer.py` mengujinya pada data yang tidak pernah dipakai untuk fitting, seleksi, maupun uji Sprint 2, lalu menulis `pipeline/models/transfer-a34f51d0a650.json` (id `transfer-34fd878c3e0a0756`). Konfigurasi benchmark (hash tersendiri) dibekukan sebelum hasil dilihat.
+
+- **Holdout mundur:** Februari sampai Desember 2012, bulan penuh pertama VIIRS S-NPP, sebelum periode latih 2013 (89.715 sel-bulan). Ini satu tahun parsial, jadi tidak mendukung klaim untuk tahun-tahun berikutnya.
+- **Ambang:** sama dengan aturan keputusan beku (penurunan MAE ≥ 20% terhadap mentah, |bias relatif agregat| ≤ 15%). Hanya ukuran sampel minimum yang lebih kecil (200 sel-bulan per domain, 100 per domain-musim, 60 per wilayah); irisan di bawahnya dilaporkan "insufficient", bukan lulus atau gagal.
+- **Transfer dipisah dari pelatihan ulang:** kolom `retrainReference` menunjukkan rasio yang dilatih ulang per domain hanya sebagai pembanding, tidak pernah diterbitkan.
+- **Status tidak pernah naik otomatis:** domain yang tidak tervalidasi tetap `stays-unvalidated` walau lulus di holdout.
+
+| Domain | Status | Holdout 2012 (bias agregat) | Uji 2021–2025 (bias agregat) |
+|---|---|---|---|
+| africa_north_of_equator | confirmed | −5,7% | lulus semua ambang |
+| africa_south_of_equator | confirmed | −4,2% | lulus semua ambang |
+| australia | confirmed | +9,6% | lulus semua ambang |
+| boreal_eurasia | confirmed | +2,6% | lulus semua ambang |
+| south_america | confirmed | −6,9% | −7,0% |
+| maritime_southeast_asia | tetap tidak tervalidasi | +12,5% (lulus) | +25,3% (gagal: bias agregat dan transfer) |
+| south_and_mainland_southeast_asia | tetap tidak tervalidasi | +9,6% (lulus) | gagal: bias agregat dan transfer |
+| north_america | tetap tidak tervalidasi | −2,6% (lulus) | gagal: transfer lintas domain |
+| europe_mediterranean | tetap tidak tervalidasi | −22,2% (gagal) | −17,2% (gagal: bias agregat dan transfer) |
+| other | tidak pernah divalidasi | −14,5% | tidak pernah divalidasi |
+
+Temuan yang perlu dibaca hati-hati:
+
+- **Asia Tenggara maritim tidak stabil antarwaktu:** bias model beku +12,5% pada 2012 tetapi +25,3% pada 2021–2025, dan per musim uji gagal pada DJF, MAM dan SON. Rasio yang dilatih ulang khusus domain ini (0,160 lawan 0,246 global) justru menghasilkan −26,8% pada 2012. Hubungan VIIRS terhadap MODIS di sini berubah menurut tahun, jadi lulus di holdout bukan alasan membukanya.
+- **Eropa/Mediterania** konsisten di bawah (−22% dan −17%), sehingga penolakannya didukung dua periode independen.
+- **Wilayah bernama:** Rondônia, Cerrado, miombo, Sahel, Australia utara, Baikal dan California lulus di holdout dan uji. Kalimantan Tengah gagal di holdout (+15,9%), lulus di uji (+6,5%); Papua gagal di keduanya (+16,9% dan +18,8%). Kalteng/Papua tetap tanpa estimasi di produk.
+- Bias agregat di beberapa domain lulus berada dekat ambang (Sahel +14,0% pada uji), sehingga hasil kedua periode belum cukup untuk menyatakan semua domain tervalidasi akurat pada polygon kecil; lihat diagnostik polygon di atas.
+
 ## Batas yang diketahui
 
 - Evaluasi retrospektif; 2026 belum dipakai. Kinerja pada bulan mendatang tidak dijamin.

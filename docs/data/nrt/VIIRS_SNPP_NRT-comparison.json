@@ -1,0 +1,27 @@
+{
+ "snapshotId": "nrt-snapshot-a9c6c471da9a3c8a",
+ "standardSource": "VIIRS_SNPP_SP",
+ "areas": {
+  "bbox_-65_-14_-59_-8": {
+   "daysInSnapshot": 33,
+   "comparableDays": 0,
+   "verdict": "not_comparable"
+  },
+  "bbox_111_-3.5_115_0": {
+   "daysInSnapshot": 33,
+   "comparableDays": 0,
+   "verdict": "not_comparable"
+  },
+  "bbox_22_-16_34_-8": {
+   "daysInSnapshot": 33,
+   "comparableDays": 0,
+   "verdict": "not_comparable"
+  },
+  "kalteng": {
+   "daysInSnapshot": 2,
+   "comparableDays": 0,
+   "verdict": "not_comparable"
+  }
+ },
+ "interpretation": "only days whose whole UTC month is covered by the standard archive are compared; a difference describes revision of these batches and is not a measure of NRT performance for other periods"
+}

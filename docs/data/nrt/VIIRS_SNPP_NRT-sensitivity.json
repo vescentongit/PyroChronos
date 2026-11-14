@@ -1,0 +1,293 @@
+{
+ "snapshotId": "nrt-snapshot-a9c6c471da9a3c8a",
+ "kind": "assumed NRT-to-standard scale sweep; the scale values are hypothetical and are not measured revisions",
+ "referencePolicy": "same month-day window in the 10 previous years, standard archive only, minimum 4 years, raw VIIRS S-NPP counts under quality-policy-1",
+ "areas": {
+  "bbox_-65_-14_-59_-8": {
+   "verdict": "assessed",
+   "window": [
+    "2026-10-01",
+    "2026-11-02"
+   ],
+   "nrtCount": 4640,
+   "referenceYears": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "referenceCounts": {
+    "2016": 19166,
+    "2017": 16243,
+    "2018": 9205,
+    "2019": 8799,
+    "2020": 26341,
+    "2021": 23820,
+    "2022": 9340,
+    "2023": 23123,
+    "2024": 26958,
+    "2025": 6592
+   },
+   "baselineMedian": 17704.5,
+   "scaleThatReachesMedian": 3.815625,
+   "scaleThatLeavesReferenceRange": {
+    "below": 1.4206896551724137,
+    "above": 5.809913793103449
+   },
+   "sweep": [
+    {
+     "nrtScale": 0.5,
+     "count": 2320.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.7,
+     "count": 3248.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.8,
+     "count": 3712.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.9,
+     "count": 4176.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.0,
+     "count": 4640.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.1,
+     "count": 5104.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.2,
+     "count": 5568.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.3,
+     "count": 6032.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.5,
+     "count": 6960.0,
+     "percentile": 10.0,
+     "aboveMedian": false
+    }
+   ]
+  },
+  "bbox_111_-3.5_115_0": {
+   "verdict": "assessed",
+   "window": [
+    "2026-10-01",
+    "2026-11-02"
+   ],
+   "nrtCount": 66908,
+   "referenceYears": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "referenceCounts": {
+    "2016": 1232,
+    "2017": 967,
+    "2018": 3306,
+    "2019": 6838,
+    "2020": 1149,
+    "2021": 864,
+    "2022": 214,
+    "2023": 14457,
+    "2024": 953,
+    "2025": 1005
+   },
+   "baselineMedian": 1077.0,
+   "scaleThatReachesMedian": 0.01609672983798649,
+   "scaleThatLeavesReferenceRange": {
+    "below": 0.003198421713397501,
+    "above": 0.2160728164046153
+   },
+   "sweep": [
+    {
+     "nrtScale": 0.5,
+     "count": 33454.0,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 0.7,
+     "count": 46835.6,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 0.8,
+     "count": 53526.4,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 0.9,
+     "count": 60217.2,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.0,
+     "count": 66908.0,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.1,
+     "count": 73598.8,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.2,
+     "count": 80289.6,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.3,
+     "count": 86980.4,
+     "percentile": 100.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.5,
+     "count": 100362.0,
+     "percentile": 100.0,
+     "aboveMedian": true
+    }
+   ]
+  },
+  "bbox_22_-16_34_-8": {
+   "verdict": "assessed",
+   "window": [
+    "2026-10-01",
+    "2026-11-02"
+   ],
+   "nrtCount": 87640,
+   "referenceYears": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "referenceCounts": {
+    "2016": 110367,
+    "2017": 109072,
+    "2018": 81071,
+    "2019": 74319,
+    "2020": 90721,
+    "2021": 81629,
+    "2022": 162979,
+    "2023": 95343,
+    "2024": 61888,
+    "2025": 110084
+   },
+   "baselineMedian": 93032.0,
+   "scaleThatReachesMedian": 1.061524418073939,
+   "scaleThatLeavesReferenceRange": {
+    "below": 0.7061615700593337,
+    "above": 1.8596417161113648
+   },
+   "sweep": [
+    {
+     "nrtScale": 0.5,
+     "count": 43820.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.7,
+     "count": 61348.0,
+     "percentile": 0.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.8,
+     "count": 70112.0,
+     "percentile": 10.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 0.9,
+     "count": 78876.0,
+     "percentile": 20.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.0,
+     "count": 87640.0,
+     "percentile": 40.0,
+     "aboveMedian": false
+    },
+    {
+     "nrtScale": 1.1,
+     "count": 96404.0,
+     "percentile": 60.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.2,
+     "count": 105168.0,
+     "percentile": 60.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.3,
+     "count": 113932.0,
+     "percentile": 90.0,
+     "aboveMedian": true
+    },
+    {
+     "nrtScale": 1.5,
+     "count": 131460.0,
+     "percentile": 90.0,
+     "aboveMedian": true
+    }
+   ]
+  },
+  "kalteng": {
+   "verdict": "skipped",
+   "reason": "snapshot window of 2 days is too short for a period assessment"
+  }
+ }
+}
