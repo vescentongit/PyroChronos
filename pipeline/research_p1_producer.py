@@ -23,6 +23,8 @@ def document(value):
 
 
 def fingerprint(root):
+    if hasattr(root, "fingerprint"):
+        return root.fingerprint()
     root = Path(root)
     if not root.is_dir():
         raise ValueError("MISSING_DATASET")

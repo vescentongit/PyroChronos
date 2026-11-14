@@ -196,27 +196,27 @@ function HeatSurface({
               ["linear"],
               ["zoom"],
               0,
-              9,
+              4,
               7,
-              22,
+              8,
               14,
-              35,
+              14,
             ],
-            "heatmap-opacity": 0.8,
+            "heatmap-opacity": 0.6,
             "heatmap-color": [
               "interpolate",
               ["linear"],
               ["heatmap-density"],
               0,
-              "rgba(68,57,131,0)",
+              "rgba(34,197,94,0)",
               0.25,
-              "#443983",
+              "#22c55e",
               0.5,
-              "#31688e",
+              "#facc15",
               0.8,
-              "#35b779",
+              "#f97316",
               1,
-              "#fde725",
+              "#ef4444",
             ],
           },
         });
@@ -404,7 +404,7 @@ function HeatSurface({
       );
       for (const point of features) {
         const [x, y] = project(point.geometry.coordinates),
-          r = 8 + 14 * Math.sqrt(Number(point.properties?.count ?? 1) / max);
+          r = 3 + 7 * Math.sqrt(Number(point.properties?.count ?? 1) / max);
         if (layer === "points") {
           context.fillStyle = "#ffbc5c";
           context.beginPath();
@@ -413,9 +413,11 @@ function HeatSurface({
           continue;
         }
         const gradient = context.createRadialGradient(x, y, 0, x, y, r);
-        gradient.addColorStop(0, "#fde725cc");
-        gradient.addColorStop(0.5, "#35b77970");
-        gradient.addColorStop(1, "#44398300");
+        gradient.addColorStop(0, "#ef4444cc");
+        gradient.addColorStop(0.2, "#f97316b0");
+        gradient.addColorStop(0.5, "#facc1570");
+        gradient.addColorStop(0.75, "#22c55e50");
+        gradient.addColorStop(1, "#22c55e00");
         context.fillStyle = gradient;
         context.fillRect(x - r, y - r, r * 2, r * 2);
       }
@@ -491,7 +493,7 @@ function HeatSurface({
           : `NASA FIRMS · ${data?.source || query.source} · ${data?.hours ?? query.hours}h`}
       </div>
       <div className="global-map-legend">
-        {!research && <span />}
+        {layer !== "points" && !sketch.editing && (!research || features.length > 0) && <span aria-hidden="true" />}
         {sketch.editing
           ? t("Titik biru: sketsa terbaru. Gunakan area ini untuk melanjutkan.", "Blue points: current sketch. Use this area to continue.")
           : research && features.length === 0
@@ -502,8 +504,8 @@ function HeatSurface({
               "Raw detections; aggregates show counts",
             )
           : t(
-              "Kepadatan relatif; bukan tingkat bahaya",
-              "Relative density; not a danger rating",
+              "Kepadatan relatif: hijau rendah, merah tinggi; bukan tingkat bahaya",
+              "Relative density: green low, red high; not a danger rating",
             )}
       </div>
     </div>

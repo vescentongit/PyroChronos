@@ -1,0 +1,53 @@
+name: Update FIRMS research dataset
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: First archive year (source availability is respected)
+        default: '2000'
+        required: true
+        type: string
+      end_year:
+        description: Last archive year (empty means current UTC year)
+        default: ''
+        type: string
+  schedule:
+    - cron: '23 19 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firms-dataset-publisher
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    if: vars.FIRMS_DATASET_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      FIRMS_BLOB_BASE_URL: ${{ vars.FIRMS_BLOB_BASE_URL }}
+      FIRST_YEAR: ${{ inputs.start_year || '2000' }}
+      LAST_YEAR: ${{ inputs.end_year }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            pipeline/requirements.txt
+            pipeline/requirements-sync.txt
+      - name: Install publisher dependencies
+        run: python -m pip install -r pipeline/requirements-sync.txt
+      - name: Verify dataset adapter before publishing
+        run: python -m unittest discover -s pipeline -p test_firms_blob.py -v
+      - name: Download changed archives and publish snapshots
+        shell: bash
+        run: |
+          args=(--start-year "$FIRST_YEAR")
+          if [[ -n "$LAST_YEAR" ]]; then args+=(--end-year "$LAST_YEAR"); fi
+          python pipeline/sync_firms_dataset.py "${args[@]}"

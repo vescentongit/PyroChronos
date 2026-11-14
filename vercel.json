@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "nextjs",
+      "bindings": [
+        { "type": "service", "service": "pipeline", "format": "url", "env": "PIPELINE_URL" }
+      ]
+    },
+    "pipeline": {
+      "root": "pipeline",
+      "runtime": "python",
+      "entrypoint": "app:app",
+      "functions": {
+        "app.py": { "maxDuration": 120, "excludeFiles": "{test_*.py,__pycache__/**}" }
+      }
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "app" } }
+  ]
+}

@@ -1,0 +1,15 @@
+.git/
+.vercel/
+.cache/
+.next/
+.playwright-mcp/
+.vscode/
+.env*
+node_modules/
+data/
+tests/
+tasks/
+*.pdf
+*.tsbuildinfo
+**/__pycache__/
+**/*.pyc

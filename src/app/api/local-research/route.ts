@@ -1,46 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { spawn } from "node:child_process";
+import { researchProducer as producer, maxHostedBundleBytes } from "@/lib/research-producer";
 import { z } from "zod";
 import { createResearchAnalysisSchema, createResearchAreaSchema, researchAreaSchema } from "@/lib/research-contracts";
 import { validateResearchGeometry } from "@/lib/research-server-geometry";
 import { validateProducerBundle } from "@/lib/research-store";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 const areaInput = z.object({ action: z.literal("area"), workspaceId: z.string().min(1).max(200), area: createResearchAreaSchema }).strict();
 const analysisInput = z.object({ action: z.literal("analyze"), workspaceId: z.string().min(1).max(200), area: researchAreaSchema, request: createResearchAnalysisSchema }).strict();
 let running = false;
-
-function producer(input: unknown, signal: AbortSignal): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.env.RESEARCH_PYTHON || "python", ["pipeline/research_worker.py"], { stdio: ["pipe", "pipe", "ignore"] });
-    const chunks: Buffer[] = [];
-    let size = 0, done = false;
-    const finish = (error?: Error, value?: unknown) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      signal.removeEventListener("abort", abort);
-      if (error) { child.kill(); reject(error); } else resolve(value);
-    };
-    const abort = () => finish(new Error("ABORTED"));
-    const timer = setTimeout(() => finish(new Error("TIMEOUT")), 120_000);
-    signal.addEventListener("abort", abort, { once: true });
-    child.stdout.on("data", (chunk: Buffer) => {
-      size += chunk.length;
-      if (size > 100_000_000) finish(new Error("CAPACITY"));
-      else chunks.push(chunk);
-    });
-    child.on("error", () => finish(new Error("PRODUCER_FAILED")));
-    child.on("close", code => {
-      if (code !== 0) return finish(new Error("PRODUCER_FAILED"));
-      try { finish(undefined, JSON.parse(Buffer.concat(chunks).toString("utf8"))); }
-      catch { finish(new Error("PRODUCER_FAILED")); }
-    });
-    child.stdin.on("error", () => finish(new Error("PRODUCER_FAILED")));
-    child.stdin.end(JSON.stringify(input));
-    if (signal.aborted) abort();
-  });
-}
 
 export async function POST(req: Request) {
   const error = (code: string, status: number) => Response.json({ code }, { status, headers: { "Cache-Control": "no-store" } });
@@ -81,7 +50,7 @@ export async function POST(req: Request) {
     if (geometry.geometryHash !== submittedArea.geometryHash || submittedArea.id !== request.areaId || submittedArea.workspaceId !== workspaceId || submittedArea.revision !== request.areaRevision || request.monitoringLocationId !== null || request.baseline.windowYears > 30 || request.qualityPolicyVersion !== "quality-policy-1" || [request.period, request.comparisonPeriod].filter(Boolean).some(period => period!.end > new Date().toISOString().slice(0, 10))) return error("INVALID_REQUEST", 400);
   } catch { return error("INVALID_REQUEST", 400); }
   const root = process.env.RESEARCH_DATA_DIR;
-  if (!root) { console.warn("[local-research] dataset not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
+  if (!root && !process.env.PIPELINE_URL) { console.warn("[local-research] dataset not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
   if (running) return error("CAPACITY_LIMIT", 503);
   running = true;
   let stage = "fingerprint";
@@ -93,11 +62,12 @@ export async function POST(req: Request) {
     const rawBundle = await producer({ root, run }, req.signal);
     stage = "validation";
     const bundle = validateProducerBundle(run, rawBundle);
+    if (process.env.PIPELINE_URL && Buffer.byteLength(JSON.stringify(bundle)) > maxHostedBundleBytes) return error("CAPACITY_LIMIT", 503);
     return Response.json(bundle, { headers: { "Cache-Control": "private, no-store" } });
   } catch (reason) {
     const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT"].includes(reason.message) ? reason.message : "UNAVAILABLE";
     console.warn(`[local-research] ${stage} ${known}`);
-    return error("DEPENDENCY_UNAVAILABLE", 503);
+    return error(known === "CAPACITY_LIMIT" ? known : "DEPENDENCY_UNAVAILABLE", 503);
   }
   finally { running = false; }
 }

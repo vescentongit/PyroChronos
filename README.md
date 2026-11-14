@@ -33,6 +33,8 @@ Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Mode Op
 
 ## Penyimpanan browser dan analisis
 
+Konfigurasi dua servis Vercel (`app` publik, `pipeline` internal melalui binding) tersedia pada `vercel.json`. Dataset historis FIRMS memiliki publisher GitHub Actions harian ke private Vercel Blob dan pembaca tile dengan checksum. Langkah aktivasi store/secret, backfill, Preview serta batas payload/cakupan ada di [panduan deployment Vercel](docs/vercel-deployment.md). Konfigurasi ini belum berarti deployment atau jadwal cloud sudah berjalan.
+
 Keputusan aktif: seluruh fitur web dapat digunakan tanpa login dan tanpa konfigurasi Google OAuth. Kalender tahun × bulan, ringkasan dua periode dan tabel anomali membaca hasil analisis yang sama. Jalur analisis lokal memuat model terbitan `pipeline/models`; estimasi tetap null pada domain yang tidak lolos evaluasi. Lihat [status dan sisa sprint](docs/current-status.md).
 
 Hasil riset kini menyediakan lokasi pemantauan dari titik asli, penugasan/pemeriksaan lokal, koreksi berhistori, CSV observasi/agregat, JSON/manifest dan PNG kalender. Klik peta kepadatan memperbesar kamera sebelum memilih titik; tabel bukti juga tersedia. CSV observasi memakai kolom `recordType`; hasil kosong memuat baris `metadata` dengan provenance dan kolom observasi kosong. Nama lokal bukan identitas akun terverifikasi. [Bukti dan batas Sprint 2](docs/orkhan-sprint-2-progress.md).

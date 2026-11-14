@@ -305,7 +305,7 @@
     display: block;
     width: 75px;
     height: 8px;
-    background: linear-gradient(90deg, #443983, #31688e, #35b779, #fde725);
+    background: linear-gradient(90deg, #22c55e, #facc15, #f97316, #ef4444);
   }
   .global-fallback {
     top: 65px;
