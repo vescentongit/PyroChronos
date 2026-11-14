@@ -122,6 +122,12 @@ from the latest immutable attempt, so restarting a worker does not erase it.
 
 ## Tests
 
+Sprint 3 Stage 4 adds native subprocess crash barriers before publication and
+inside the atomic publisher transaction, plus runtime timeout/transient/stop/signal
+checks followed by real CLI retries. See [process resilience evidence and platform
+limits](bagas-sprint-3-process-resilience.md). Orphan reconciliation and repeatable
+user-data recovery remain Stage 5 work.
+
 Unit tests cover orchestration, timeout/cancellation, lease loss, publication
 races, configuration and secret-safe failures. Native integration tests execute
 the production queue queries and shipped migrations against separate PostgreSQL

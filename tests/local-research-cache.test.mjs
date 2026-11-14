@@ -74,6 +74,13 @@ test("rejected submissions preserve IndexedDB, localStorage history and last-res
     assert.deepEqual(researchHistory(),history);
   }
   // Evict memory cache, then prove the old persisted record remains readable.
+  for (const name of ["AbortError", "TimeoutError"]) {
+    t.mock.method(globalThis,"fetch",async()=>{throw new DOMException("Synthetic interrupted request",name);});
+    await assert.rejects(submitResearch(area.workspaceId,body,new AbortController().signal),error=>error.name===name);
+    assert.deepEqual(local,beforeLocal);
+    assert.deepEqual(records,beforeRecords);
+    assert.equal((await lastResearchResult()).id,"preserved-old");
+  }
   await getBundle("cache-active");
   assert.equal((await getBundle("preserved-old")).result.id,"preserved-old");
 });

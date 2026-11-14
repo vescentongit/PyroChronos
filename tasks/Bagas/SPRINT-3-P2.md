@@ -54,6 +54,16 @@ deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum d
 
 **Dependensi integrasi:** R2-P1-B1, R2-P1-B3
 
+**Tahap 4 — B2 bagian 1:** [bukti ketahanan proses](../../docs/bagas-sprint-3-process-resilience.md).
+
+- [x] Hard crash sebelum publikasi dan kill di tengah transaksi: metadata hasil parsial tidak terbit; restart/replay menghasilkan satu hasil.
+- [x] Expired/stale lease ditolak sebelum dan sesudah attempt pengganti sukses; hanya lease sah dapat memublikasikan.
+- [x] Timeout, transient failure, kontrol stop dan handler terminasi runtime diuji dengan PostgreSQL native terisolasi; retry menghormati backoff.
+- [x] Pengajuan/laporan duplikat server serta operation ID laporan lokal dibedakan dari pengiriman ulang analisis anonim; abort/timeout klien tidak menimpa hasil lama.
+- [x] Verifikasi Tahap 4: 276/276 Node dan 163/163 Python tanpa skip dengan PostgreSQL native; typecheck, lint, contracts, ruff helper dan diff check lulus.
+- [ ] Tahap 5: pemulihan metadata/result/artefak yatim dan prosedur pemulihan berulang tanpa menghapus data pengguna.
+- [ ] Review manusia Orkhan; B2 belum dinyatakan selesai/direview penuh.
+
 ### R2-P2-B3 — Review isolasi dan retensi workspace
 
 - [ ] **Selesai dan direview** — estimasi 5 poin.

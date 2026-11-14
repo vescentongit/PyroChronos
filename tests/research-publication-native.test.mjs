@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
+import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { registerHooks } from "node:module";
@@ -103,6 +105,70 @@ native(
 				.status,
 			"succeeded",
 		);
+	},
+);
+
+native(
+	"killing a publisher inside its transaction rolls back result/manifest and a replay publishes once",
+	async () => {
+		await client.p1AnalysisJobAttempt.update({
+			where: { id: fixture.attempt.id },
+			data: { leaseExpiresAt: new Date(Date.now() + 30000) },
+		});
+		const url = new URL(dsn);
+		url.searchParams.set("schema", schema);
+		const child = spawn(
+			process.execPath,
+			["tests/helpers/research-publication-crash.mjs"],
+			{
+				env: {
+					...process.env,
+					DATABASE_URL: url.href,
+					RESEARCH_ARTIFACT_ROOT: root,
+				},
+				stdio: ["pipe", "pipe", "ignore"],
+				windowsHide: true,
+			},
+		);
+		const exited = once(child, "exit");
+		const lines = createInterface({ input: child.stdout });
+		let timer;
+		try {
+			const barrier = Promise.race([
+				once(lines, "line"),
+				exited.then(() => {
+					throw new Error("Publisher exited before transaction barrier");
+				}),
+				new Promise((_, reject) => {
+					timer = setTimeout(
+						() => reject(new Error("Publisher barrier timeout")),
+						15000,
+					);
+				}),
+			]);
+			child.stdin.end(JSON.stringify(request));
+			assert.equal((await barrier)[0], "inside-publication");
+			assert.equal(
+				await client.analysisResult.count(),
+				0,
+				"Uncommitted result became visible",
+			);
+			assert.equal(await client.analysisManifest.count(), 0);
+			child.kill("SIGKILL");
+			await exited;
+			assert.equal(await client.analysisResult.count(), 0);
+			assert.equal(await client.analysisManifest.count(), 0);
+			assert.equal(await client.p1AnalysisArtifact.count(), 0);
+			await publishResearchResult({ database, storage }, request);
+			await publishResearchResult({ database, storage }, request);
+			assert.equal(await client.analysisResult.count(), 1);
+			assert.equal(await client.analysisManifest.count(), 1);
+		} finally {
+			clearTimeout(timer);
+			lines.close();
+			if (child.exitCode === null && child.signalCode === null) child.kill();
+			await exited;
+		}
 	},
 );
 

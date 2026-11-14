@@ -33,6 +33,10 @@ test("anonymous analysis uses an isolated dataset and returns a validated raw re
     assert.equal(bundle.result.primary.metric.status, "no_data");
     assert.equal(bundle.result.primary.metric.harmonizedCount, null);
     assert.equal(bundle.days.length, 1);
+    // Anonymous requestId is not a persisted queue/idempotency receipt.
+    const duplicate = await call({ action: "analyze", workspaceId: "local-test", area, request });
+    assert.equal(duplicate.status, 200);
+    assert.notEqual((await duplicate.json()).result.id, bundle.result.id);
     const changed = await call({ action: "analyze", workspaceId: "other", area, request });
     assert.equal(changed.status, 400);
   } finally {
@@ -48,6 +52,23 @@ test("anonymous analysis rejects cross-origin and oversized requests", async () 
   assert.equal(oversized.status, 413);
   assert.equal((await oversized.json()).code, "PAYLOAD_TOO_LARGE");
   assert.equal(oversized.headers.get("Retry-After"), null);
+});
+
+test("aborted anonymous producer returns no partial bundle and releases admission for a fresh request",async()=>{
+  const root=mkdtempSync(join(tmpdir(),"pyro-abort-"));
+  const previous=process.env.RESEARCH_DATA_DIR;
+  process.env.RESEARCH_DATA_DIR=root;
+  try {
+    const area=await (await call({action:"area",workspaceId:"abort-test",area:{requestId:randomUUID(),name:"Synthetic",geometry:{type:"Polygon",coordinates:[[[113,-3],[114,-3],[114,-2],[113,-2],[113,-3]]]}}})).json();
+    const request={requestId:randomUUID(),areaId:area.id,areaRevision:1,period:{start:"2019-01-01",end:"2019-01-02"},comparisonPeriod:null,baseline:{kind:"rolling-same-calendar-period",windowYears:10},referenceScale:"MODIS-equivalent",qualityPolicyVersion:"quality-policy-1",monitoringLocationId:null};
+    const body={action:"analyze",workspaceId:"abort-test",area,request};
+    const response=await POST(new Request("http://localhost/api/local-research",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.abort()}));
+    assert.equal(response.status,503);
+    const failed=await response.json();
+    assert.equal(failed.code,"DEPENDENCY_UNAVAILABLE");
+    assert.equal(failed.result,undefined);
+    assert.equal((await call(body)).status,200);
+  } finally {if(previous===undefined)delete process.env.RESEARCH_DATA_DIR;else process.env.RESEARCH_DATA_DIR=previous;rmSync(root,{recursive:true,force:true});}
 });
 
 test("anonymous route validates a bundle received over the real Python HTTP adapter", async () => {

@@ -32,6 +32,15 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 4 (B2 bagian 1): [ketahanan proses](bagas-sprint-3-process-resilience.md)
+memiliki bukti subprocess crash/restart, rollback publikasi yang dimatikan,
+stale lease fencing, timeout/retry dan kontrol terminasi runtime pada PostgreSQL
+native uji. Duplikasi server dan operation ID laporan lokal dibedakan dari request
+anonim sinkron; abort/timeout tidak menimpa hasil lama. Tidak ada perubahan policy
+atau kode produksi. Tahap 5 pemulihan artefak/metadata dan review Orkhan tetap terbuka.
+Verifikasi sesi Tahap 4: 276 tes Node dan 163 tes Python tanpa skip dengan
+PostgreSQL native aktif; typecheck/lint/contracts/ruff helper dan diff check lulus.
+
 Bagas Sprint 3 Tahap 3: [policy kapasitas dan backpressure](bagas-sprint-3-backpressure.md)
 diterapkan. Satu analisis anonim/proses dan lima analisis aktif/workspace
 dipertahankan; kuota anonim 30 admission/menit/proses dan guard lima ekspor

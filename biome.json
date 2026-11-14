@@ -12,6 +12,7 @@
 			"src/lib/research-publication*.ts",
 			"tests/research-publication*.test.mjs",
 			"tests/helpers/research-publication-fixtures.mjs",
+			"tests/helpers/research-publication-crash.mjs",
 			"src/lib/monitoring-location*.ts",
 			"src/app/api/v2/workspaces/**/route.ts",
 			"tests/monitoring-location*.test.mjs",

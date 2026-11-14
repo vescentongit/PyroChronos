@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
+import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -130,6 +132,212 @@ const register = () =>
 const run = () =>
 	JSON.parse(
 		command(process.execPath, ["scripts/research-worker.mjs", "--once"]).trim(),
+	);
+
+async function processProbe(mode) {
+	const child = spawn(
+		python,
+		["-u", "tests/helpers/research-process-probe.py", mode],
+		{ env, stdio: ["pipe", "pipe", "ignore"], windowsHide: true },
+	);
+	const exited = once(child, "exit");
+	async function waitExited() {
+		let deadline;
+		try {
+			return await Promise.race([
+				exited,
+				new Promise((_, reject) => {
+					deadline = setTimeout(() => {
+						child.kill("SIGKILL");
+						reject(new Error("Process exit deadline exceeded"));
+					}, 10000);
+				}),
+			]);
+		} finally {
+			clearTimeout(deadline);
+		}
+	}
+	const lines = createInterface({ input: child.stdout });
+	let timer;
+	try {
+		const [line] = await Promise.race([
+			once(lines, "line"),
+			exited.then(() => {
+				throw new Error("Process probe exited before barrier");
+			}),
+			new Promise((_, reject) => {
+				timer = setTimeout(
+					() => reject(new Error("Process barrier timeout")),
+					30000,
+				);
+			}),
+		]);
+		const checkpoint = JSON.parse(line);
+		return {
+			child,
+			exited: waitExited,
+			checkpoint,
+			close: async () => {
+				lines.close();
+				if (child.exitCode === null && child.signalCode === null) child.kill();
+				try {
+					await waitExited();
+				} finally {
+					if (checkpoint.childPid)
+						try {
+							process.kill(checkpoint.childPid, "SIGKILL");
+						} catch {
+							// Best-effort fallback; the PID assertion reports cleanup failures.
+						}
+				}
+			},
+		};
+	} catch (error) {
+		child.kill();
+		await waitExited();
+		lines.close();
+		throw error;
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
+native(
+	"crash before publication expires its lease; restart publishes once and fences the crashed owner",
+	async () => {
+		register();
+		const submitted = await store.submitAnalysis(
+			db,
+			"e2e",
+			"e2e-user",
+			input(),
+		);
+		const probe = await processProbe("crash");
+		try {
+			assert.equal(probe.checkpoint.stage, "before-publication");
+			assert.equal(await client.analysisResult.count(), 0);
+			assert.equal(await client.analysisManifest.count(), 0);
+			assert.equal(await client.p1AnalysisArtifact.count(), 0);
+			probe.child.kill("SIGKILL");
+			await probe.exited();
+			const deadline = Date.now() + 10000;
+			while (true) {
+				const [state] = await db.query(
+					'SELECT "leaseExpiresAt"<=clock_timestamp() AS expired FROM "P1AnalysisJobAttempt" WHERE id=$1',
+					[probe.checkpoint.claim.attemptId],
+				);
+				if (state.expired) break;
+				assert.ok(Date.now() < deadline, "Crashed lease did not expire");
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
+			const job = await client.p1AnalysisJob.findUnique({
+				where: { id: submitted.value.id },
+			});
+			const bundle = JSON.parse(
+				command(python, ["pipeline/research_worker.py"], {
+					input: JSON.stringify({
+						root: env.RESEARCH_DATA_DIR,
+						run: { id: job.id, workspaceId: job.workspaceId, input: job.input },
+					}),
+				}),
+			);
+			function stalePublish() {
+				const result = spawnSync(
+					process.execPath,
+					["scripts/research-p1-publish.mjs"],
+					{
+						env,
+						input: JSON.stringify({ claim: probe.checkpoint.claim, bundle }),
+						encoding: "utf8",
+						timeout: 30000,
+					},
+				);
+				assert.equal(result.status, 1);
+				assert.doesNotMatch(
+					result.stdout + result.stderr,
+					/leaseToken|postgresql|stack/,
+				);
+			}
+			stalePublish();
+			assert.equal(await client.analysisResult.count(), 0);
+			assert.equal(run().status, "succeeded");
+			stalePublish();
+			const { readPublicationContext } = await loadInspectionModule(
+				"research-publication-db",
+			);
+			await assert.rejects(
+				readPublicationContext(db, probe.checkpoint.claim),
+				(error) => error.code === "LEASE_LOST",
+			);
+			assert.equal(run().status, "idle");
+			assert.equal(await client.analysisResult.count(), 1);
+			assert.equal(await client.analysisManifest.count(), 1);
+			const attempts = await client.p1AnalysisJobAttempt.findMany({
+				orderBy: { attemptNo: "asc" },
+			});
+			assert.deepEqual(
+				attempts.map((item) => item.status),
+				["expired", "succeeded"],
+			);
+			assert.notEqual(attempts[0].leaseToken, attempts[1].leaseToken);
+		} finally {
+			await probe.close();
+		}
+	},
+);
+
+for (const [mode, code] of [
+	["timeout", "PROCESS_TIMEOUT"],
+	["transient", "PROCESSOR_FAILED"],
+	["stop", "WORKER_CANCELLED"],
+	["signal", "WORKER_CANCELLED"],
+])
+	native(
+		`runtime ${mode} records a retryable attempt without partial publication; restart succeeds`,
+		async () => {
+			register();
+			const submitted = await store.submitAnalysis(
+				db,
+				"e2e",
+				"e2e-user",
+				input(),
+			);
+			const probe = await processProbe(mode);
+			try {
+				if (mode === "stop") probe.child.stdin.end("stop\n");
+				await probe.exited();
+				if (mode !== "transient")
+					assert.throws(
+						() => process.kill(probe.checkpoint.childPid, 0),
+						(error) => error.code === "ESRCH",
+					);
+				assert.equal(await client.analysisResult.count(), 0);
+				assert.equal(await client.analysisManifest.count(), 0);
+				assert.equal(await client.p1AnalysisArtifact.count(), 0);
+				const attempt = await client.p1AnalysisJobAttempt.findFirst();
+				assert.equal(attempt.errorCode, code);
+				assert.equal(attempt.retryable, true);
+				assert.equal(attempt.status, "failed");
+				const before = await client.p1AnalysisJob.findUnique({
+					where: { id: submitted.value.id },
+				});
+				assert.equal(before.resultId, null);
+				// Restart uses the shipped five-second backoff, not the probe's short policy.
+				await new Promise((resolve) =>
+					setTimeout(
+						resolve,
+						Math.max(0, Date.parse(attempt.completedAt) + 5050 - Date.now()),
+					),
+				);
+				assert.equal(run().status, "succeeded");
+				assert.equal(await client.analysisResult.count(), 1);
+				assert.equal(await client.analysisManifest.count(), 1);
+				assert.equal(await client.p1AnalysisJobAttempt.count(), 2);
+				assert.equal(run().status, "idle");
+			} finally {
+				await probe.close();
+			}
+		},
 	);
 
 native(
