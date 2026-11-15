@@ -32,6 +32,16 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 6: [audit isolasi dan retensi](bagas-sprint-3-isolation-retention.md)
+menambahkan recheck membership sebelum respons dan setiap chunk unduhan CSV,
+tanpa prefetch stream aplikasi. Cross-workspace, revoke dan downgrade hak owner
+diuji; member aktif tetap memiliki hak baca sesuai kontrak. Retensi server dan
+browser tanpa TTL/delete data otomatis; browser hanya melepas cache memori saat
+panel ditutup. Orphan tetap privat, tidak ada trigger histori yang diubah atau
+login baru pada web anonim. Review manusia Orkhan atas B3 masih terbuka.
+Verifikasi Tahap 6: 286 tes Node dan 163 tes Python tanpa skip dengan PostgreSQL
+native aktif; typecheck/lint/contracts/build dan diff check lulus.
+
 Bagas Sprint 3 Tahap 5: [rekonsiliasi dan pemulihan berulang](bagas-sprint-3-recovery.md)
 menambahkan audit objek privat tanpa delete/metadata write, restore file hilang
 dari backup checksum-valid tanpa overwrite, serta pemulihan indeks browser sebelum

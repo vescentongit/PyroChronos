@@ -9,6 +9,13 @@ const bundleSchema = z.object({ result: researchAnalysisResultSchema, manifest: 
 type Bundle = z.infer<typeof bundleSchema>;
 let bundleCache: { id: string; promise: Promise<Bundle> } | undefined;
 
+export const localResearchRetentionPolicy = Object.freeze({persistedTtlDays:null,activeBundleCacheEntries:1,automaticPersistedEviction:false});
+export function releaseLocalResearchCache() { bundleCache=undefined; }
+export async function localResearchStorageCapacity() {
+  const estimate=await globalThis.navigator?.storage?.estimate?.();
+  return {usage:estimate?.usage??null,quota:estimate?.quota??null,automaticPersistedEviction:false};
+}
+
 function database() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open("pyro-research-v1", 1);

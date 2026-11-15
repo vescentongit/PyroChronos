@@ -7,7 +7,7 @@ registerHooks({ resolve(specifier, context, next) {
   if (context.parentURL?.includes("/src/lib/") && specifier.startsWith("./") && !/\.[a-z]+$/i.test(specifier)) return next(`${specifier}.ts`, context);
   return next(specifier, context);
 } });
-const { getBundle, submitResearch, lastResearchResult, researchHistory } = await import("../src/lib/local-research-client.ts");
+const { getBundle, submitResearch, lastResearchResult, researchHistory, releaseLocalResearchCache,localResearchRetentionPolicy } = await import("../src/lib/local-research-client.ts");
 const example = JSON.parse(readFileSync("src/lib/fixtures/research-demo.json", "utf8"));
 const records = new Map();
 let reads = 0;
@@ -45,6 +45,19 @@ test("switching analyses evicts the previous cached bundle", async () => {
   const before = reads;
   await getBundle("cache-active");
   assert.equal(reads - before, 1);
+});
+
+test("local retention clears only derived memory cache and never persisted bundles",async()=>{
+  const before=structuredClone(records);
+  await getBundle("cache-active");
+  const count=reads;
+  releaseLocalResearchCache();
+  await getBundle("cache-active");
+  assert.equal(reads,count+1);
+  assert.deepEqual(records,before);
+  assert.equal(localResearchRetentionPolicy.activeBundleCacheEntries,1);
+  assert.equal(localResearchRetentionPolicy.automaticPersistedEviction,false);
+  assert.equal(localResearchRetentionPolicy.persistedTtlDays,null);
 });
 test("failed reads are not cached and do not replace a recoverable stored result", async () => {
   await assert.rejects(getBundle("cache-missing"), error => error.code === "INVALID_RESPONSE");

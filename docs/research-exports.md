@@ -118,6 +118,12 @@ failure aborts rather than inserting an error JSON document into CSV.
 
 ## Verification
 
+Stage 6 [isolation/retention audit](bagas-sprint-3-isolation-retention.md) adds
+response-boundary authorization and membership checks per CSV chunk, with stream
+prefetch disabled. Previously returned application download paths still require
+current membership. Already delivered bytes cannot be recalled. Archives have
+no automatic TTL/deletion; no valid export or history row is purged on revocation.
+
 Sprint 3 B1 adds a five-active-export guard per workspace after ready/queued cache
 reuse, retaining the existing receipt quota and size guards. CSV output is bounded
 before storage; overflow remains a terminal capacity error even when storage

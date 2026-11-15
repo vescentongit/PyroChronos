@@ -10,6 +10,7 @@ import {
 	researchListQuery,
 	researchRequestBody,
 	withPrivateResearchRequest,
+	workspaceResearchDependencies,
 	type ResearchHttpDependencies,
 } from "./research-http";
 import { fail } from "./research-store";
@@ -30,48 +31,54 @@ export function createMonitoringLocationHandlers(
 		context: LocationRouteContext,
 		operation: "create" | "list" | "detail",
 	): Promise<Response> {
-		return withPrivateResearchRequest(request, dependencies, async (userId) => {
-			const { workspaceId, locationId } = await context.params;
-			const service = {
-				database: dependencies.database(),
-				artifacts: {
-					async read(key: string, checksum: string, bytes: number) {
-						try {
-							return await dependencies.artifacts().read(key, checksum, bytes);
-						} catch {
-							return fail("DEPENDENCY_UNAVAILABLE", 503);
-						}
+		return withPrivateResearchRequest(
+			request,
+			workspaceResearchDependencies(dependencies, context),
+			async (userId) => {
+				const { workspaceId, locationId } = await context.params;
+				const service = {
+					database: dependencies.database(),
+					artifacts: {
+						async read(key: string, checksum: string, bytes: number) {
+							try {
+								return await dependencies
+									.artifacts()
+									.read(key, checksum, bytes);
+							} catch {
+								return fail("DEPENDENCY_UNAVAILABLE", 503);
+							}
+						},
 					},
-				},
-			};
-			if (operation === "create")
+				};
+				if (operation === "create")
+					return privateResearchJson(
+						await createMonitoringLocation(
+							service,
+							workspaceId,
+							userId,
+							await researchRequestBody(request),
+						),
+						201,
+					);
+				if (operation === "detail")
+					return privateResearchJson(
+						await getMonitoringLocation(
+							service,
+							workspaceId,
+							userId,
+							locationId ?? fail("NOT_FOUND", 404),
+						),
+					);
 				return privateResearchJson(
-					await createMonitoringLocation(
+					await listMonitoringLocations(
 						service,
 						workspaceId,
 						userId,
-						await researchRequestBody(request),
-					),
-					201,
-				);
-			if (operation === "detail")
-				return privateResearchJson(
-					await getMonitoringLocation(
-						service,
-						workspaceId,
-						userId,
-						locationId ?? fail("NOT_FOUND", 404),
+						researchListQuery(request),
 					),
 				);
-			return privateResearchJson(
-				await listMonitoringLocations(
-					service,
-					workspaceId,
-					userId,
-					researchListQuery(request),
-				),
-			);
-		});
+			},
+		);
 	}
 	return {
 		POST: (request: Request, context: LocationRouteContext) =>

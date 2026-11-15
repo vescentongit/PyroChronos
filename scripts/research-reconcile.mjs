@@ -15,6 +15,9 @@ registerHooks({
 const { reconcileResearchObjects } = await import(
 	"../src/lib/research-recovery.ts"
 );
+const { serverResearchRetentionPolicy } = await import(
+	"../src/lib/research-retention.ts"
+);
 const client = new PrismaClient();
 try {
 	if (!process.env.RESEARCH_ARTIFACT_ROOT) throw new Error("ROOT_REQUIRED");
@@ -24,7 +27,11 @@ try {
 		process.env.RESEARCH_RECOVERY_BACKUP_ROOT,
 	);
 	console.log(
-		JSON.stringify({ policy: "retain-private-no-delete", objects: report }),
+		JSON.stringify({
+			policy: "retain-private-no-delete",
+			retention: serverResearchRetentionPolicy,
+			objects: report,
+		}),
 	);
 	if (
 		report.some((row) =>

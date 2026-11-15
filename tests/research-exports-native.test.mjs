@@ -77,6 +77,16 @@ const create = (input = body(), dependencies = f.dependencies) =>
 	api.createResearchExport(dependencies, f.workspace, f.user, input);
 
 native(
+	"native workspace resource matrix denies cross-workspace and revoked resources",
+	async () => {
+		const { checkWorkspaceIsolation } = await import(
+			"./helpers/workspace-isolation-checks.mjs"
+		);
+		await checkWorkspaceIsolation(db, f, storage);
+	},
+);
+
+native(
 	"repeated export object recovery preserves ready export, attempts and report history",
 	async () => {
 		const { loadInspectionModule } = await import(

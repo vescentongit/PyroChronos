@@ -1,9 +1,28 @@
-import { errorPayload, fail, ResearchFailure } from "./research-store.ts";
+import {
+	errorPayload,
+	fail,
+	ResearchFailure,
+	member,
+	type Sql,
+} from "./research-store.ts";
 import { backpressureHeaders, capacityPolicy } from "./research-capacity.ts";
 
 export interface ResearchHttpDependencies {
 	session(): Promise<{ user?: { id?: string } } | null>;
 	enabled(): boolean;
+	authorizeResponse?(userId: string): Promise<void>;
+}
+
+export function workspaceResearchDependencies(
+	deps: ResearchHttpDependencies & { database(): Sql },
+	context: { params: Promise<{ workspaceId: string }> },
+): ResearchHttpDependencies {
+	return {
+		...deps,
+		authorizeResponse: async (userId) => {
+			await member(deps.database(), (await context.params).workspaceId, userId);
+		},
+	};
 }
 const errorStatuses = new Map([
 	["INVALID_REQUEST", 400],
@@ -36,7 +55,14 @@ export async function withPrivateResearchRequest(
 			if (origin && origin !== new URL(request.url).origin)
 				fail("FORBIDDEN", 403);
 		}
-		return await action(userId);
+		const response = await action(userId);
+		try {
+			await dependencies.authorizeResponse?.(userId);
+		} catch (error) {
+			await response.body?.cancel().catch(() => {});
+			throw error;
+		}
+		return response;
 	} catch (error: unknown) {
 		const code =
 			error instanceof ResearchFailure && errorStatuses.has(error.code)

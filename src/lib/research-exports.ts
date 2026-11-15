@@ -231,8 +231,10 @@ export async function getResearchExportDownload(
 	return {
 		filename: `${row.kind}-${publicationChecksum(row.id).slice(7, 23)}-${row.periodRole}.csv`,
 		content: (async function* () {
-			for (let offset = 0; offset < bytes.byteLength; offset += 65536)
+			for (let offset = 0; offset < bytes.byteLength; offset += 65536) {
+				await member(dependencies.database, workspaceId, userId);
 				yield bytes.slice(offset, offset + 65536);
+			}
 		})(),
 	};
 }

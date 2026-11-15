@@ -125,6 +125,7 @@ async function handle(req: NextRequest, context: Context) {
         }
       } else fail("NOT_FOUND", 404);
     }
+    if(path[0]==="workspaces"&&path[1])await member(db,path[1],user);
     return NextResponse.json(value, { status, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     const known = error instanceof ResearchFailure ? error : new ResearchFailure("INTERNAL_ERROR", 500);

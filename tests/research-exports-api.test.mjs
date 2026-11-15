@@ -17,6 +17,12 @@ import {
 const { createResearchExportHandlers } = await loadInspectionModule(
 	"research-exports-http",
 );
+test("workspace resource matrix rejects foreign IDs, stale cursors and revoked membership", async () => {
+	const { checkWorkspaceIsolation } = await import(
+		"./helpers/workspace-isolation-checks.mjs"
+	);
+	await checkWorkspaceIsolation(db, f, storage);
+});
 let pg,
 	root,
 	db,
@@ -187,6 +193,46 @@ test("database exceptions never appear in status or download error bodies", asyn
 			/private-sentinel|postgresql|stack/,
 		);
 	}
+});
+
+test("revocation after download creation blocks even the first CSV chunk", async () => {
+	const created = await check(
+		await handlers.POST(request("POST", body()), context()),
+		202,
+	);
+	await exportWorker.runResearchExportOnce(f.dependencies);
+	const service = await loadInspectionModule("research-exports");
+	const file = await service.getResearchExportDownload(
+		f.dependencies,
+		f.workspace,
+		f.user,
+		created.id,
+	);
+	await db.query(
+		'UPDATE "Membership" SET active=false WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	await assert.rejects(
+		file.content[Symbol.asyncIterator]().next(),
+		(error) => error.code === "FORBIDDEN",
+	);
+	for (const method of ["GET", "manifestGET", "downloadGET"])
+		await check(
+			await handlers[method](request(), context(created.id)),
+			403,
+			"FORBIDDEN",
+		);
+	await db.query(
+		'UPDATE "Membership" SET active=true WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	const response = await handlers.downloadGET(request(), context(created.id));
+	assert.equal(response.status, 200);
+	await db.query(
+		'UPDATE "Membership" SET active=false WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	await assert.rejects(response.text());
 });
 
 test("full export queue and receipt quota reject new work while old result/CSV/manifest remain readable", async () => {

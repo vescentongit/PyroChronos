@@ -11,6 +11,20 @@ import { loadInspectionModule } from "./helpers/research-inspection-fixtures.mjs
 const { withPrivateResearchRequest, researchRequestBody } =
 	await loadInspectionModule("research-http");
 const { fail } = await loadInspectionModule("research-store");
+
+test("response authorization is checked again after work and before returning private bytes", async () => {
+	const response = await withPrivateResearchRequest(
+		new Request("http://localhost"),
+		{
+			enabled: () => true,
+			session: async () => ({ user: { id: "revoked" } }),
+			authorizeResponse: async () => fail("FORBIDDEN", 403),
+		},
+		async () => Response.json({ private: "must not escape" }),
+	);
+	assert.equal(response.status, 403);
+	assert.doesNotMatch(await response.text(), /must not escape/);
+});
 const { boundExportStream, storeBoundedExport } = await loadInspectionModule(
 	"research-export-worker",
 );

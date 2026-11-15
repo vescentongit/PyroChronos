@@ -165,6 +165,14 @@ Target awal ekspor visual adalah PNG kalender/grafik yang dibuat frontend dari r
 
 ## 10. Error, cache dan batas layanan
 
+Tahap 6: [isolasi dan retensi](../bagas-sprint-3-isolation-retention.md).
+Membership aktif diperiksa ulang sebelum respons privat dan setiap chunk CSV.
+Pencabutan menolak request baru serta stream chunk berikutnya yang belum dikirim;
+stream setelah header terbit di-abort, bukan disisipi JSON error. Tidak ada URL
+objek publik/presigned sebagai pengganti endpoint aplikasi. Downgrade mencabut
+hak owner, sementara hak member yang masih aktif tetap berlaku. Tidak ada TTL
+atau penghapusan histori otomatis pada policy retensi saat ini.
+
 Implementasi policy `research-capacity-1` dan perilaku anonim/legacy terbaru:
 [Tahap 3 backpressure](../bagas-sprint-3-backpressure.md). Error publik anonim
 `/api/local-research` mengikuti bentuk error v2 di bawah. 413 `PAYLOAD_TOO_LARGE`

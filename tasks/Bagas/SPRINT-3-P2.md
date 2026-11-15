@@ -76,6 +76,16 @@ deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum d
 
 **Dependensi integrasi:** R2-P1-B2, R2-P1-B3, R2-P1-B4
 
+**Tahap 6 — [audit isolasi dan retensi](../../docs/bagas-sprint-3-isolation-retention.md):**
+
+- [x] Inventaris route v2, scope workspace resource/cursor/cache, manifest/tile/download dan capability publikasi privat diaudit; web anonim tetap tanpa login.
+- [x] Recheck membership pada batas respons seluruh keluarga handler dan catch-all workspace; stream CSV memeriksa tiap chunk tanpa prefetch aplikasi.
+- [x] Matriks lintas workspace, revoke dan downgrade hak owner diuji di PGlite/PostgreSQL native; download lama tidak menjadi tautan publik yang melewati otorisasi.
+- [x] Policy research-retention-1: histori/artefak/orphan tetap privat tanpa TTL/delete otomatis; trigger tidak diubah. Rotasi browser hanya cache memori satu bundle, tanpa eviksi data persisted.
+- [x] Prosedur kapasitas, backup, cleanup memori dan batas pencabutan stream terdokumentasi; tidak ada purge arsip atau penghapusan origin otomatis.
+- [x] Verifikasi Tahap 6: 286/286 Node dan 163/163 Python tanpa skip, PostgreSQL native aktif; typecheck, lint, contracts, build dan diff check lulus.
+- [ ] Review manusia Orkhan; checkbox gabungan selesai/direview tetap terbuka sampai review.
+
 ### R2-P2-B4 — Deployment dan observabilitas
 
 - [ ] **Selesai dan direview** — estimasi 5 poin.

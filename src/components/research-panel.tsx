@@ -28,6 +28,7 @@ import {
   researchDetections,
   lastResearchResult,
   recoverLocalResearch,
+  releaseLocalResearchCache,
   researchHistory,
   openResearchResult,
 } from "@/lib/local-research-client";
@@ -265,7 +266,7 @@ function ResearchPanel({
     }).then(saved => {
       if (active && saved) { publishResult(saved, "saved-local-result"); setStatus("succeeded"); }
     }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
-    return () => { active = false; };
+    return () => { active = false; releaseLocalResearchCache(); };
   }, []);
   useEffect(() => {
     const controller = new AbortController();
