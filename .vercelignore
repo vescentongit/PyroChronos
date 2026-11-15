@@ -6,7 +6,7 @@
 .vscode/
 .env*
 node_modules/
-data/
+/data/
 tests/
 tasks/
 *.pdf
