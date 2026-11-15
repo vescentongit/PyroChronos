@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "research-2"
+    },
+    "error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "code": {
+      "type": "string",
+      "enum": [
+        "INVALID_REQUEST",
+        "PAYLOAD_TOO_LARGE",
+        "UNAUTHENTICATED",
+        "FORBIDDEN",
+        "NOT_FOUND",
+        "RESULT_NOT_READY",
+        "DEPENDENCY_UNAVAILABLE",
+        "NOT_CONFIGURED",
+        "NETWORK_ERROR",
+        "TIMEOUT",
+        "UPSTREAM_DENIED",
+        "RATE_LIMITED",
+        "IDEMPOTENCY_CONFLICT",
+        "REVISION_CONFLICT",
+        "CAPACITY_LIMIT",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "error",
+    "code",
+    "retryable",
+    "requestId"
+  ],
+  "additionalProperties": false
+}

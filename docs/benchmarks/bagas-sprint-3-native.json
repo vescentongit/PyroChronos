@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "native-capacity-benchmark-1",
+  "measuredAt": "2026-11-14T07:13:58.350Z",
+  "synthetic": true,
+  "engine": "PostgreSQL 16.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+  "methodology": "Real shipped migrations, submit service, worker CLI and publisher; raw synthetic model-less bundles. Wall includes process startup. DB relation bytes include indexes and empty migrated tables; not physical IO. No DB/worker CPU or RSS claimed.",
+  "statuses": [
+    "accepted",
+    "accepted",
+    "accepted",
+    "accepted",
+    "CAPACITY_LIMIT",
+    "accepted"
+  ],
+  "quotaStatus": "RATE_LIMITED",
+  "oldResultReadable": true,
+  "cachedResultReadableAtCapacity": true,
+  "relationBytes": 1531904,
+  "artifactBytes": 2263442,
+  "rows": [
+    {
+      "name": "submit/small/short/miss",
+      "elapsedMs": 54.70209999999997
+    },
+    {
+      "name": "worker/small/short",
+      "elapsedMs": 1162.5355
+    },
+    {
+      "name": "submit/small/short/hit",
+      "elapsedMs": 14.180399999999736
+    },
+    {
+      "name": "submit/small/short/hit",
+      "elapsedMs": 14.166200000000117
+    },
+    {
+      "name": "submit/small/short/hit",
+      "elapsedMs": 15.148400000000038
+    },
+    {
+      "name": "submit/small/long/miss",
+      "elapsedMs": 18.083000000000084
+    },
+    {
+      "name": "worker/small/long",
+      "elapsedMs": 1189.3046999999997
+    },
+    {
+      "name": "submit/small/long/hit",
+      "elapsedMs": 12.991800000000694
+    },
+    {
+      "name": "submit/small/long/hit",
+      "elapsedMs": 12.248900000000503
+    },
+    {
+      "name": "submit/small/long/hit",
+      "elapsedMs": 11.013100000000122
+    },
+    {
+      "name": "submit/large/short/miss",
+      "elapsedMs": 17.322700000000623
+    },
+    {
+      "name": "worker/large/short",
+      "elapsedMs": 1183.1792999999998
+    },
+    {
+      "name": "submit/large/short/hit",
+      "elapsedMs": 13.313000000000102
+    },
+    {
+      "name": "submit/large/short/hit",
+      "elapsedMs": 12.669999999999163
+    },
+    {
+      "name": "submit/large/short/hit",
+      "elapsedMs": 15.232700000000477
+    },
+    {
+      "name": "submit/large/long/miss",
+      "elapsedMs": 17.123399999999492
+    },
+    {
+      "name": "worker/large/long",
+      "elapsedMs": 3247.5076
+    },
+    {
+      "name": "submit/large/long/hit",
+      "elapsedMs": 13.937399999998888
+    },
+    {
+      "name": "submit/large/long/hit",
+      "elapsedMs": 14.87750000000051
+    },
+    {
+      "name": "submit/large/long/hit",
+      "elapsedMs": 13.132799999999406
+    },
+    {
+      "name": "queue/concurrency-6/quota-5",
+      "elapsedMs": 159.9329000000016
+    },
+    {
+      "name": "read/old-result/queue-full",
+      "elapsedMs": 3.1345000000001164
+    },
+    {
+      "name": "submit/succeeded-hit/queue-full",
+      "elapsedMs": 13.642600000001039
+    },
+    {
+      "name": "receipts/quota-30",
+      "elapsedMs": 473.20700000000033
+    }
+  ]
+}

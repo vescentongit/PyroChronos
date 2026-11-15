@@ -1,0 +1,60 @@
+{
+ "schema": "polygon-check-1",
+ "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+ "evaluationId": "evaluation-275ac4d8b7c6096b",
+ "seed": 20261112,
+ "boxDegrees": 0.5,
+ "polygons": 120,
+ "role": "diagnostic only; not part of the acceptance rule and not used for tuning",
+ "unitsDefinition": "one polygon and one test-split calendar year with MODIS and VIIRS fully covered",
+ "all": {
+  "units": 600,
+  "unitsWithReferenceAtLeast30": 185,
+  "relativeBias": -0.00463082084353824,
+  "medianRatioToModis": 1.001038943722789,
+  "withinQuarter": 0.6054054054054054,
+  "mae": 48.05522514555107
+ },
+ "byDomain": {
+  "africa_north_of_equator": {
+   "units": 140,
+   "unitsWithReferenceAtLeast30": 43,
+   "relativeBias": 0.0892769649501634,
+   "medianRatioToModis": 1.0993452603273897,
+   "withinQuarter": 0.627906976744186,
+   "mae": 54.67209923773919
+  },
+  "africa_south_of_equator": {
+   "units": 60,
+   "unitsWithReferenceAtLeast30": 43,
+   "relativeBias": -0.034339703750522824,
+   "medianRatioToModis": 0.9862759995851821,
+   "withinQuarter": 0.7674418604651163,
+   "mae": 58.340862009117636
+  },
+  "australia": {
+   "units": 60,
+   "unitsWithReferenceAtLeast30": 17,
+   "relativeBias": 0.23035182139149757,
+   "medianRatioToModis": 1.2141406655405595,
+   "withinQuarter": 0.5294117647058824,
+   "mae": 44.078195919486674
+  },
+  "boreal_eurasia": {
+   "units": 215,
+   "unitsWithReferenceAtLeast30": 18,
+   "relativeBias": 0.05934267264386613,
+   "medianRatioToModis": 0.879539820110039,
+   "withinQuarter": 0.6111111111111112,
+   "mae": 41.90217401797639
+  },
+  "south_america": {
+   "units": 125,
+   "unitsWithReferenceAtLeast30": 64,
+   "relativeBias": -0.18596643089056336,
+   "medianRatioToModis": 0.8323042155363684,
+   "withinQuarter": 0.5,
+   "mae": 39.48579461495713
+  }
+ }
+}

@@ -1,0 +1,18 @@
+{
+  "passed": [
+    "Live synthetic snapshot and nullable evidence render without fabricated zeroes",
+    "Network failure retains region cache across refresh and marks it stale",
+    "Late response from abandoned region never replaces selected region",
+    "Partial/replay labels and rejection of demo responses in operational mode",
+    "Exact 24-hour/seven-day boundary candidates appear once in the matching browser tab",
+    "CSV and JSON buttons download provenance-bearing region-correct files",
+    "Keyboard skip link, navigation and candidate selection activate correctly",
+    "Native dialog traps Tab, closes with Escape, and returns focus",
+    "Demo report survives reload, language persists, and report regions stay separate",
+    "Storage failure keeps form open and never claims successful save",
+    "Synthetic API save failure keeps draft; retry reuses request ID and shows one saved report",
+    "Mobile layout and selected-region control remain usable"
+  ],
+  "exceptions": [],
+  "syntheticNetwork": true
+}

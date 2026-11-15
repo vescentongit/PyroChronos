@@ -1,0 +1,47 @@
+{
+ "schema": "harmonization-model-1",
+ "evaluationId": "evaluation-275ac4d8b7c6096b",
+ "configHash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+ "family": "ratio_global",
+ "ratio": 0.24575377326604025,
+ "ratios": null,
+ "validatedDomains": [
+  "africa_north_of_equator",
+  "africa_south_of_equator",
+  "australia",
+  "boreal_eurasia",
+  "south_america"
+ ],
+ "unvalidatedDomains": [
+  "europe_mediterranean",
+  "maritime_southeast_asia",
+  "north_america",
+  "other",
+  "south_and_mainland_southeast_asia"
+ ],
+ "pairsSha256": "e194422b2197a112c5b98bde604b0610318f9f21c8260a97b15da5b432d89a7e",
+ "split": {
+  "train": {
+   "start": "2013-01",
+   "end": "2018-12"
+  },
+  "validation": {
+   "start": "2019-01",
+   "end": "2020-12"
+  },
+  "test": {
+   "start": "2021-01",
+   "end": "2025-12"
+  }
+ },
+ "decisionRuleVersion": "decision-rule-1",
+ "testMae": 12.527906757106656,
+ "testRawAlignmentMae": 130.638074318682,
+ "polygonCheck": {
+  "units": 600,
+  "unitsWithReferenceAtLeast30": 185,
+  "relativeBias": -0.00463082084353824,
+  "withinQuarter": 0.6054054054054054,
+  "medianRatioToModis": 1.001038943722789
+ }
+}

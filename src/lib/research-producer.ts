@@ -1,0 +1,137 @@
+import { spawn } from "node:child_process";
+import { capacityPolicy } from "./research-capacity.ts";
+
+type ProducerInput =
+	| { action: "fingerprint"; root?: string }
+	| { action?: "analyze"; root?: string; run: unknown };
+export const producerFailureCodes = [
+	"CAPACITY_LIMIT",
+	"PAYLOAD_TOO_LARGE",
+	"RATE_LIMITED",
+	"NETWORK_ERROR",
+	"TIMEOUT",
+	"UPSTREAM_DENIED",
+];
+function failure(value: unknown) {
+	return value &&
+		typeof value === "object" &&
+		"code" in value &&
+		producerFailureCodes.includes(String(value.code))
+		? String(value.code)
+		: "PRODUCER_FAILED";
+}
+const maxLocalBytes = capacityPolicy.localBundleBytes;
+// Keep hosted JSON bundles below Vercel's non-streaming response limit.
+export const maxHostedBundleBytes = capacityPolicy.hostedBundleBytes;
+
+export async function researchProducer(
+	input: ProducerInput,
+	signal: AbortSignal,
+): Promise<unknown> {
+	const base = process.env.PIPELINE_URL;
+	if (base) {
+		const requestSignal = AbortSignal.any([
+			signal,
+			AbortSignal.timeout(120_000),
+		]);
+		try {
+			const body =
+				"run" in input
+					? { action: input.action ?? "produce", run: input.run }
+					: { action: "fingerprint" };
+			const response = await fetch(
+				new URL("produce", base.endsWith("/") ? base : `${base}/`),
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body),
+					cache: "no-store",
+					redirect: "error",
+					signal: requestSignal,
+				},
+			);
+			if (!response.body) throw new Error("PRODUCER_FAILED");
+			const reader = response.body.getReader();
+			const chunks: Uint8Array[] = [];
+			let size = 0;
+			try {
+				for (;;) {
+					const part = await reader.read();
+					if (part.done) break;
+					size += part.value.byteLength;
+					if (size > maxHostedBundleBytes) throw new Error("PAYLOAD_TOO_LARGE");
+					chunks.push(part.value);
+				}
+			} finally {
+				await reader.cancel();
+			}
+			let value: unknown;
+			try {
+				value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+			} catch {
+				throw new Error("PRODUCER_FAILED");
+			}
+			if (!response.ok) {
+				if (response.status === 413) throw new Error("PAYLOAD_TOO_LARGE");
+				throw new Error(failure(value));
+			}
+			return value;
+		} catch (error) {
+			if (signal.aborted) throw new Error("ABORTED");
+			if (
+				requestSignal.aborted ||
+				(error instanceof Error && error.name === "TimeoutError")
+			)
+				throw new Error("TIMEOUT");
+			if (
+				error instanceof Error &&
+				["PRODUCER_FAILED", ...producerFailureCodes].includes(error.message)
+			)
+				throw error;
+			throw new Error("NETWORK_ERROR");
+		}
+	}
+	// A missing binding on Vercel must never fall back to a nonexistent Python binary.
+	if (process.env.VERCEL) throw new Error("PRODUCER_FAILED");
+	return new Promise((resolve, reject) => {
+		const child = spawn(
+			process.env.RESEARCH_PYTHON || "python",
+			["pipeline/research_worker.py"],
+			{ stdio: ["pipe", "pipe", "ignore"], windowsHide: true },
+		);
+		const chunks: Buffer[] = [];
+		let size = 0,
+			done = false;
+		const finish = (error?: Error, value?: unknown) => {
+			if (done) return;
+			done = true;
+			clearTimeout(timer);
+			signal.removeEventListener("abort", abort);
+			if (error) {
+				child.kill();
+				reject(error);
+			} else resolve(value);
+		};
+		const abort = () => finish(new Error("ABORTED"));
+		const timer = setTimeout(() => finish(new Error("TIMEOUT")), 120_000);
+		signal.addEventListener("abort", abort, { once: true });
+		child.stdout.on("data", (chunk: Buffer) => {
+			size += chunk.length;
+			if (size > maxLocalBytes) finish(new Error("PAYLOAD_TOO_LARGE"));
+			else chunks.push(chunk);
+		});
+		child.on("error", () => finish(new Error("PRODUCER_FAILED")));
+		child.on("close", (code) => {
+			try {
+				const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+				if (code !== 0) return finish(new Error(failure(value)));
+				finish(undefined, value);
+			} catch {
+				finish(new Error("PRODUCER_FAILED"));
+			}
+		});
+		child.stdin.on("error", () => finish(new Error("PRODUCER_FAILED")));
+		child.stdin.end(JSON.stringify(input));
+		if (signal.aborted) abort();
+	});
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1",
+  "runId": "example-replay-kalteng-v1",
+  "regionId": "kalteng",
+  "boundaryVersion": "study-rectangle-v1",
+  "mode": "replay",
+  "status": "replay",
+  "evaluatedAt": "2026-11-09T12:00:00Z",
+  "ingestedAt": "2026-11-09T12:05:00Z",
+  "publishedAt": "2026-11-09T12:10:00Z",
+  "freshUntil": "2026-11-09T13:10:00Z",
+  "sources": [
+    {
+      "id": "example-source",
+      "product": "EXAMPLE-NOT-FIRMS-DATA",
+      "version": "1",
+      "observedAt": "2026-11-09T10:00:00Z",
+      "ingestedAt": "2026-11-09T12:05:00Z",
+      "status": "available",
+      "checksum": "example-checksum-not-a-raw-batch"
+    }
+  ],
+  "method": {
+    "name": "raw",
+    "version": "1",
+    "validation": "not-evaluated",
+    "baselinePeriod": null,
+    "unit": "detected-cell-days"
+  },
+  "candidates": [
+    {
+      "id": "example-location-kalteng-1",
+      "name": "Contoh lokasi / Example location",
+      "district": "",
+      "lat": -2.5,
+      "lng": 114,
+      "observedAt": "2026-11-09T10:00:00Z",
+      "sensor": "EXAMPLE",
+      "repeats": null,
+      "anomaly": null,
+      "priority": null,
+      "reason": {
+        "id": "Contoh kontrak sintetis. Bukti historis belum memadai; bukan data FIRMS.",
+        "en": "Synthetic contract example. Historical evidence is insufficient; not FIRMS data."
+      }
+    }
+  ],
+  "series": [
+    { "at": "2026-11-08T12:00:00Z", "observed": null, "baseline": null },
+    { "at": "2026-11-09T12:00:00Z", "observed": 1, "baseline": null }
+  ],
+  "coverage": null
+}

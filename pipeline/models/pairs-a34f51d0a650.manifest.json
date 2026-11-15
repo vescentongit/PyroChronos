@@ -1,0 +1,1111 @@
+{
+ "schema": "pairs-manifest-1",
+ "pairsVersion": "pairs-1",
+ "storeFormat": "pcd1",
+ "config": {
+  "version": "harmonization-config-1",
+  "hash": "a34f51d0a6501f5ae7676dfacef9c9411b01302ca7cd723d51778f865970b365",
+  "referenceSource": "MODIS_SP",
+  "harmonizedSource": "VIIRS_SNPP_SP",
+  "satellites": {
+   "reference": [
+    "Terra",
+    "Aqua"
+   ],
+   "harmonized": [
+    "Suomi NPP"
+   ],
+   "excluded": {
+    "NOAA-20": "not processed into the store yet",
+    "NOAA-21": "not processed into the store yet"
+   },
+   "nominalOverpassesPerDay": {
+    "MODIS_SP": 4,
+    "VIIRS_SNPP_SP": 2
+   }
+  },
+  "cellDegrees": 1.0,
+  "timeUnit": "calendar-month-utc",
+  "pairRule": "a pair is one 1-degree cell and one UTC calendar month where the reference archive and the VIIRS archive both cover the whole month; cells with at least one accepted detection in either source are listed, cells with none in both are not enumerated",
+  "split": {
+   "train": {
+    "start": "2013-01",
+    "end": "2018-12"
+   },
+   "validation": {
+    "start": "2019-01",
+    "end": "2020-12"
+   },
+   "test": {
+    "start": "2021-01",
+    "end": "2025-12"
+   }
+  },
+  "splitRule": "split by whole calendar years so no cell-month of a later split shares a year with an earlier one; models are fitted on train only, candidates and thresholds are chosen on validation only, test is scored once",
+  "domains": {
+   "south_america": [
+    -82.0,
+    -56.0,
+    -34.0,
+    13.0
+   ],
+   "africa_north_of_equator": [
+    -20.0,
+    0.0,
+    52.0,
+    37.0
+   ],
+   "africa_south_of_equator": [
+    -20.0,
+    -36.0,
+    52.0,
+    0.0
+   ],
+   "maritime_southeast_asia": [
+    92.0,
+    -12.0,
+    155.0,
+    11.0
+   ],
+   "australia": [
+    112.0,
+    -45.0,
+    155.0,
+    -12.0
+   ],
+   "south_and_mainland_southeast_asia": [
+    60.0,
+    11.0,
+    110.0,
+    40.0
+   ],
+   "north_america": [
+    -170.0,
+    13.0,
+    -50.0,
+    72.0
+   ],
+   "boreal_eurasia": [
+    20.0,
+    50.0,
+    180.0,
+    80.0
+   ],
+   "europe_mediterranean": [
+    -12.0,
+    36.0,
+    45.0,
+    60.0
+   ]
+  },
+  "domainRule": "first matching box wins, evaluated on the 1-degree cell centre; unmatched cells are domain 'other' and are never validated",
+  "candidates": {
+   "raw_alignment": "VIIRS count taken as the MODIS-scale count without correction",
+   "ratio_global": "one least-squares multiplier through the origin, fitted on train",
+   "ratio_domain": "one least-squares multiplier per domain through the origin, fitted on train",
+   "affine_global": "least-squares intercept and slope on train; not additive and not zero-preserving",
+   "eqm_global": "empirical quantile mapping of positive counts, fitted on train; not additive"
+  },
+  "selectionRule": "the published method is the additive candidate with the lowest validation MAE on cell-months; non-additive candidates are evaluated and reported but cannot be applied to arbitrary clipped polygons or to daily allocation",
+  "decisionRule": {
+   "version": "decision-rule-1",
+   "minimumTestCellMonths": 500,
+   "minimumMaeReductionVersusRaw": 0.2,
+   "maximumAbsoluteRelativeBiasAggregated": 0.15,
+   "aggregateUnit": "domain-month sum over cells",
+   "transferRequired": true,
+   "transferRule": "the same model family refitted without the domain on train must also meet both thresholds on the domain's test cell-months",
+   "outsideSupportMaximumShare": 0.1,
+   "text": "a domain is validated when, on test, its cell-months number at least minimumTestCellMonths, MAE falls by at least minimumMaeReductionVersusRaw against raw alignment, absolute relative bias of domain-month sums is at most maximumAbsoluteRelativeBiasAggregated, the leave-domain-out transfer meets both thresholds, and no more than outsideSupportMaximumShare of test VIIRS counts exceed the train support"
+  },
+  "baseline": {
+   "version": "reference-policy-1",
+   "kind": "rolling-same-calendar-period",
+   "windowYears": 10,
+   "statistic": "median",
+   "scoreKind": "percentile",
+   "series": "harmonized VIIRS estimate on the MODIS scale; years without a validated estimate are missing and are never filled with zero or with native MODIS counts",
+   "window": "same month-day range in each reference year Y-windowYears..Y-1; the target year and later years are never used",
+   "leapRule": "when the reference window has a different number of days than the target window because of 29 February, the reference value is scaled by target days / reference days",
+   "partialRule": "a partial target month is compared only with the same month-day range of reference years; a reference year whose archive does not cover that whole range is missing",
+   "zeroRule": "an all-zero reference or identical reference values give a baseline and delta but no score",
+   "tieRule": "percentile counts ties as half"
+  },
+  "minimumYearsSelection": {
+   "rule": "smallest k in 3..windowYears whose backtest MAE of the median forecast is within tolerance of the k=windowYears MAE",
+   "tolerance": 0.1,
+   "backtestSeries": "native MODIS cell-month counts per domain, 2000-2025",
+   "targetYears": "validation split only"
+  },
+  "supportRule": "a polygon is supported only when every sampled interior point (vertices plus a grid of at most 4000 points) falls in a validated domain; a polygon touching an unvalidated domain, 'other' or the sampling gap gets no estimate"
+ },
+ "qualityPolicy": {
+  "version": "quality-policy-1",
+  "fireTypes": [
+   "vegetation",
+   "unknown"
+  ],
+  "confidenceClasses": [
+   "nominal",
+   "high"
+  ],
+  "note": "Archive type 0 (vegetation) and feeds without a type column are counted; low confidence, volcano, static and offshore detections are excluded and reported."
+ },
+ "pairsFile": "pairs-a34f51d0a650.csv.gz",
+ "pairsSha256": "e194422b2197a112c5b98bde604b0610318f9f21c8260a97b15da5b432d89a7e",
+ "pairMonths": 156,
+ "cellMonthsBySplit": {
+  "train": 571940,
+  "validation": 190747,
+  "test": 473017
+ },
+ "excludedMonths": {},
+ "archiveRevisions": {
+  "MODIS_SP": {
+   "2013": {
+    "sha256": "75047fa996f73eaa3608250da171a2af445992aebad9ee5bbe8ce5cf532ac79d",
+    "firstObserved": "2013-01-01T00:06:00Z",
+    "lastObserved": "2013-12-31T23:59:00Z",
+    "detections": 4226645
+   },
+   "2014": {
+    "sha256": "4c07401117af1cde8c2ede482152b030669a0bff76a077dd9b8b4c36341bf853",
+    "firstObserved": "2014-01-01T00:00:00Z",
+    "lastObserved": "2014-12-31T23:58:00Z",
+    "detections": 4434374
+   },
+   "2015": {
+    "sha256": "9a48028c03a79ed4fb7f6a807dfe42458b070f437a92716cf300cd3f4454150f",
+    "firstObserved": "2015-01-01T01:04:00Z",
+    "lastObserved": "2015-12-31T23:43:00Z",
+    "detections": 4741228
+   },
+   "2016": {
+    "sha256": "a43708defea6302f9bcaed1bb8172d39778f856be2bbf1adf61cdcb724b1a09d",
+    "firstObserved": "2016-01-01T00:12:00Z",
+    "lastObserved": "2016-12-31T23:39:00Z",
+    "detections": 4415910
+   },
+   "2017": {
+    "sha256": "d8725fc74e3587abb8679a828a39cc2431902bf99509f372ec5ce0c24200ef05",
+    "firstObserved": "2017-01-01T00:47:00Z",
+    "lastObserved": "2017-12-31T23:54:00Z",
+    "detections": 4453181
+   },
+   "2018": {
+    "sha256": "a9c0db7b8b022eeb0186c25ae8deec4d3ed5e70ed71c125b83c9b59d292b532a",
+    "firstObserved": "2018-01-01T00:15:00Z",
+    "lastObserved": "2018-12-31T23:59:00Z",
+    "detections": 4184262
+   },
+   "2019": {
+    "sha256": "13a581b5d6b28741c81bf01bd27195cf3226b85a29102337f2cd3b2cabf1a517",
+    "firstObserved": "2019-01-01T00:04:00Z",
+    "lastObserved": "2019-12-31T23:39:00Z",
+    "detections": 4578188
+   },
+   "2020": {
+    "sha256": "bb4c7012b8f4d89dbf24da49143c4cecbaef90cc5f504433642189201d6c0ddb",
+    "firstObserved": "2020-01-01T00:48:00Z",
+    "lastObserved": "2020-12-31T23:47:00Z",
+    "detections": 4440620
+   },
+   "2021": {
+    "sha256": "3bef964afea2d29506ede25b2299a478fa7d96a06b93bc7fc20297794979710e",
+    "firstObserved": "2021-01-01T01:01:00Z",
+    "lastObserved": "2021-12-31T23:40:00Z",
+    "detections": 4384341
+   },
+   "2022": {
+    "sha256": "99b365825aa9df0638e64006af7ecadc38ccc7c14bb91bc7b16aa541be8377a0",
+    "firstObserved": "2022-01-01T00:28:00Z",
+    "lastObserved": "2022-12-31T23:19:00Z",
+    "detections": 3789164
+   },
+   "2023": {
+    "sha256": "1fdd2cb87c6303dd609e2aa197e5d0ec5057921e240db51fed2f24b6d971a2e4",
+    "firstObserved": "2023-01-01T01:28:00Z",
+    "lastObserved": "2023-12-31T23:17:00Z",
+    "detections": 4664302
+   },
+   "2024": {
+    "sha256": "034f357da2022202fec7c4a2916e4128f29536cc1578aef9b04bbf7fd6901389",
+    "firstObserved": "2024-01-01T00:35:00Z",
+    "lastObserved": "2024-12-31T23:50:00Z",
+    "detections": 4848247
+   },
+   "2025": {
+    "sha256": "e4dfcfe082422625aa858c8fb0672eb8b3d0b881f3cc4b6960a85a7666ca9ab7",
+    "firstObserved": "2025-01-01T00:31:00Z",
+    "lastObserved": "2025-12-31T23:13:00Z",
+    "detections": 3693554
+   }
+  },
+  "VIIRS_SNPP_SP": {
+   "2013": {
+    "sha256": "084a978b2a96751c1f44350d17c00457795bce0d51de929d320522e11e2aa1ca",
+    "firstObserved": "2013-01-01T00:56:00Z",
+    "lastObserved": "2013-12-31T23:07:00Z",
+    "detections": 19296967
+   },
+   "2014": {
+    "sha256": "f2d4e5bc578ceba9cda5f52118a3a321a46cdb14ca66fb85c05047384a59ed41",
+    "firstObserved": "2014-01-01T00:15:00Z",
+    "lastObserved": "2014-12-31T23:59:00Z",
+    "detections": 20190191
+   },
+   "2015": {
+    "sha256": "511cd7d08699b7c48bffed3b219ad25fa82450753831db986500b1574eee04b0",
+    "firstObserved": "2015-01-01T00:02:00Z",
+    "lastObserved": "2015-12-31T23:19:00Z",
+    "detections": 21329455
+   },
+   "2016": {
+    "sha256": "dbc2a2bd77a2e5ea7f0caf68ef4a15cf435f4267903d2cc6569bb0e5d4caa100",
+    "firstObserved": "2016-01-01T00:05:00Z",
+    "lastObserved": "2016-12-31T23:55:00Z",
+    "detections": 20247857
+   },
+   "2017": {
+    "sha256": "5b996cd72544c549ae7e51e243f7c0f83eade7cadac4db5f0d77a96e9705e5ef",
+    "firstObserved": "2017-01-01T01:02:00Z",
+    "lastObserved": "2017-12-31T23:57:00Z",
+    "detections": 19984119
+   },
+   "2018": {
+    "sha256": "b07430dcc76ce42d1dbb917822d1b932f5288404627b540d1e59a2266dea9ebc",
+    "firstObserved": "2018-01-01T00:20:00Z",
+    "lastObserved": "2018-12-31T23:59:00Z",
+    "detections": 19067070
+   },
+   "2019": {
+    "sha256": "9ae38fbd33aeed67a75f1652009d43cb41e23ff0da2ea8b5100f0fd261111b84",
+    "firstObserved": "2019-01-01T00:00:00Z",
+    "lastObserved": "2019-12-31T23:22:00Z",
+    "detections": 20990254
+   },
+   "2020": {
+    "sha256": "2095da8ff74d765d355eac3126d0349c932e5187b3ee7c9fe7eb1a8888572fe3",
+    "firstObserved": "2020-01-01T00:30:00Z",
+    "lastObserved": "2020-12-31T23:58:00Z",
+    "detections": 20619134
+   },
+   "2021": {
+    "sha256": "5e891d8429513f6b1d8cd549b8a12bf908d0e8192094c12184f6c7855d636dcf",
+    "firstObserved": "2021-01-01T00:00:00Z",
+    "lastObserved": "2021-12-31T23:17:00Z",
+    "detections": 20247649
+   },
+   "2022": {
+    "sha256": "b6b48250dd40672209de0523ce782bb21d86d34f502bec17cba384868c4e3b29",
+    "firstObserved": "2022-01-01T00:26:00Z",
+    "lastObserved": "2022-12-31T23:58:00Z",
+    "detections": 17164338
+   },
+   "2023": {
+    "sha256": "782a022159bf01fcb1310077b25b46da1d58a09045ab9fe31f2e2b98c762ae15",
+    "firstObserved": "2023-01-01T00:00:00Z",
+    "lastObserved": "2023-12-31T23:30:00Z",
+    "detections": 21750293
+   },
+   "2024": {
+    "sha256": "a38653b029d03b48868272ab2cade671d8e2df4cbcbda205ba9fdeae023e66ae",
+    "firstObserved": "2024-01-01T00:38:00Z",
+    "lastObserved": "2024-12-31T23:59:00Z",
+    "detections": 20976947
+   },
+   "2025": {
+    "sha256": "1e6f650cc956333586c2fac0ddf86a30e3b50a5550a33541fc1254a23599e6d7",
+    "firstObserved": "2025-01-01T00:00:00Z",
+    "lastObserved": "2025-12-31T23:28:00Z",
+    "detections": 18415090
+   }
+  }
+ },
+ "originalDetectionsUnchanged": "pair tables are aggregates; original points stay in the pcd1 store and are what the API returns",
+ "overlapRule": "MODIS (Terra+Aqua, 4 nominal overpasses/day) is the reference; VIIRS S-NPP (2 nominal overpasses/day) is the input. The two are never summed. A third sensor (NOAA-20/21) would change the overpass count and requires a new configuration hash",
+ "overpassEffect": "the satellite set is identical in every paired month, so overpass count is constant across train/validation/test and the fitted multiplier absorbs it; it does not transfer to a different satellite set",
+ "leakage": "train, validation and test cover disjoint calendar years; fitting uses train only",
+ "months": {
+  "2013-01": {
+   "cells": 6374,
+   "reference": 342236,
+   "viirs": 1400878
+  },
+  "2013-02": {
+   "cells": 6422,
+   "reference": 243266,
+   "viirs": 1085519
+  },
+  "2013-03": {
+   "cells": 7295,
+   "reference": 262654,
+   "viirs": 1109609
+  },
+  "2013-04": {
+   "cells": 8510,
+   "reference": 261895,
+   "viirs": 1094008
+  },
+  "2013-05": {
+   "cells": 8869,
+   "reference": 234678,
+   "viirs": 905762
+  },
+  "2013-06": {
+   "cells": 8836,
+   "reference": 364136,
+   "viirs": 1307058
+  },
+  "2013-07": {
+   "cells": 8680,
+   "reference": 429173,
+   "viirs": 1608076
+  },
+  "2013-08": {
+   "cells": 8515,
+   "reference": 573622,
+   "viirs": 2339782
+  },
+  "2013-09": {
+   "cells": 8162,
+   "reference": 393178,
+   "viirs": 1633560
+  },
+  "2013-10": {
+   "cells": 8494,
+   "reference": 245879,
+   "viirs": 1084539
+  },
+  "2013-11": {
+   "cells": 7832,
+   "reference": 221692,
+   "viirs": 926167
+  },
+  "2013-12": {
+   "cells": 6808,
+   "reference": 327555,
+   "viirs": 1219575
+  },
+  "2014-01": {
+   "cells": 6442,
+   "reference": 337496,
+   "viirs": 1339445
+  },
+  "2014-02": {
+   "cells": 6424,
+   "reference": 250232,
+   "viirs": 1128914
+  },
+  "2014-03": {
+   "cells": 7910,
+   "reference": 324533,
+   "viirs": 1415680
+  },
+  "2014-04": {
+   "cells": 8575,
+   "reference": 303122,
+   "viirs": 1224325
+  },
+  "2014-05": {
+   "cells": 8625,
+   "reference": 197403,
+   "viirs": 822363
+  },
+  "2014-06": {
+   "cells": 8601,
+   "reference": 295567,
+   "viirs": 1078099
+  },
+  "2014-07": {
+   "cells": 8731,
+   "reference": 487164,
+   "viirs": 1963932
+  },
+  "2014-08": {
+   "cells": 8595,
+   "reference": 492719,
+   "viirs": 2020003
+  },
+  "2014-09": {
+   "cells": 8421,
+   "reference": 426393,
+   "viirs": 1766043
+  },
+  "2014-10": {
+   "cells": 8567,
+   "reference": 376634,
+   "viirs": 1609186
+  },
+  "2014-11": {
+   "cells": 7756,
+   "reference": 247212,
+   "viirs": 1057256
+  },
+  "2014-12": {
+   "cells": 6794,
+   "reference": 339071,
+   "viirs": 1238410
+  },
+  "2015-01": {
+   "cells": 6356,
+   "reference": 375522,
+   "viirs": 1462544
+  },
+  "2015-02": {
+   "cells": 6806,
+   "reference": 212289,
+   "viirs": 969627
+  },
+  "2015-03": {
+   "cells": 7986,
+   "reference": 310652,
+   "viirs": 1316165
+  },
+  "2015-04": {
+   "cells": 8567,
+   "reference": 278390,
+   "viirs": 1135077
+  },
+  "2015-05": {
+   "cells": 8751,
+   "reference": 225129,
+   "viirs": 900353
+  },
+  "2015-06": {
+   "cells": 8737,
+   "reference": 314166,
+   "viirs": 1127332
+  },
+  "2015-07": {
+   "cells": 8798,
+   "reference": 473403,
+   "viirs": 1821146
+  },
+  "2015-08": {
+   "cells": 8472,
+   "reference": 611461,
+   "viirs": 2454973
+  },
+  "2015-09": {
+   "cells": 8526,
+   "reference": 506758,
+   "viirs": 2138236
+  },
+  "2015-10": {
+   "cells": 8808,
+   "reference": 381543,
+   "viirs": 1723990
+  },
+  "2015-11": {
+   "cells": 7812,
+   "reference": 287977,
+   "viirs": 1227205
+  },
+  "2015-12": {
+   "cells": 7032,
+   "reference": 388188,
+   "viirs": 1391973
+  },
+  "2016-01": {
+   "cells": 6521,
+   "reference": 366056,
+   "viirs": 1490524
+  },
+  "2016-02": {
+   "cells": 6896,
+   "reference": 262801,
+   "viirs": 1268223
+  },
+  "2016-03": {
+   "cells": 7815,
+   "reference": 240873,
+   "viirs": 1152768
+  },
+  "2016-04": {
+   "cells": 8551,
+   "reference": 271114,
+   "viirs": 1168060
+  },
+  "2016-05": {
+   "cells": 8587,
+   "reference": 246137,
+   "viirs": 956126
+  },
+  "2016-06": {
+   "cells": 8641,
+   "reference": 343595,
+   "viirs": 1199688
+  },
+  "2016-07": {
+   "cells": 8487,
+   "reference": 487120,
+   "viirs": 1869443
+  },
+  "2016-08": {
+   "cells": 8443,
+   "reference": 530498,
+   "viirs": 2047997
+  },
+  "2016-09": {
+   "cells": 8274,
+   "reference": 424820,
+   "viirs": 1782910
+  },
+  "2016-10": {
+   "cells": 8341,
+   "reference": 283053,
+   "viirs": 1234078
+  },
+  "2016-11": {
+   "cells": 7706,
+   "reference": 269940,
+   "viirs": 1110531
+  },
+  "2016-12": {
+   "cells": 6808,
+   "reference": 356197,
+   "viirs": 1341287
+  },
+  "2017-01": {
+   "cells": 6343,
+   "reference": 304617,
+   "viirs": 1210453
+  },
+  "2017-02": {
+   "cells": 6592,
+   "reference": 252408,
+   "viirs": 1098235
+  },
+  "2017-03": {
+   "cells": 7736,
+   "reference": 238676,
+   "viirs": 1040045
+  },
+  "2017-04": {
+   "cells": 8450,
+   "reference": 275929,
+   "viirs": 1103102
+  },
+  "2017-05": {
+   "cells": 8641,
+   "reference": 202570,
+   "viirs": 801423
+  },
+  "2017-06": {
+   "cells": 8729,
+   "reference": 298088,
+   "viirs": 1091581
+  },
+  "2017-07": {
+   "cells": 8781,
+   "reference": 447133,
+   "viirs": 1594725
+  },
+  "2017-08": {
+   "cells": 8643,
+   "reference": 565764,
+   "viirs": 2324485
+  },
+  "2017-09": {
+   "cells": 8265,
+   "reference": 551848,
+   "viirs": 2203757
+  },
+  "2017-10": {
+   "cells": 8485,
+   "reference": 338297,
+   "viirs": 1431573
+  },
+  "2017-11": {
+   "cells": 7723,
+   "reference": 272741,
+   "viirs": 1090413
+  },
+  "2017-12": {
+   "cells": 6892,
+   "reference": 359551,
+   "viirs": 1317029
+  },
+  "2018-01": {
+   "cells": 6589,
+   "reference": 366866,
+   "viirs": 1404930
+  },
+  "2018-02": {
+   "cells": 6468,
+   "reference": 206452,
+   "viirs": 918323
+  },
+  "2018-03": {
+   "cells": 7290,
+   "reference": 237827,
+   "viirs": 1114029
+  },
+  "2018-04": {
+   "cells": 8437,
+   "reference": 252075,
+   "viirs": 1067240
+  },
+  "2018-05": {
+   "cells": 8692,
+   "reference": 187914,
+   "viirs": 838051
+  },
+  "2018-06": {
+   "cells": 8788,
+   "reference": 274618,
+   "viirs": 991622
+  },
+  "2018-07": {
+   "cells": 8747,
+   "reference": 422564,
+   "viirs": 1615275
+  },
+  "2018-08": {
+   "cells": 8385,
+   "reference": 554377,
+   "viirs": 2291960
+  },
+  "2018-09": {
+   "cells": 8277,
+   "reference": 426821,
+   "viirs": 1799322
+  },
+  "2018-10": {
+   "cells": 8661,
+   "reference": 264407,
+   "viirs": 1172960
+  },
+  "2018-11": {
+   "cells": 7707,
+   "reference": 265468,
+   "viirs": 1109643
+  },
+  "2018-12": {
+   "cells": 6660,
+   "reference": 331050,
+   "viirs": 1230076
+  },
+  "2019-01": {
+   "cells": 6495,
+   "reference": 310704,
+   "viirs": 1285459
+  },
+  "2019-02": {
+   "cells": 6861,
+   "reference": 247351,
+   "viirs": 1158645
+  },
+  "2019-03": {
+   "cells": 7915,
+   "reference": 300221,
+   "viirs": 1327042
+  },
+  "2019-04": {
+   "cells": 8592,
+   "reference": 275821,
+   "viirs": 1137219
+  },
+  "2019-05": {
+   "cells": 8601,
+   "reference": 214953,
+   "viirs": 896574
+  },
+  "2019-06": {
+   "cells": 8616,
+   "reference": 357463,
+   "viirs": 1255374
+  },
+  "2019-07": {
+   "cells": 8811,
+   "reference": 562848,
+   "viirs": 2244964
+  },
+  "2019-08": {
+   "cells": 8425,
+   "reference": 587746,
+   "viirs": 2459826
+  },
+  "2019-09": {
+   "cells": 8227,
+   "reference": 467998,
+   "viirs": 1986988
+  },
+  "2019-10": {
+   "cells": 8260,
+   "reference": 260782,
+   "viirs": 1147455
+  },
+  "2019-11": {
+   "cells": 7686,
+   "reference": 230197,
+   "viirs": 1021722
+  },
+  "2019-12": {
+   "cells": 6816,
+   "reference": 353120,
+   "viirs": 1395989
+  },
+  "2020-01": {
+   "cells": 6488,
+   "reference": 373373,
+   "viirs": 1546442
+  },
+  "2020-02": {
+   "cells": 6869,
+   "reference": 317999,
+   "viirs": 1358333
+  },
+  "2020-03": {
+   "cells": 8004,
+   "reference": 318353,
+   "viirs": 1336827
+  },
+  "2020-04": {
+   "cells": 8536,
+   "reference": 290283,
+   "viirs": 1235341
+  },
+  "2020-05": {
+   "cells": 8577,
+   "reference": 193992,
+   "viirs": 805633
+  },
+  "2020-06": {
+   "cells": 8822,
+   "reference": 311332,
+   "viirs": 1110851
+  },
+  "2020-07": {
+   "cells": 8614,
+   "reference": 471129,
+   "viirs": 1746295
+  },
+  "2020-08": {
+   "cells": 8404,
+   "reference": 426100,
+   "viirs": 2236507
+  },
+  "2020-09": {
+   "cells": 8161,
+   "reference": 514433,
+   "viirs": 2224057
+  },
+  "2020-10": {
+   "cells": 8413,
+   "reference": 316312,
+   "viirs": 1379683
+  },
+  "2020-11": {
+   "cells": 7907,
+   "reference": 250138,
+   "viirs": 1041208
+  },
+  "2020-12": {
+   "cells": 6647,
+   "reference": 271606,
+   "viirs": 1030229
+  },
+  "2021-01": {
+   "cells": 6378,
+   "reference": 292098,
+   "viirs": 1221870
+  },
+  "2021-02": {
+   "cells": 6613,
+   "reference": 252058,
+   "viirs": 1100233
+  },
+  "2021-03": {
+   "cells": 7797,
+   "reference": 268329,
+   "viirs": 1246724
+  },
+  "2021-04": {
+   "cells": 8692,
+   "reference": 245394,
+   "viirs": 1043548
+  },
+  "2021-05": {
+   "cells": 8464,
+   "reference": 193536,
+   "viirs": 822648
+  },
+  "2021-06": {
+   "cells": 8688,
+   "reference": 271911,
+   "viirs": 970605
+  },
+  "2021-07": {
+   "cells": 8916,
+   "reference": 618902,
+   "viirs": 2422763
+  },
+  "2021-08": {
+   "cells": 8422,
+   "reference": 657455,
+   "viirs": 2640844
+  },
+  "2021-09": {
+   "cells": 8105,
+   "reference": 420162,
+   "viirs": 1899092
+  },
+  "2021-10": {
+   "cells": 8554,
+   "reference": 275887,
+   "viirs": 1238737
+  },
+  "2021-11": {
+   "cells": 7743,
+   "reference": 233459,
+   "viirs": 1017132
+  },
+  "2021-12": {
+   "cells": 6685,
+   "reference": 268590,
+   "viirs": 1066023
+  },
+  "2022-01": {
+   "cells": 6504,
+   "reference": 306047,
+   "viirs": 1279354
+  },
+  "2022-02": {
+   "cells": 6671,
+   "reference": 252675,
+   "viirs": 1082904
+  },
+  "2022-03": {
+   "cells": 7634,
+   "reference": 230486,
+   "viirs": 1018699
+  },
+  "2022-04": {
+   "cells": 8417,
+   "reference": 138902,
+   "viirs": 1013618
+  },
+  "2022-05": {
+   "cells": 8490,
+   "reference": 191223,
+   "viirs": 793445
+  },
+  "2022-06": {
+   "cells": 8521,
+   "reference": 271230,
+   "viirs": 958152
+  },
+  "2022-07": {
+   "cells": 8295,
+   "reference": 376479,
+   "viirs": 1175016
+  },
+  "2022-08": {
+   "cells": 7846,
+   "reference": 493916,
+   "viirs": 1375862
+  },
+  "2022-09": {
+   "cells": 8021,
+   "reference": 427848,
+   "viirs": 1823687
+  },
+  "2022-10": {
+   "cells": 8386,
+   "reference": 267496,
+   "viirs": 1399465
+  },
+  "2022-11": {
+   "cells": 7505,
+   "reference": 224943,
+   "viirs": 985484
+  },
+  "2022-12": {
+   "cells": 6642,
+   "reference": 266431,
+   "viirs": 1044754
+  },
+  "2023-01": {
+   "cells": 6422,
+   "reference": 289134,
+   "viirs": 1189595
+  },
+  "2023-02": {
+   "cells": 6655,
+   "reference": 295585,
+   "viirs": 1288421
+  },
+  "2023-03": {
+   "cells": 7695,
+   "reference": 249297,
+   "viirs": 1156634
+  },
+  "2023-04": {
+   "cells": 8402,
+   "reference": 257633,
+   "viirs": 1114628
+  },
+  "2023-05": {
+   "cells": 8728,
+   "reference": 263834,
+   "viirs": 1179157
+  },
+  "2023-06": {
+   "cells": 8754,
+   "reference": 307332,
+   "viirs": 1263489
+  },
+  "2023-07": {
+   "cells": 8794,
+   "reference": 529604,
+   "viirs": 1999622
+  },
+  "2023-08": {
+   "cells": 8731,
+   "reference": 593739,
+   "viirs": 2542065
+  },
+  "2023-09": {
+   "cells": 8459,
+   "reference": 495640,
+   "viirs": 2249203
+  },
+  "2023-10": {
+   "cells": 8598,
+   "reference": 409717,
+   "viirs": 1806945
+  },
+  "2023-11": {
+   "cells": 7768,
+   "reference": 264713,
+   "viirs": 1078872
+  },
+  "2023-12": {
+   "cells": 6952,
+   "reference": 288507,
+   "viirs": 1153497
+  },
+  "2024-01": {
+   "cells": 6631,
+   "reference": 344381,
+   "viirs": 1373734
+  },
+  "2024-02": {
+   "cells": 6986,
+   "reference": 258153,
+   "viirs": 1192983
+  },
+  "2024-03": {
+   "cells": 7715,
+   "reference": 242521,
+   "viirs": 1159515
+  },
+  "2024-04": {
+   "cells": 8289,
+   "reference": 259722,
+   "viirs": 1188763
+  },
+  "2024-05": {
+   "cells": 8430,
+   "reference": 277098,
+   "viirs": 1089715
+  },
+  "2024-06": {
+   "cells": 8431,
+   "reference": 372083,
+   "viirs": 1329168
+  },
+  "2024-07": {
+   "cells": 8151,
+   "reference": 617107,
+   "viirs": 1418600
+  },
+  "2024-08": {
+   "cells": 8395,
+   "reference": 703328,
+   "viirs": 3102654
+  },
+  "2024-09": {
+   "cells": 8175,
+   "reference": 542506,
+   "viirs": 2262145
+  },
+  "2024-10": {
+   "cells": 8516,
+   "reference": 276366,
+   "viirs": 1246416
+  },
+  "2024-11": {
+   "cells": 7597,
+   "reference": 238951,
+   "viirs": 877736
+  },
+  "2024-12": {
+   "cells": 6755,
+   "reference": 291905,
+   "viirs": 1183048
+  },
+  "2025-01": {
+   "cells": 6798,
+   "reference": 323382,
+   "viirs": 1383780
+  },
+  "2025-02": {
+   "cells": 6793,
+   "reference": 232664,
+   "viirs": 1110291
+  },
+  "2025-03": {
+   "cells": 8038,
+   "reference": 261820,
+   "viirs": 1222460
+  },
+  "2025-04": {
+   "cells": 8427,
+   "reference": 182782,
+   "viirs": 827504
+  },
+  "2025-05": {
+   "cells": 8488,
+   "reference": 191381,
+   "viirs": 906366
+  },
+  "2025-06": {
+   "cells": 8564,
+   "reference": 231843,
+   "viirs": 1009623
+  },
+  "2025-07": {
+   "cells": 8450,
+   "reference": 379138,
+   "viirs": 1498107
+  },
+  "2025-08": {
+   "cells": 8303,
+   "reference": 506837,
+   "viirs": 2242054
+  },
+  "2025-09": {
+   "cells": 8207,
+   "reference": 362400,
+   "viirs": 1642434
+  },
+  "2025-10": {
+   "cells": 8482,
+   "reference": 287330,
+   "viirs": 1329395
+  },
+  "2025-11": {
+   "cells": 7732,
+   "reference": 190747,
+   "viirs": 866025
+  },
+  "2025-12": {
+   "cells": 6717,
+   "reference": 183747,
+   "viirs": 869413
+  }
+ }
+}

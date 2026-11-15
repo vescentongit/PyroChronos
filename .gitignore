@@ -3,8 +3,13 @@ node_modules/
 .env*
 !.env.example
 .cache/
+.playwright-mcp/
+data/raw/
+data/processed/
 *.tsbuildinfo
 __pycache__/
 *.pyc
 .vscode/
+.vercel/
 .env
+.vercel

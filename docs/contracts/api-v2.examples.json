@@ -1,0 +1,470 @@
+{
+  "notice": "SYNTHETIC CONTRACT FIXTURES. No real FIRMS observations, hashes, area measurement, model validation, or field inspection is claimed.",
+  "examples": {
+    "workspace-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "name": "Synthetic research team"
+    },
+    "workspace": {
+      "schemaVersion": "research-2",
+      "id": "workspace-demo",
+      "name": "Synthetic research team",
+      "createdAt": "2026-09-02T00:00:00.000Z",
+      "createdBy": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      }
+    },
+    "membership-update": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "expectedRevision": null,
+      "role": "member",
+      "active": true
+    },
+    "membership": {
+      "schemaVersion": "research-2",
+      "workspaceId": "workspace-demo",
+      "user": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      },
+      "role": "member",
+      "active": true,
+      "revision": 1
+    },
+    "area-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "name": "Synthetic custom AOI",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              113,
+              -4
+            ],
+            [
+              115,
+              -3
+            ],
+            [
+              114,
+              0
+            ],
+            [
+              112,
+              -1
+            ],
+            [
+              113,
+              -4
+            ]
+          ]
+        ]
+      }
+    },
+    "area": {
+      "schemaVersion": "research-2",
+      "id": "area-demo",
+      "workspaceId": "workspace-demo",
+      "revision": 1,
+      "name": "Synthetic custom AOI",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              113,
+              -4
+            ],
+            [
+              115,
+              -3
+            ],
+            [
+              114,
+              0
+            ],
+            [
+              112,
+              -1
+            ],
+            [
+              113,
+              -4
+            ]
+          ]
+        ]
+      },
+      "geometryHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "areaKm2": 100,
+      "createdAt": "2026-09-02T00:00:00.000Z"
+    },
+    "analysis-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "areaId": "area-demo",
+      "areaRevision": 1,
+      "period": {
+        "start": "2026-08-01",
+        "end": "2026-08-31"
+      },
+      "comparisonPeriod": {
+        "start": "2025-08-01",
+        "end": "2025-08-31"
+      },
+      "baseline": {
+        "kind": "rolling-same-calendar-period",
+        "windowYears": 10
+      },
+      "referenceScale": "MODIS-equivalent",
+      "qualityPolicyVersion": "synthetic-quality-1",
+      "monitoringLocationId": null
+    },
+    "job": {
+      "schemaVersion": "research-2",
+      "id": "job-demo",
+      "workspaceId": "workspace-demo",
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "analysisKey": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "areaId": "area-demo",
+      "areaRevision": 1,
+      "status": "succeeded",
+      "stage": "publish",
+      "progressPercent": 100,
+      "createdAt": "2026-09-02T00:00:00.000Z",
+      "startedAt": "2026-09-02T00:00:00.000Z",
+      "completedAt": "2026-09-02T00:00:00.000Z",
+      "resultId": "analysis-demo",
+      "error": null
+    },
+    "result": {
+      "schemaVersion": "research-2",
+      "id": "analysis-demo",
+      "jobId": "job-demo",
+      "workspaceId": "workspace-demo",
+      "mode": "demo",
+      "area": {
+        "schemaVersion": "research-2",
+        "id": "area-demo",
+        "workspaceId": "workspace-demo",
+        "revision": 1,
+        "name": "Synthetic custom AOI",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                113,
+                -4
+              ],
+              [
+                115,
+                -3
+              ],
+              [
+                114,
+                0
+              ],
+              [
+                112,
+                -1
+              ],
+              [
+                113,
+                -4
+              ]
+            ]
+          ]
+        },
+        "geometryHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "areaKm2": 100,
+        "createdAt": "2026-09-02T00:00:00.000Z"
+      },
+      "primary": {
+        "period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "days": 31,
+        "metric": {
+          "rawCount": 30,
+          "rawCountsBySource": {
+            "MODIS_SP": 20,
+            "VIIRS_SNPP_SP": 10
+          },
+          "harmonizedCount": 12.5,
+          "status": "available"
+        }
+      },
+      "comparison": {
+        "period": {
+          "start": "2025-08-01",
+          "end": "2025-08-31"
+        },
+        "days": 31,
+        "metric": {
+          "rawCount": 25,
+          "rawCountsBySource": {
+            "MODIS_SP": 15,
+            "VIIRS_SNPP_SP": 10
+          },
+          "harmonizedCount": 10,
+          "status": "available"
+        }
+      },
+      "baseline": {
+        "kind": "rolling-same-calendar-period",
+        "windowYears": 10,
+        "minimumValidYears": 10,
+        "policyVersion": "synthetic-reference-1"
+      },
+      "method": {
+        "name": "synthetic-count-calibration",
+        "version": "demo-1",
+        "referenceScale": "MODIS-equivalent",
+        "unit": "estimated-hotspot-detections",
+        "validation": "not-evaluated",
+        "validationDomain": "Synthetic fixture only; not a real validated model",
+        "manifestId": "manifest-demo"
+      },
+      "sources": [
+        {
+          "id": "MODIS_SP",
+          "product": "synthetic-MODIS",
+          "version": "demo",
+          "processingLevel": "STANDARD",
+          "status": "available",
+          "observedFrom": "2016-08-01T00:00:00.000Z",
+          "observedTo": "2026-08-31T23:59:00.000Z",
+          "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        {
+          "id": "VIIRS_SNPP_SP",
+          "product": "synthetic-VIIRS",
+          "version": "demo",
+          "processingLevel": "STANDARD",
+          "status": "available",
+          "observedFrom": "2016-08-01T00:00:00.000Z",
+          "observedTo": "2026-08-31T23:59:00.000Z",
+          "checksum": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      ],
+      "dataVersion": "synthetic-archive-1",
+      "qualityPolicyVersion": "synthetic-quality-1",
+      "generatedAt": "2026-09-02T00:00:00.000Z",
+      "publishedAt": "2026-09-02T00:00:00.000Z",
+      "months": [
+        {
+          "month": "2026-08",
+          "metric": {
+            "rawCount": 30,
+            "rawCountsBySource": {
+              "MODIS_SP": 20,
+              "VIIRS_SNPP_SP": 10
+            },
+            "harmonizedCount": 12.5,
+            "status": "available"
+          },
+          "anomaly": {
+            "status": "assessed",
+            "referenceYears": [
+              2016,
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024,
+              2025
+            ],
+            "baselineStatistic": "mean",
+            "baselineValue": 10,
+            "delta": 2.5,
+            "scoreKind": null,
+            "score": null
+          },
+          "isPartialPeriod": false
+        }
+      ]
+    },
+    "daily-page": {
+      "schemaVersion": "research-2",
+      "analysisId": "analysis-demo",
+      "periodRole": "primary",
+      "month": "2026-08",
+      "days": [
+        {
+          "date": "2026-08-01",
+          "metric": {
+            "rawCount": 30,
+            "rawCountsBySource": {
+              "MODIS_SP": 20,
+              "VIIRS_SNPP_SP": 10
+            },
+            "harmonizedCount": 12.5,
+            "status": "available"
+          },
+          "anomaly": {
+            "status": "assessed",
+            "referenceYears": [
+              2016,
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024,
+              2025
+            ],
+            "baselineStatistic": "mean",
+            "baselineValue": 10,
+            "delta": 2.5,
+            "scoreKind": null,
+            "score": null
+          }
+        }
+      ],
+      "nextCursor": "synthetic-next-page"
+    },
+    "detections-page": {
+      "schemaVersion": "research-2",
+      "analysisId": "analysis-demo",
+      "periodRole": "primary",
+      "observations": [
+        {
+          "id": "detection-demo",
+          "sourceId": "VIIRS_SNPP_SP",
+          "observedAt": "2026-08-01T00:15:00.000Z",
+          "coordinates": [
+            114,
+            -2.5
+          ],
+          "confidence": "n",
+          "frpMw": 7
+        }
+      ],
+      "nextCursor": "synthetic-next-page"
+    },
+    "location-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "analysisId": "analysis-demo",
+      "anchorDetectionId": "detection-demo",
+      "name": "Synthetic monitoring location"
+    },
+    "location": {
+      "schemaVersion": "research-2",
+      "id": "location-demo",
+      "workspaceId": "workspace-demo",
+      "name": "Synthetic monitoring location",
+      "anchor": {
+        "id": "detection-demo",
+        "sourceId": "VIIRS_SNPP_SP",
+        "observedAt": "2026-08-01T00:15:00.000Z",
+        "coordinates": [
+          114,
+          -2.5
+        ],
+        "confidence": "n",
+        "frpMw": 7
+      },
+      "initialAnalysisId": "analysis-demo",
+      "areaId": "area-demo",
+      "areaRevision": 1,
+      "createdAt": "2026-09-02T00:00:00.000Z",
+      "createdBy": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      }
+    },
+    "assignment-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "assigneeUserId": "user-demo-nathan"
+    },
+    "assignment-update": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "expectedRevision": 1,
+      "status": "in_progress"
+    },
+    "assignment": {
+      "schemaVersion": "research-2",
+      "id": "assignment-demo",
+      "workspaceId": "workspace-demo",
+      "locationId": "location-demo",
+      "assignee": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      },
+      "assignedBy": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      },
+      "status": "in_progress",
+      "revision": 2,
+      "createdAt": "2026-09-02T00:00:00.000Z",
+      "updatedAt": "2026-09-02T00:00:00.000Z"
+    },
+    "report-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "inspectorUserId": "user-demo-nathan",
+      "observedAt": "2026-09-02T12:00:00.000Z",
+      "outcome": "inconclusive",
+      "notes": "Synthetic report; no actual field inspection."
+    },
+    "report-correction": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "expectedRevision": 1,
+      "reason": "Synthetic correction example",
+      "inspectorUserId": "user-demo-nathan",
+      "observedAt": "2026-09-02T12:00:00.000Z",
+      "outcome": "inconclusive",
+      "notes": "Synthetic report; no actual field inspection."
+    },
+    "report": {
+      "schemaVersion": "research-2",
+      "id": "report-demo",
+      "workspaceId": "workspace-demo",
+      "locationId": "location-demo",
+      "assignmentId": "assignment-demo",
+      "inspectorUserId": "user-demo-nathan",
+      "observedAt": "2026-09-02T12:00:00.000Z",
+      "outcome": "inconclusive",
+      "notes": "Synthetic report; no actual field inspection.",
+      "recordedBy": {
+        "id": "user-demo-nathan",
+        "displayName": "Synthetic researcher"
+      },
+      "revision": 1,
+      "createdAt": "2026-09-03T00:00:00.000Z",
+      "updatedAt": "2026-09-03T00:00:00.000Z",
+      "corrections": []
+    },
+    "export-create": {
+      "requestId": "22222222-2222-4222-8222-222222222222",
+      "analysisId": "analysis-demo",
+      "periodRole": "primary",
+      "kind": "raw-hotspots-csv"
+    },
+    "export": {
+      "schemaVersion": "research-2",
+      "id": "export-demo",
+      "workspaceId": "workspace-demo",
+      "analysisId": "analysis-demo",
+      "periodRole": "primary",
+      "kind": "raw-hotspots-csv",
+      "status": "ready",
+      "downloadPath": "/api/v2/workspaces/workspace-demo/exports/export-demo/download",
+      "error": null
+    },
+    "error": {
+      "schemaVersion": "research-2",
+      "error": "Synthetic unavailable service example.",
+      "code": "DEPENDENCY_UNAVAILABLE",
+      "retryable": true,
+      "requestId": "22222222-2222-4222-8222-222222222222"
+    }
+  }
+}

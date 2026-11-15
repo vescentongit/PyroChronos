@@ -15,3 +15,567 @@ model InspectionReport {
   createdAt DateTime @default(now())
   @@index([candidateId, createdAt])
 }
+
+enum RawBatchStatus {
+  PENDING
+  FETCHED
+  VALID
+  EMPTY
+  REJECTED
+  FAILED
+}
+
+enum FirmsProcessingLevel {
+  NRT
+  STANDARD
+}
+
+// One fetch attempt; repeated downloads append, even when checksums match.
+// SQL migration owns lifecycle checks and append-only history triggers.
+model RawBatch {
+  id                    String               @id @default(cuid())
+  sourceId              String
+  sourceManifestVersion String
+  processingLevel       FirmsProcessingLevel
+  productVersion        String?
+  regionId              String
+  boundaryVersion       String
+  regionConfigChecksum  String               @db.VarChar(64)
+  requestBbox           Json                 @db.JsonB
+  requestedStart        DateTime             @db.Timestamptz(3)
+  requestedEnd          DateTime             @db.Timestamptz(3)
+  fetchStartedAt        DateTime             @default(now()) @db.Timestamptz(3)
+  fetchedAt             DateTime?            @db.Timestamptz(3)
+  completedAt           DateTime?            @db.Timestamptz(3)
+  checksumSha256        String?              @db.VarChar(64)
+  payloadRef            String?              @unique
+  payloadBytes          BigInt?
+  payloadFormat         String               @default("csv")
+  status                RawBatchStatus       @default(PENDING)
+  httpStatus            Int?
+  errorCode             String?
+  retryable             Boolean?
+  validatorVersion      String?
+  rowCount              Int?
+  validationSummary     Json?                @db.JsonB
+
+  @@index([regionId, sourceId, fetchedAt])
+  @@index([status, fetchStartedAt])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Workspace {
+  id          String   @id
+  name        String
+  createdById String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model Membership {
+  workspaceId String
+  userId      String
+  role        String
+  active      Boolean @default(true)
+  revision    Int     @default(1)
+  inspectionAssignments InspectionAssignment[] @relation("InspectionAssignee")
+  assignedInspections InspectionAssignment[] @relation("InspectionAssigner")
+  recordedInspections P1InspectionReport[] @relation("InspectionRecorder")
+  performedInspections P1InspectionReport[] @relation("InspectionInspector")
+  inspectionCorrections P1InspectionReportRevision[] @relation("InspectionCorrector")
+  revisedInspections P1InspectionReportRevision[] @relation("InspectionRevisionInspector")
+  inspectionAuditEvents InspectionAuditEvent[] @relation("InspectionAuditActor")
+  researchExports ResearchExport[]
+  @@id([workspaceId, userId])
+  @@index([userId, active])
+}
+
+model AnalysisArea {
+  id           String   @id
+  workspaceId  String
+  revision     Int      @default(1)
+  name         String
+  geometry     Json
+  geometryHash String
+  areaKm2      Float
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  @@index([workspaceId, id])
+}
+
+model ResearchDataset {
+  id        String   @id
+  config    Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model AnalysisRun {
+  id             String   @id
+  workspaceId    String
+  analysisKey    String
+  datasetId      String
+  input          Json
+  status         String   @default("queued")
+  attempts       Int      @default(0)
+  leaseToken     String?
+  leaseUntil     DateTime? @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  startedAt      DateTime? @db.Timestamptz(3)
+  completedAt    DateTime? @db.Timestamptz(3)
+  error          Json?
+  @@index([workspaceId, analysisKey, createdAt])
+  @@index([status, leaseUntil, createdAt])
+}
+
+// A submission keeps its own request identity while identical inputs share a run.
+model AnalysisJob {
+  id          String   @id
+  workspaceId String
+  areaId      String
+  actorId     String
+  requestId   String
+  runId       String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([workspaceId, actorId, requestId])
+}
+
+model AnalysisAttempt {
+  runId       String
+  attempt     Int
+  token       String   @unique
+  startedAt   DateTime @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  error       String?
+  @@id([runId, attempt])
+}
+
+model ResearchRequest {
+  scope       String
+  requestId   String
+  payloadHash String
+  response    Json
+  statusCode  Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  @@id([scope, requestId])
+}
+
+model AnalysisArtifact {
+  runId       String @id
+  result      Json
+  manifest    Json
+  days        Json
+}
+
+model ResearchObservation {
+  runId      String
+  periodRole String
+  ordinal    Int
+  longitude  Float
+  latitude   Float
+  payload    Json
+  @@id([runId, periodRole, ordinal])
+  @@index([runId, periodRole, longitude, latitude])
+}
+
+model ResearchTile {
+  runId      String
+  periodRole String
+  z          Int
+  x          Int
+  y          Int
+  payload    Json
+  @@id([runId, periodRole, z, x, y])
+}
+
+// R2-P1 foundation. Workspace/user/AOI IDs are opaque P0 references for now;
+// no synthetic identity tables or production memberships are fabricated here.
+enum P1AnalysisJobStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+enum AnalysisAttemptStatus {
+  running
+  succeeded
+  failed
+  expired
+}
+
+enum P1AnalysisArtifactKind {
+  observations
+  daily
+  estimated_grid
+}
+
+model P1AnalysisJob {
+  id              String            @id @default(cuid())
+  workspaceId     String
+  requestedById   String
+  requestId       String            @db.Uuid
+  analysisKey     String            @db.VarChar(71)
+  areaId          String
+  areaRevision    Int
+  input           Json              @db.JsonB
+  status          P1AnalysisJobStatus @default(queued)
+  stage           String?
+  progressPercent Float?
+  createdAt       DateTime          @default(now()) @db.Timestamptz(3)
+  startedAt       DateTime?         @db.Timestamptz(3)
+  completedAt     DateTime?         @db.Timestamptz(3)
+  resultId        String?           @unique
+  error           Json?             @db.JsonB
+
+  attempts        P1AnalysisJobAttempt[]
+  locationRequests P1AnalysisLocationRequest[]
+  manifests       AnalysisManifest[]
+  result          AnalysisResult?      @relation("JobResult")
+  publishedResult AnalysisResult?      @relation("PublishedResult", fields: [resultId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, requestedById, requestId])
+  @@index([workspaceId, analysisKey])
+  @@index([status, createdAt])
+}
+
+model P1AnalysisJobAttempt {
+  id             String                @id @default(cuid())
+  jobId          String
+  workspaceId    String
+  attemptNo      Int
+  leaseToken     String                @unique @db.Uuid
+  status         AnalysisAttemptStatus @default(running)
+  claimedAt      DateTime              @db.Timestamptz(3)
+  heartbeatAt    DateTime              @db.Timestamptz(3)
+  leaseExpiresAt DateTime              @db.Timestamptz(3)
+  completedAt    DateTime?             @db.Timestamptz(3)
+  errorCode      String?
+  retryable      Boolean?
+  job            P1AnalysisJob           @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([jobId, attemptNo])
+  @@index([status, leaseExpiresAt])
+}
+
+model AnalysisManifest {
+  id          String           @id @default(cuid())
+  jobId       String
+  workspaceId String
+  dataVersion String
+  checksum    String           @db.VarChar(71)
+  content     Json             @db.JsonB
+  job         P1AnalysisJob      @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  results     AnalysisResult[]
+
+  @@unique([id, jobId, workspaceId])
+}
+
+model AnalysisResult {
+  id               String                       @id @default(cuid())
+  jobId            String
+  workspaceId      String
+  manifestId       String
+  dataVersion      String
+  generatedAt      DateTime                     @db.Timestamptz(3)
+  publishedAt      DateTime                     @db.Timestamptz(3)
+  payload          Json                         @db.JsonB
+  job              P1AnalysisJob                  @relation("JobResult", fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  manifest         AnalysisManifest             @relation(fields: [manifestId, jobId, workspaceId], references: [id, jobId, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  publishedBy      P1AnalysisJob?                 @relation("PublishedResult")
+  artifacts        P1AnalysisArtifact[]
+  initialLocations MonitoringLocation[]
+  locationLinks    MonitoringLocationAnalysis[]
+  exports          ResearchExport[]
+
+  @@unique([id, workspaceId])
+  @@unique([jobId, workspaceId])
+  @@index([workspaceId, publishedAt])
+}
+
+model P1AnalysisArtifact {
+  id          String               @id @default(cuid())
+  resultId    String
+  workspaceId String
+  kind        P1AnalysisArtifactKind
+  periodRole  String
+  objectKey   String               @unique
+  checksum    String               @db.VarChar(71)
+  bytes       BigInt
+  format      String
+  result      AnalysisResult       @relation(fields: [resultId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([resultId, kind, periodRole])
+}
+
+model MonitoringLocation {
+  id                String                       @id @default(cuid())
+  workspaceId       String
+  requestId         String                       @db.Uuid
+  requestHash       String                       @db.VarChar(71)
+  name              String
+  anchorDetectionId String
+  anchor            Json                         @db.JsonB
+  initialAnalysisId String
+  areaId            String
+  areaRevision      Int
+  createdById       String
+  createdBy         Json                         @db.JsonB
+  createdAt         DateTime                     @default(now()) @db.Timestamptz(3)
+  initialAnalysis   AnalysisResult               @relation(fields: [initialAnalysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  analyses          MonitoringLocationAnalysis[]
+  analysisRequests  P1AnalysisLocationRequest[]
+  assignments       InspectionAssignment[]
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, createdById, requestId])
+  @@index([workspaceId, createdAt, id])
+}
+
+enum P1InspectionAssignmentStatus {
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+enum P1InspectionOutcome {
+  fire_or_smoke_found
+  no_sign_at_inspection
+  inconclusive
+}
+
+enum P1InspectionAuditAction {
+  assignment_created
+  assignment_status_changed
+  report_created
+  report_corrected
+}
+
+model InspectionAssignment {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  requestId String @db.Uuid
+  assigneeUserId String
+  assignee Json @db.JsonB
+  assignedById String
+  assignedBy Json @db.JsonB
+  status P1InspectionAssignmentStatus @default(assigned)
+  revision Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+  location MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_location_fkey")
+  assigneeMembership Membership @relation("InspectionAssignee", fields: [workspaceId, assigneeUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_assignee_fkey")
+  assignerMembership Membership @relation("InspectionAssigner", fields: [workspaceId, assignedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAssignment_assigner_fkey")
+  reports P1InspectionReport[]
+  auditEvents InspectionAuditEvent[]
+  @@unique([id, locationId, workspaceId], map: "InspectionAssignment_scope_key")
+  @@unique([locationId, assignedById, requestId], map: "InspectionAssignment_request_key")
+  @@index([workspaceId, locationId, createdAt, id], map: "InspectionAssignment_list_idx")
+}
+
+model P1InspectionReport {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  assignmentId String
+  requestId String @db.Uuid
+  inspectorUserId String
+  inspector Json @db.JsonB
+  observedAt DateTime @db.Timestamptz(3)
+  outcome P1InspectionOutcome
+  notes String @db.Text
+  recordedById String
+  recordedBy Json @db.JsonB
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  assignment InspectionAssignment @relation(fields: [assignmentId, locationId, workspaceId], references: [id, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_assignment_fkey")
+  inspectorMembership Membership @relation("InspectionInspector", fields: [workspaceId, inspectorUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_inspector_fkey")
+  recorderMembership Membership @relation("InspectionRecorder", fields: [workspaceId, recordedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReport_recorder_fkey")
+  revisions P1InspectionReportRevision[]
+  auditEvents InspectionAuditEvent[]
+  @@unique([id, workspaceId], map: "P1InspectionReport_identity_key")
+  @@unique([id, assignmentId, locationId, workspaceId], map: "P1InspectionReport_scope_key")
+  @@unique([assignmentId, recordedById, requestId], map: "P1InspectionReport_request_key")
+  @@index([workspaceId, locationId, createdAt, id], map: "P1InspectionReport_list_idx")
+}
+
+model P1InspectionReportRevision {
+  id String @id @default(cuid())
+  workspaceId String
+  reportId String
+  revision Int
+  requestId String @db.Uuid
+  reason String
+  inspectorUserId String
+  inspector Json @db.JsonB
+  observedAt DateTime @db.Timestamptz(3)
+  outcome P1InspectionOutcome
+  notes String @db.Text
+  correctedById String
+  correctedBy Json @db.JsonB
+  correctedAt DateTime @default(now()) @db.Timestamptz(3)
+  report P1InspectionReport @relation(fields: [reportId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_report_fkey")
+  inspectorMembership Membership @relation("InspectionRevisionInspector", fields: [workspaceId, inspectorUserId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_inspector_fkey")
+  correctorMembership Membership @relation("InspectionCorrector", fields: [workspaceId, correctedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "P1InspectionReportRevision_corrector_fkey")
+  @@unique([reportId, revision], map: "P1InspectionReportRevision_sequence_key")
+  @@unique([reportId, correctedById, requestId], map: "P1InspectionReportRevision_request_key")
+}
+
+model InspectionAuditEvent {
+  id String @id @default(cuid())
+  workspaceId String
+  locationId String
+  assignmentId String
+  reportId String?
+  action P1InspectionAuditAction
+  requestId String @db.Uuid
+  actorId String
+  actor Json @db.JsonB
+  occurredAt DateTime @default(now()) @db.Timestamptz(3)
+  fromRevision Int?
+  toRevision Int
+  fromStatus P1InspectionAssignmentStatus?
+  toStatus P1InspectionAssignmentStatus?
+  assignment InspectionAssignment @relation(fields: [assignmentId, locationId, workspaceId], references: [id, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_assignment_fkey")
+  report P1InspectionReport? @relation(fields: [reportId, assignmentId, locationId, workspaceId], references: [id, assignmentId, locationId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_report_fkey")
+  actorMembership Membership @relation("InspectionAuditActor", fields: [workspaceId, actorId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "InspectionAuditEvent_actor_fkey")
+  @@index([workspaceId, locationId, occurredAt, id], map: "InspectionAuditEvent_list_idx")
+}
+
+model MonitoringLocationAnalysis {
+  locationId  String
+  workspaceId String
+  analysisId  String
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+  location    MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  analysis    AnalysisResult     @relation(fields: [analysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([locationId, analysisId])
+  @@index([workspaceId, analysisId])
+}
+
+model P1AnalysisLocationRequest {
+  jobId String
+  workspaceId String
+  locationId String
+  job P1AnalysisJob @relation(fields: [jobId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  location MonitoringLocation @relation(fields: [locationId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict)
+  @@id([jobId, locationId])
+  @@index([workspaceId, locationId])
+}
+
+enum P1ResearchExportStatus {
+  queued
+  running
+  ready
+  failed
+}
+
+enum P1ResearchExportKind {
+  raw_hotspots_csv
+  harmonized_aggregates_csv
+}
+
+model ResearchExport {
+  id String @id @default(cuid())
+  workspaceId String
+  analysisId String
+  requestedById String
+  exportKey String @db.VarChar(71)
+  periodRole String
+  kind P1ResearchExportKind
+  analysisChecksum String @db.VarChar(71)
+  manifestChecksum String @db.VarChar(71)
+  formatterVersion String @db.VarChar(71)
+  sanitizationVersion String
+  inspectionSnapshot Json @db.JsonB
+  snapshotChecksum String @db.VarChar(71)
+  status P1ResearchExportStatus @default(queued)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  startedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  resultAttemptId String? @unique
+  error Json? @db.JsonB
+  analysis AnalysisResult @relation(fields: [analysisId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_analysis_fkey")
+  requester Membership @relation(fields: [workspaceId, requestedById], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_requester_fkey")
+  attempts ResearchExportAttempt[] @relation("ExportAttempts")
+  resultAttempt ResearchExportAttempt? @relation("ExportPublishedAttempt", fields: [resultAttemptId, id, workspaceId], references: [id, exportId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExport_result_attempt_fkey")
+  @@unique([id, workspaceId], map: "ResearchExport_scope_key")
+  @@index([workspaceId, exportKey], map: "ResearchExport_dedup_idx")
+  @@index([status, createdAt], map: "ResearchExport_queue_idx")
+}
+
+model ResearchExportAttempt {
+  id String @id @default(cuid())
+  exportId String
+  workspaceId String
+  attemptNo Int
+  leaseToken String @unique @db.Uuid
+  status AnalysisAttemptStatus @default(running)
+  claimedAt DateTime @db.Timestamptz(3)
+  heartbeatAt DateTime @db.Timestamptz(3)
+  leaseExpiresAt DateTime @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  errorCode String?
+  retryable Boolean?
+  export ResearchExport @relation("ExportAttempts", fields: [exportId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExportAttempt_export_fkey")
+  publishedExports ResearchExport[] @relation("ExportPublishedAttempt")
+  artifacts ResearchExportArtifact[]
+  @@unique([id, exportId, workspaceId], map: "ResearchExportAttempt_scope_key")
+  @@unique([exportId, attemptNo], map: "ResearchExportAttempt_sequence_key")
+  @@index([status, leaseExpiresAt], map: "ResearchExportAttempt_lease_idx")
+}
+
+model ResearchExportArtifact {
+  id String @id @default(cuid())
+  exportId String
+  workspaceId String
+  attemptId String
+  kind String
+  objectKey String @unique
+  checksum String @db.VarChar(71)
+  bytes BigInt
+  rowCount Int?
+  attempt ResearchExportAttempt @relation(fields: [attemptId, exportId, workspaceId], references: [id, exportId, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "ResearchExportArtifact_attempt_fkey")
+  @@unique([attemptId, kind], map: "ResearchExportArtifact_kind_key")
+}

@@ -1,0 +1,27 @@
+{
+  "manifestVersion": "firms-transport-v1",
+  "requiredColumns": ["latitude", "longitude", "acq_date", "acq_time", "satellite", "confidence", "version", "frp"],
+  "optionalColumns": ["country_id", "brightness", "scan", "track", "bright_t31", "bright_ti4", "bright_ti5", "daynight", "type", "instrument"],
+  "sources": {
+    "MODIS_NRT": {"sensor": "MODIS", "processingLevel": "NRT"},
+    "MODIS_SP": {"sensor": "MODIS", "processingLevel": "STANDARD"},
+    "VIIRS_NOAA20_NRT": {"sensor": "VIIRS", "processingLevel": "NRT"},
+    "VIIRS_NOAA20_SP": {"sensor": "VIIRS", "processingLevel": "STANDARD"},
+    "VIIRS_NOAA21_NRT": {"sensor": "VIIRS", "processingLevel": "NRT"},
+    "VIIRS_NOAA21_SP": {"sensor": "VIIRS", "processingLevel": "STANDARD"},
+    "VIIRS_SNPP_NRT": {"sensor": "VIIRS", "processingLevel": "NRT"},
+    "VIIRS_SNPP_SP": {"sensor": "VIIRS", "processingLevel": "STANDARD"}
+  },
+  "regions": {
+    "kalteng": {
+      "boundaryVersion": "prototype-rectangle-v1",
+      "boundarySource": "Existing prototype study rectangle; not final administrative geometry",
+      "geometry": {"type": "Polygon", "coordinates": [[[113, -3.6], [115, -3.6], [115, -1.5], [113, -1.5], [113, -3.6]]]}
+    },
+    "papua": {
+      "boundaryVersion": "prototype-rectangle-v1",
+      "boundarySource": "Existing prototype study rectangle; not final administrative geometry",
+      "geometry": {"type": "Polygon", "coordinates": [[[139.5, -8.8], [141, -8.8], [141, -7.5], [139.5, -7.5], [139.5, -8.8]]]}
+    }
+  }
+}

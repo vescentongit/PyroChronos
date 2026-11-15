@@ -1,0 +1,109 @@
+import type { FeatureCollection } from "geojson";
+
+export type Vertex = [number, number];
+export type AreaPolygon = { type: "Polygon"; coordinates: Vertex[][] };
+
+export function polygonViewport(geometry: AreaPolygon): [number, number, number, number] {
+  const ring = unwrapVertices(geometry.coordinates[0]);
+  const wrap = (value: number) => ((value + 180) % 360 + 360) % 360 - 180;
+  return [wrap(Math.min(...ring.map(point => point[0]))), Math.min(...ring.map(point => point[1])),
+    wrap(Math.max(...ring.map(point => point[0]))), Math.max(...ring.map(point => point[1]))];
+}
+
+export function researchMapGeometry(vertices: Vertex[], draft: AreaPolygon | null, active: AreaPolygon | null, drawing: boolean) {
+  const editing = drawing || JSON.stringify(vertices) !== JSON.stringify(draft?.coordinates[0].slice(0, -1) ?? []);
+  const edits: FeatureCollection = { type: "FeatureCollection", features: [] };
+  const outlines: FeatureCollection = { type: "FeatureCollection", features: [] };
+  if (editing) {
+    const coordinates = unwrapVertices(vertices);
+    edits.features = coordinates.map((point, index) => ({ type: "Feature", id: index, properties: {}, geometry: { type: "Point", coordinates: point } }));
+    if (coordinates.length > 1) edits.features.push({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates } });
+  } else {
+    for (const [geometry, kind] of [[draft, "draft"], [active, "active"]] as const) {
+      if (geometry) outlines.features.push({ type: "Feature", properties: { kind }, geometry: { ...geometry, coordinates: geometry.coordinates.map(unwrapVertices) } });
+    }
+  }
+  return { editing, edits, outlines };
+}
+
+export function unwrapVertices(vertices: Vertex[]): Vertex[] {
+  const ring: Vertex[] = [];
+  for (const [longitude, latitude] of vertices) {
+    let x = longitude;
+    const previous = ring.at(-1)?.[0] ?? x;
+    while (x - previous > 180) x -= 360;
+    while (x - previous < -180) x += 360;
+    ring.push([x, latitude]);
+  }
+  return ring;
+}
+
+// Unwrap the date line before checking topology; do not silently clip global AOIs.
+export function polygonFromVertices(vertices: Vertex[]): AreaPolygon {
+  if (vertices.length < 3 || vertices.length > 500)
+    throw new Error("vertex_count");
+  if (
+    vertices.some(
+      ([x, y]) =>
+        !Number.isFinite(x) ||
+        !Number.isFinite(y) ||
+        Math.abs(x) > 180 ||
+        Math.abs(y) > 90,
+    )
+  )
+    throw new Error("coordinates");
+  if (
+    new Set(vertices.map((point) => point.join(","))).size !== vertices.length
+  )
+    throw new Error("duplicate_vertices");
+  const ring = unwrapVertices(vertices);
+  if (
+    Math.max(...ring.map(([x]) => x)) - Math.min(...ring.map(([x]) => x)) >=
+    180
+  )
+    throw new Error("hemisphere");
+  const cross = (a: Vertex, b: Vertex, c: Vertex) =>
+    (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  const onSegment = (a: Vertex, b: Vertex, c: Vertex) =>
+    Math.abs(cross(a, b, c)) < 1e-10 &&
+    c[0] >= Math.min(a[0], b[0]) &&
+    c[0] <= Math.max(a[0], b[0]) &&
+    c[1] >= Math.min(a[1], b[1]) &&
+    c[1] <= Math.max(a[1], b[1]);
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i],
+      b = ring[(i + 1) % ring.length];
+    for (let j = i + 1; j < ring.length; j++) {
+      if (j === i + 1 || (i === 0 && j === ring.length - 1)) continue;
+      const c = ring[j],
+        d = ring[(j + 1) % ring.length];
+      if (
+        (cross(a, b, c) * cross(a, b, d) < 0 &&
+          cross(c, d, a) * cross(c, d, b) < 0) ||
+        onSegment(a, b, c) ||
+        onSegment(a, b, d) ||
+        onSegment(c, d, a) ||
+        onSegment(c, d, b)
+      )
+        throw new Error("self_intersection");
+    }
+  }
+  const area = ring.reduce((sum, a, i) => {
+    const b = ring[(i + 1) % ring.length];
+    return sum + a[0] * b[1] - b[0] * a[1];
+  }, 0);
+  if (Math.abs(area) < 1e-10) throw new Error("zero_area");
+  return {
+    type: "Polygon",
+    coordinates: [
+      [...vertices.map((point): Vertex => [...point]), [...vertices[0]]],
+    ],
+  };
+}
+
+export function requestIdentity(
+  previous: { key: string; id: string } | null,
+  key: string,
+) {
+  return previous?.key === key ? previous : { key, id: crypto.randomUUID() };
+}
