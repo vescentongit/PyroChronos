@@ -9,7 +9,6 @@ the 0.25-degree grid derived from the same deduplicated records is a coarse aggr
 removed afterwards unless --keep-zip is given; manifests keep the archive checksum.
 """
 
-import argparse
 import csv
 import gzip
 import hashlib
@@ -26,8 +25,15 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from detection_store import (
+    FORMAT_VERSION,
+    BlockBuilder,
+    RowDecoder,
+    StoreError,
+    write_month,
+)
 from firms_catalog import CATALOG_VERSION, archive_url, get_source
-from detection_store import FORMAT_VERSION, BlockBuilder, RowDecoder, StoreError, write_month
+from safe_cli import SafeArguments
 
 ROOT = Path(__file__).resolve().parent.parent
 GRID_VERSION = "grid-0.25deg-monthly-1"
@@ -213,7 +219,7 @@ def parse_years(value):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = SafeArguments(description=__doc__.splitlines()[0])
     parser.add_argument("--source", required=True)
     parser.add_argument("--years", required=True, help="2019 or 2015-2020")
     parser.add_argument("--raw", default=ROOT / "data" / "raw" / "firms_archive", type=Path)
@@ -224,18 +230,18 @@ def main(argv=None):
     try:
         get_source(args.source)
         years = parse_years(args.years)
-    except ValueError as error:
-        print(f"error: {error}", file=sys.stderr)
+    except ValueError:
+        print("ARCHIVE_INVALID_REQUEST", file=sys.stderr)
         return 1
     store = args.grid.parent / "detections"
     for year in years:
-        if not args.force and already_done(store, args.source, year):
-            print(f"{args.source} {year}: already in the store, skipped (use --force to redo)", flush=True)
-            continue
         try:
+            if not args.force and already_done(store, args.source, year):
+                print(f"{args.source} {year}: already in the store, skipped (use --force to redo)", flush=True)
+                continue
             entry = process_year(args.source, year, args.raw, args.grid, args.keep_zip, store_dir=store)
-        except (ArchiveError, ValueError, OSError) as error:
-            print(f"{args.source} {year}: error: {error}", file=sys.stderr)
+        except Exception:
+            print("ARCHIVE_PROCESSING_FAILED", file=sys.stderr)
             return 1
         print(f"{args.source} {year}: {entry['detections']:,} detections ({entry['duplicates_removed']} duplicates removed, {entry['rejected']} rejected), {entry['first_observed']} -> {entry['last_observed']}", flush=True)
     return 0

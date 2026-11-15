@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import { researchAnalysisResultSchema, researchDailyPageSchema, researchDetectionsPageSchema, researchJobSchema } from "./research-contracts.ts";
 import { containsPoint, validateResearchGeometry } from "./research-server-geometry.ts";
+import { capacityPolicy } from "./research-capacity.ts";
 
 export type Row = Record<string, any>;
 export interface Sql {
@@ -42,7 +43,7 @@ export async function idempotent(db: Sql, scope: string, requestId: string, body
     return { value: old.response, status: old.statusCode };
   }
   const [{ count }] = await db.query('SELECT count(*)::int AS count FROM "ResearchRequest" WHERE scope=$1 AND "createdAt">CURRENT_TIMESTAMP-INTERVAL \'1 minute\'', [scope]);
-  if (count >= 30) fail("RATE_LIMITED", 429);
+  if (count >= capacityPolicy.requestsPerMinute) fail("RATE_LIMITED", 429);
   const response = await action();
   await db.query('INSERT INTO "ResearchRequest" (scope,"requestId","payloadHash",response,"statusCode") VALUES ($1,$2,$3,$4::jsonb,$5)', [scope, requestId, digest, json(response.value), response.status]);
   return response;
@@ -85,7 +86,7 @@ export async function submitLegacyAnalysis(db: Sql, workspace: string, user: str
   let [run] = await db.query('SELECT * FROM "AnalysisRun" WHERE "workspaceId"=$1 AND "analysisKey"=$2 AND status<>\'failed\' ORDER BY "createdAt" DESC LIMIT 1', [workspace, analysisKey]);
   if (!run) {
     const [{ count }] = await db.query('SELECT count(*)::int AS count FROM "AnalysisRun" WHERE "workspaceId"=$1 AND status IN (\'queued\',\'running\')', [workspace]);
-    if (count >= 5) fail("CAPACITY_LIMIT", 503);
+    if (count >= capacityPolicy.activeAnalysesPerWorkspace) fail("CAPACITY_LIMIT", 503);
     const input = { ...settings, area, dataset: dataset.config, createdAt: new Date().toISOString() };
     [run] = await db.query('INSERT INTO "AnalysisRun" (id,"workspaceId","analysisKey","datasetId",input) VALUES ($1,$2,$3,$4,$5::jsonb) RETURNING *', [randomUUID(), workspace, analysisKey, dataset.id, json(input)]);
   }
@@ -174,7 +175,7 @@ export function validateProducerBundle(run: Row, raw: unknown) {
     if (observations.length !== (summary.metric.rawCount ?? 0) || Object.entries(summary.metric.rawCountsBySource).some(([source, count]) => count !== null && count !== (perSource[source] ?? 0))) throw new Error("INCOMPLETE_DETECTIONS");
   }
   if ([...bundle.days, ...bundle.detections].some(page => !roles.includes(page.periodRole))) throw new Error("INVALID_PERIOD_ROLE");
-  if (bundle.detections.reduce((sum, page) => sum + page.observations.length, 0) > 100000) throw new ResearchFailure("CAPACITY_LIMIT", 503);
+  if (bundle.detections.reduce((sum, page) => sum + page.observations.length, 0) > capacityPolicy.observationsPerBundle) throw new ResearchFailure("CAPACITY_LIMIT", 503);
   return bundle;
 }
 export async function publishRun(db: Sql, run: Row, raw: unknown) {

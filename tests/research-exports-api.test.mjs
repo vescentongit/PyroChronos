@@ -17,6 +17,12 @@ import {
 const { createResearchExportHandlers } = await loadInspectionModule(
 	"research-exports-http",
 );
+test("workspace resource matrix rejects foreign IDs, stale cursors and revoked membership", async () => {
+	const { checkWorkspaceIsolation } = await import(
+		"./helpers/workspace-isolation-checks.mjs"
+	);
+	await checkWorkspaceIsolation(db, f, storage);
+});
 let pg,
 	root,
 	db,
@@ -187,4 +193,99 @@ test("database exceptions never appear in status or download error bodies", asyn
 			/private-sentinel|postgresql|stack/,
 		);
 	}
+});
+
+test("revocation after download creation blocks even the first CSV chunk", async () => {
+	const created = await check(
+		await handlers.POST(request("POST", body()), context()),
+		202,
+	);
+	await exportWorker.runResearchExportOnce(f.dependencies);
+	const service = await loadInspectionModule("research-exports");
+	const file = await service.getResearchExportDownload(
+		f.dependencies,
+		f.workspace,
+		f.user,
+		created.id,
+	);
+	await db.query(
+		'UPDATE "Membership" SET active=false WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	await assert.rejects(
+		file.content[Symbol.asyncIterator]().next(),
+		(error) => error.code === "FORBIDDEN",
+	);
+	for (const method of ["GET", "manifestGET", "downloadGET"])
+		await check(
+			await handlers[method](request(), context(created.id)),
+			403,
+			"FORBIDDEN",
+		);
+	await db.query(
+		'UPDATE "Membership" SET active=true WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	const response = await handlers.downloadGET(request(), context(created.id));
+	assert.equal(response.status, 200);
+	await db.query(
+		'UPDATE "Membership" SET active=false WHERE "workspaceId"=$1 AND "userId"=$2',
+		[f.workspace, f.user],
+	);
+	await assert.rejects(response.text());
+});
+
+test("full export queue and receipt quota reject new work while old result/CSV/manifest remain readable", async () => {
+	const created = await check(
+		await handlers.POST(request("POST", body()), context()),
+		202,
+	);
+	await exportWorker.runResearchExportOnce(f.dependencies);
+	// Synthetic queued slots retain real source/snapshot metadata, without running more producers.
+	for (let i = 0; i < 5; i++)
+		await db.query(
+			`INSERT INTO "ResearchExport"
+		(id,"workspaceId","analysisId","requestedById","exportKey","periodRole",kind,"analysisChecksum","manifestChecksum","formatterVersion","sanitizationVersion","inspectionSnapshot","snapshotChecksum")
+		SELECT $1,"workspaceId","analysisId","requestedById",$2,"periodRole",kind,"analysisChecksum","manifestChecksum","formatterVersion","sanitizationVersion","inspectionSnapshot","snapshotChecksum"
+		FROM "ResearchExport" WHERE id=$3`,
+			[randomUUID(), `sha256:${String(i + 1).repeat(64)}`, created.id],
+		);
+	const busy = await handlers.POST(
+		request("POST", body({ kind: "harmonized-aggregates-csv" })),
+		context(),
+	);
+	assert.equal(busy.headers.get("Retry-After"), "2");
+	await check(busy, 503, "CAPACITY_LIMIT");
+	assert.equal(
+		(await check(await handlers.POST(request("POST", body()), context()), 200))
+			.id,
+		created.id,
+	);
+	const { readResearchAnalysis } =
+		await loadInspectionModule("research-analyses");
+	const preserved = await readResearchAnalysis(
+		db,
+		f.workspace,
+		f.user,
+		f.analysisId,
+	);
+	async function readOld() {
+		assert.deepEqual(
+			await readResearchAnalysis(db, f.workspace, f.user, f.analysisId),
+			preserved,
+		);
+		for (const method of ["GET", "manifestGET", "downloadGET"]) {
+			const response = await handlers[method](request(), context(created.id));
+			assert.equal(response.status, 200);
+			assert.equal(response.headers.get("Retry-After"), null);
+			assert.ok((await response.text()).length);
+		}
+	}
+	await readOld();
+	for (let i = 0; i < 28; i++)
+		await check(await handlers.POST(request("POST", body()), context()), 200);
+	const limited = await handlers.POST(request("POST", body()), context());
+	assert.equal(limited.headers.get("Retry-After"), "60");
+	await check(limited, 429, "RATE_LIMITED");
+	await readOld();
 });

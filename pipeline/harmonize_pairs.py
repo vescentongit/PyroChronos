@@ -21,7 +21,14 @@ from pathlib import Path
 
 import harmonize_config as config
 from area_counts import QUALITY_POLICY, month_status, source_coverage
-from detection_store import FORMAT_VERSION, RECORD, SATELLITES, StoreError, month_path, read_header
+from detection_store import (
+    FORMAT_VERSION,
+    RECORD,
+    StoreError,
+    month_path,
+    read_header,
+)
+from detection_store import SATELLITES as SATELLITES
 from firms_catalog import get_source
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +53,7 @@ def count_month(store_dir, source_id, month):
     ok = accepted_confidence(source_id)
     cells, rejected = {}, {"lowConfidence": 0, "nonVegetationType": 0}
     with path.open("rb") as handle:
-        for tile, entry in sorted(header["blocks"].items(), key=lambda item: int(item[0])):
+        for _tile, entry in sorted(header["blocks"].items(), key=lambda item: int(item[0])):
             handle.seek(base + entry[0])
             data = zlib.decompress(handle.read(entry[1]))
             for lat, lon, _, _, flags, conf in RECORD.iter_unpack(data):

@@ -14,6 +14,7 @@ import {
 	researchListQuery,
 	researchRequestBody,
 	withPrivateResearchRequest,
+	workspaceResearchDependencies,
 	type ResearchHttpDependencies,
 } from "./research-http.ts";
 import { fail } from "./research-store.ts";
@@ -44,76 +45,81 @@ export function createResearchInspectionHandlers(
 		context: InspectionRouteContext,
 		operation: Operation,
 	): Promise<Response> {
-		return withPrivateResearchRequest(request, dependencies, async (userId) => {
-			const params = await context.params;
-			const db = dependencies.database();
-			const workspaceId = params.workspaceId;
-			const resource = (id: string | undefined) => id ?? fail("NOT_FOUND", 404);
-			switch (operation) {
-				case "assignment-create":
-					return privateResearchJson(
-						await createInspectionAssignment(
-							db,
-							workspaceId,
-							userId,
-							resource(params.locationId),
-							await researchRequestBody(request),
-						),
-						201,
-					);
-				case "assignment-list":
-					return privateResearchJson(
-						await listInspectionAssignments(
-							db,
-							workspaceId,
-							userId,
-							resource(params.locationId),
-							researchListQuery(request),
-						),
-					);
-				case "assignment-update":
-					return privateResearchJson(
-						await updateInspectionAssignment(
-							db,
-							workspaceId,
-							userId,
-							resource(params.assignmentId),
-							await researchRequestBody(request),
-						),
-					);
-				case "report-create":
-					return privateResearchJson(
-						await createResearchReport(
-							db,
-							workspaceId,
-							userId,
-							resource(params.assignmentId),
-							await researchRequestBody(request),
-						),
-						201,
-					);
-				case "report-list":
-					return privateResearchJson(
-						await listResearchReports(
-							db,
-							workspaceId,
-							userId,
-							resource(params.locationId),
-							researchListQuery(request),
-						),
-					);
-				case "report-correct":
-					return privateResearchJson(
-						await correctResearchReport(
-							db,
-							workspaceId,
-							userId,
-							resource(params.reportId),
-							await researchRequestBody(request),
-						),
-					);
-			}
-		});
+		return withPrivateResearchRequest(
+			request,
+			workspaceResearchDependencies(dependencies, context),
+			async (userId) => {
+				const params = await context.params;
+				const db = dependencies.database();
+				const workspaceId = params.workspaceId;
+				const resource = (id: string | undefined) =>
+					id ?? fail("NOT_FOUND", 404);
+				switch (operation) {
+					case "assignment-create":
+						return privateResearchJson(
+							await createInspectionAssignment(
+								db,
+								workspaceId,
+								userId,
+								resource(params.locationId),
+								await researchRequestBody(request),
+							),
+							201,
+						);
+					case "assignment-list":
+						return privateResearchJson(
+							await listInspectionAssignments(
+								db,
+								workspaceId,
+								userId,
+								resource(params.locationId),
+								researchListQuery(request),
+							),
+						);
+					case "assignment-update":
+						return privateResearchJson(
+							await updateInspectionAssignment(
+								db,
+								workspaceId,
+								userId,
+								resource(params.assignmentId),
+								await researchRequestBody(request),
+							),
+						);
+					case "report-create":
+						return privateResearchJson(
+							await createResearchReport(
+								db,
+								workspaceId,
+								userId,
+								resource(params.assignmentId),
+								await researchRequestBody(request),
+							),
+							201,
+						);
+					case "report-list":
+						return privateResearchJson(
+							await listResearchReports(
+								db,
+								workspaceId,
+								userId,
+								resource(params.locationId),
+								researchListQuery(request),
+							),
+						);
+					case "report-correct":
+						return privateResearchJson(
+							await correctResearchReport(
+								db,
+								workspaceId,
+								userId,
+								resource(params.reportId),
+								await researchRequestBody(request),
+							),
+						);
+				}
+			},
+		);
 	}
 	return {
 		createAssignment: (request: Request, context: InspectionRouteContext) =>

@@ -4,6 +4,8 @@ import { researchDb } from "@/lib/research-db";
 import { createResearchWorkspaceSchema, createResearchAreaSchema, createResearchAnalysisSchema, updateResearchMembershipSchema } from "@/lib/research-contracts";
 import { areaWire, createArea, cursorRead, cursorWrite, errorPayload, fail, getArea, getArtifact, getJobRow, idempotent, jobWire, member, membershipWire, ResearchFailure, resultWire, rolePeriod, submitAnalysis, workspaceLock, workspaceWire } from "@/lib/research-store";
 import { randomUUID } from "node:crypto";
+import { researchRequestBody } from "@/lib/research-http";
+import { backpressureHeaders } from "@/lib/research-capacity";
 
 export const runtime = "nodejs";
 type Context = { params: Promise<{ path: string[] }> };
@@ -20,7 +22,7 @@ async function handle(req: NextRequest, context: Context) {
       const origin = req.headers.get("origin");
       if (origin && origin !== `${req.nextUrl.protocol}//${req.headers.get("host")}`) fail("FORBIDDEN", 403);
     }
-    const body = method === "GET" ? null : await req.json().catch(() => fail("INVALID_REQUEST"));
+    const body = method === "GET" ? null : await researchRequestBody(req);
     const parse = (schema: any) => { const result = schema.safeParse(body); if (!result.success) fail("INVALID_REQUEST"); return result.data; };
     let value: any, status = 200;
     if (path.length === 1 && path[0] === "workspaces") {
@@ -123,10 +125,11 @@ async function handle(req: NextRequest, context: Context) {
         }
       } else fail("NOT_FOUND", 404);
     }
+    if(path[0]==="workspaces"&&path[1])await member(db,path[1],user);
     return NextResponse.json(value, { status, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     const known = error instanceof ResearchFailure ? error : new ResearchFailure("INTERNAL_ERROR", 500);
-    return NextResponse.json(errorPayload(known.code), { status: known.status, headers: { "Cache-Control": "private, no-store", ...(known.status === 429 ? { "Retry-After": "60" } : {}) } });
+    return NextResponse.json(errorPayload(known.code), { status: known.status, headers: { "Cache-Control": "private, no-store", ...backpressureHeaders(known.code) } });
   }
 }
 export const GET = handle;

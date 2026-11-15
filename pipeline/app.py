@@ -14,7 +14,7 @@ _running = BoundedSemaphore(1)
 def _response(start_response, status, value):
     body = json.dumps(value, allow_nan=False, separators=(",", ":")).encode("utf-8")
     if len(body) > MAX_RESPONSE_BYTES:
-        status, body = "503 Service Unavailable", b'{"code":"CAPACITY_LIMIT"}'
+        status, body = "413 Content Too Large", b'{"code":"PAYLOAD_TOO_LARGE"}'
     start_response(status, [("Content-Type", "application/json"),
                             ("Cache-Control", "no-store"), ("Content-Length", str(len(body)))])
     return [body]
@@ -28,6 +28,27 @@ def app(environ, start_response):
     path, method = environ.get("PATH_INFO"), environ.get("REQUEST_METHOD")
     if path == "/health" and method == "GET":
         return respond("200 OK", {"service": "pipeline", "status": "ok"})
+    if path == "/ready" and method == "GET":
+        try:
+            configured = os.environ.get("RESEARCH_DATA_DIR")
+            if configured:
+                root = Path(configured)
+                if not root.is_absolute():
+                    root = Path(__file__).resolve().parent / root
+                if not root.is_dir():
+                    raise ValueError("UNAVAILABLE")
+            elif os.environ.get("FIRMS_MAP_KEY", "").strip():
+                # Configuration readiness only: do not spend NASA quota on probes.
+                pass
+            elif os.environ.get("FIRMS_BLOB_BASE_URL"):
+                from firms_blob import BlobDataset, PrivateBlob
+
+                BlobDataset(PrivateBlob())
+            else:
+                raise ValueError("UNAVAILABLE")
+            return respond("200 OK", {"status": "ready"})
+        except Exception:
+            return respond("503 Service Unavailable", {"status": "not_ready"})
     if path != "/produce":
         return respond("404 Not Found", {"code": "NOT_FOUND"})
     if method != "POST":

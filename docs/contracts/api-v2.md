@@ -165,7 +165,32 @@ Target awal ekspor visual adalah PNG kalender/grafik yang dibuat frontend dari r
 
 ## 10. Error, cache dan batas layanan
 
+Tahap 6: [isolasi dan retensi](../bagas-sprint-3-isolation-retention.md).
+Membership aktif diperiksa ulang sebelum respons privat dan setiap chunk CSV.
+Pencabutan menolak request baru serta stream chunk berikutnya yang belum dikirim;
+stream setelah header terbit di-abort, bukan disisipi JSON error. Tidak ada URL
+objek publik/presigned sebagai pengganti endpoint aplikasi. Downgrade mencabut
+hak owner, sementara hak member yang masih aktif tetap berlaku. Tidak ada TTL
+atau penghapusan histori otomatis pada policy retensi saat ini.
+
+Implementasi policy `research-capacity-1` dan perilaku anonim/legacy terbaru:
+[Tahap 3 backpressure](../bagas-sprint-3-backpressure.md). Error publik anonim
+`/api/local-research` mengikuti bentuk error v2 di bawah. 413 `PAYLOAD_TOO_LARGE`
+memiliki retryable=false dan tanpa Retry-After; 503 `CAPACITY_LIMIT` pada admission
+memiliki Retry-After: 2, 429 `RATE_LIMITED` memiliki Retry-After: 60. Nilai header
+adalah backoff minimum, bukan ETA. GET hasil/ekspor lama tidak memakai kuota
+submission. Error ekspor terminal memiliki retryable=false.
+
 Error menggunakan schema error v2: schemaVersion, error aman, code, retryable, requestId trace nullable. requestId trace respons tidak menjadi pengganti idempotency key body. Tidak ada raw exception atau kredensial di dalam error.
+
+Jalur anonim on-demand memakai envelope yang sama dan menambahkan diagnostik
+allowlist `NOT_CONFIGURED`, `NETWORK_ERROR`, `TIMEOUT`, `UPSTREAM_DENIED` (503).
+Nilai diagnostik ini tidak membawa exception, URL sumber atau key dan tidak
+mengiklankan retry otomatis (`retryable=false`). Kode lain yang tidak dikenal
+tetap menjadi `DEPENDENCY_UNAVAILABLE`. Batas B1 tetap 503 `CAPACITY_LIMIT` +
+Retry-After: 2, 429 `RATE_LIMITED` + Retry-After: 60, serta 413
+`PAYLOAD_TOO_LARGE` non-retryable tanpa Retry-After. Snapshot fingerprint berasal
+dari respons sumber pada satu invocation analyze, bukan request time/key.
 
 | HTTP | Code |
 |---|---|
@@ -174,6 +199,7 @@ Error menggunakan schema error v2: schemaVersion, error aman, code, retryable, r
 | 403 atau 404 sesuai kebijakan anti-enumerasi | FORBIDDEN / NOT_FOUND |
 | 409 | IDEMPOTENCY_CONFLICT, REVISION_CONFLICT, RESULT_NOT_READY |
 | 429 | RATE_LIMITED, dengan Retry-After bila diketahui |
+| 413 | PAYLOAD_TOO_LARGE; byte request/bundle melebihi guard, tanpa pemotongan otomatis |
 | 503 | DEPENDENCY_UNAVAILABLE atau CAPACITY_LIMIT, dengan penjelasan pemulihan |
 | 500 | INTERNAL_ERROR tanpa detail internal |
 

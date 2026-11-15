@@ -3,7 +3,16 @@ import unittest
 from pathlib import Path
 
 from area_query import GeometryError, Polygon, period_minutes, query
-from detection_store import BlockBuilder, RowDecoder, decode, iter_tiles, month_path, read_header, tiles_for_bbox, write_month
+from detection_store import (
+    BlockBuilder,
+    RowDecoder,
+    decode,
+    iter_tiles,
+    month_path,
+    read_header,
+    tiles_for_bbox,
+    write_month,
+)
 from synthetic import MODIS_HEADER, modis_row
 
 

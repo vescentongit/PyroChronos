@@ -64,7 +64,8 @@ class RowParser:
         """Return (record, None) or (None, reject)."""
         if len(row) != len(self.header):
             return None, {"line": line, "reason": "column_count", "raw": row}
-        get = lambda column: row[self.index[column]].strip()
+        def get(column):
+            return row[self.index[column]].strip()
         try:
             lat, lon = float(get("latitude")), float(get("longitude"))
             if not (isfinite(lat) and isfinite(lon) and -90 <= lat <= 90 and -180 <= lon <= 180):

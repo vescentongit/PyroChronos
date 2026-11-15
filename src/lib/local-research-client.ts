@@ -16,6 +16,13 @@ function storage<T>(operation: () => T): T {
   catch { throw new ResearchApiError("STORAGE_UNAVAILABLE"); }
 }
 
+export const localResearchRetentionPolicy = Object.freeze({persistedTtlDays:null,activeBundleCacheEntries:1,automaticPersistedEviction:false});
+export function releaseLocalResearchCache() { bundleCache=undefined; }
+export async function localResearchStorageCapacity() {
+  const estimate=await globalThis.navigator?.storage?.estimate?.();
+  return {usage:estimate?.usage??null,quota:estimate?.quota??null,automaticPersistedEviction:false};
+}
+
 function database() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open("pyro-research-v1", 1);
@@ -40,7 +47,12 @@ async function readBundle(id: string): Promise<Bundle> {
   try {
     return await new Promise((resolve, reject) => {
       const request = db.transaction("results").objectStore("results").get(id);
-      request.onsuccess = () => { const parsed = bundleSchema.safeParse(request.result); parsed.success ? resolve(parsed.data) : reject(new ResearchApiError("INVALID_RESPONSE")); };
+      request.onsuccess = () => {
+        const stored = request.result;
+        const payload = stored?.localStageOnly === true ? { result: stored.result, manifest: stored.manifest, days: stored.days, detections: stored.detections } : stored;
+        const parsed = bundleSchema.safeParse(payload);
+        parsed.success ? resolve(parsed.data) : reject(new ResearchApiError("INVALID_RESPONSE"));
+      };
       request.onerror = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     });
   } catch (error) {
@@ -52,7 +64,8 @@ async function saveBundle(bundle: Bundle, recordHistory = true, signal?: AbortSi
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction("results", "readwrite");
-      tx.objectStore("results").put(bundle);
+      // Keep resumable checkpoints durable, but distinguish them from complete analyses.
+      tx.objectStore("results").put(recordHistory ? bundle : { ...bundle, localStageOnly: true });
       tx.oncomplete = () => resolve();
       tx.onerror = tx.onabort = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     });
@@ -72,7 +85,11 @@ async function saveBundle(bundle: Bundle, recordHistory = true, signal?: AbortSi
 async function request(body: unknown, signal: AbortSignal) {
   const response = await fetch("/api/local-research", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.any([signal, AbortSignal.timeout(250_000)]) });
   const value = await response.json().catch(() => null);
-  if (!response.ok) throw new ResearchApiError(typeof value?.code === "string" ? value.code : "DEPENDENCY_UNAVAILABLE");
+  if (!response.ok) {
+    const retry = response.headers.get("Retry-After");
+    const seconds = retry && /^\d+$/.test(retry) ? Number(retry) : 2;
+    throw new ResearchApiError(typeof value?.code === "string" ? value.code : response.status === 429 ? "RATE_LIMITED" : "DEPENDENCY_UNAVAILABLE", Number.isSafeInteger(seconds) ? Math.max(2, seconds) : 2);
+  }
   return value;
 }
 export async function listResearchWorkspaces(signal: AbortSignal) {
@@ -172,8 +189,76 @@ export async function researchDetections(_workspace: string, id: string, signal:
   return { ...pages[index], nextCursor: index + 1 < pages.length ? String(index + 1) : null };
 }
 export async function lastResearchResult() {
-  const id = storage(() => localStorage.getItem("pyro-last-research-v1"));
-  return id ? (await getBundle(id)).result : null;
+  let id = storage(() => localStorage.getItem("pyro-last-research-v1"));
+  if (!id) { await recoverLocalResearch(); id = storage(() => localStorage.getItem("pyro-last-research-v1")); }
+  if(!id)return null;
+  try {return (await getBundle(id)).result;}
+  catch(error) {
+    if(!(error instanceof ResearchApiError)||error.code!=="INVALID_RESPONSE")throw error;
+    await recoverLocalResearch();
+    const repaired=storage(() => localStorage.getItem("pyro-last-research-v1"));
+    return repaired&&repaired!==id?(await getBundle(repaired)).result:null;
+  }
+}
+
+// Rebuild only secondary indexes; persisted bundles/reports are never rewritten.
+export async function recoverLocalResearch() {
+  // Older on-demand checkpoints have no record marker; their resume pointers
+  // identify them without rewriting or deleting any persisted bundle.
+  const checkpointIds = new Set<string>();
+  storage(() => {
+  for (let index=0; index<localStorage.length; index++) {
+    const key=localStorage.key(index);
+    if(key?.startsWith("pyro-stage-v1-")) {
+      const id=localStorage.getItem(key);
+      if(id)checkpointIds.add(id);
+    }
+  }
+  });
+  const db=await database();
+  const summaries: {id:string;name:string;start:string;end:string}[]=[];
+  let invalid=0;
+  try {
+    await new Promise<void>((resolve,reject)=>{
+      const tx=db.transaction("results");
+      const cursor=tx.objectStore("results").openCursor();
+      cursor.onsuccess=()=>{
+        const item=cursor.result;
+        if(!item)return;
+        if(item.value?.localStageOnly===true||checkpointIds.has(item.value?.result?.id)){item.continue();return;}
+        const parsed=bundleSchema.safeParse(item.value);
+        if(parsed.success){const r=parsed.data.result;summaries.push({id:r.id,name:r.area.name,start:r.primary.period.start,end:r.primary.period.end});}
+        else invalid++;
+        item.continue();
+      };
+      tx.oncomplete=()=>resolve();tx.onerror=tx.onabort=()=>reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
+    });
+  } finally {db.close();}
+  return storage(() => {
+  const raw=localStorage.getItem(historyKey);
+  let history:ReturnType<typeof researchHistory>=[];
+  try {history=researchHistory();}catch {
+    // Keep damaged text verbatim for manual export; never erase it during repair.
+    const backupKey=`${historyKey}-recovery-backup`;
+    if(raw!==null&&localStorage.getItem(backupKey)!==raw) {
+      if(localStorage.getItem(backupKey)!==null)throw new ResearchApiError("STORAGE_UNAVAILABLE");
+      localStorage.setItem(backupKey,raw);
+    }
+  }
+  const merged=new Map(history.map(row=>[row.id,row]));
+  for(const summary of summaries.sort((a,b)=>a.id.localeCompare(b.id)))merged.set(summary.id,summary);
+  localStorage.setItem(historyKey,JSON.stringify([...merged.values()]));
+  const old=localStorage.getItem("pyro-last-research-v1");
+  if(summaries.length&&!summaries.some(row=>row.id===old)) {
+    if(old) {
+      const key="pyro-last-research-v1-recovery-backup";
+      if(localStorage.getItem(key)===null)localStorage.setItem(key,old);
+      else if(localStorage.getItem(key)!==old)localStorage.setItem(`${key}:${encodeURIComponent(old)}`,old);
+    }
+    localStorage.setItem("pyro-last-research-v1",summaries[0].id);
+  }
+  return {valid:summaries.length,invalidRetained:invalid};
+  });
 }
 const historySchema = z.array(z.object({ id: z.string(), name: z.string(), start: z.string(), end: z.string() }).strict());
 export function researchHistory() {

@@ -70,7 +70,7 @@ def summarize(units):
             "unitsWithReferenceAtLeast30": len(usable),
             "relativeBias": sum(errors) / total,
             "medianRatioToModis": ratios[len(ratios) // 2],
-            "withinQuarter": sum(abs(e) / u["modis"] <= 0.25 for e, u in zip(errors, usable)) / len(usable),
+            "withinQuarter": sum(abs(e) / u["modis"] <= 0.25 for e, u in zip(errors, usable, strict=False)) / len(usable),
             "mae": sum(abs(e) for e in errors) / len(usable),
         }
 

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { capacityPolicy } from "./research-capacity.ts";
 import type { LocationDatabase } from "./monitoring-locations.ts";
 import {
 	createResearchExportSchema,
@@ -106,6 +107,12 @@ export async function createResearchExport(
 						status: row.status === "ready" ? 200 : 202,
 					};
 				}
+				const [capacity] = await tx.query(
+					"SELECT count(*)::int AS count FROM \"ResearchExport\" WHERE \"workspaceId\"=$1 AND status IN ('queued','running')",
+					[workspaceId],
+				);
+				if (Number(capacity.count) >= capacityPolicy.activeExportsPerWorkspace)
+					return fail("CAPACITY_LIMIT", 503);
 				const [created] = await tx.query(
 					`INSERT INTO "ResearchExport" (id,"workspaceId","analysisId","requestedById","exportKey","periodRole",kind,"analysisChecksum","manifestChecksum","formatterVersion","sanitizationVersion","inspectionSnapshot","snapshotChecksum","createdAt")
 				VALUES ($1,$2,$3,$4,$5,$6,$7::"P1ResearchExportKind",$8,$9,$10,$11,$12::jsonb,$13,clock_timestamp()) RETURNING *`,
@@ -224,8 +231,10 @@ export async function getResearchExportDownload(
 	return {
 		filename: `${row.kind}-${publicationChecksum(row.id).slice(7, 23)}-${row.periodRole}.csv`,
 		content: (async function* () {
-			for (let offset = 0; offset < bytes.byteLength; offset += 65536)
+			for (let offset = 0; offset < bytes.byteLength; offset += 65536) {
+				await member(dependencies.database, workspaceId, userId);
 				yield bytes.slice(offset, offset + 65536);
+			}
 		})(),
 	};
 }

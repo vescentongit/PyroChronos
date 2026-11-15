@@ -124,6 +124,9 @@ try {
     return JSON.parse(Buffer.concat(chunks).toString());
   };
   const bundle = await downloadBundle();
+  await open();
+  await page.getByRole("region", { name: "Analysis result", exact: true }).getByText(/Synthetic staged Amazon/).waitFor();
+  checks.push("complete saved results restore after reload and local index recovery");
   await page.getByRole("button", { name: "View detection", exact: true }).first().waitFor();
   checks.push("first page of original points loads automatically after analysis");
   assert.equal(bundle.manifest.stages.length, 4);

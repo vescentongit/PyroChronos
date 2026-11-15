@@ -23,6 +23,17 @@ test("location preserves original evidence and idempotent assignments reject con
   assert.throws(() => changeLocation(saved, 1, "assign-1", { ...assign, assignee: "Other" }, now), /IDEMPOTENCY_CONFLICT/);
   assert.throws(() => changeLocation(saved, 1, "assign-2", assign, now), /REVISION_CONFLICT/);
 });
+
+test("local report retries reuse one operation and conflicting payload leaves original report intact",()=>{
+  let saved=changeLocation(initial(),1,"assign-1",assign,now);
+  const revision=saved.revision;
+  const operation={kind:"report",assignmentId:"assign-1",report};
+  saved=changeLocation(saved,revision,"report-retry",operation,now);
+  assert.deepEqual(changeLocation(saved,revision,"report-retry",operation,now),saved);
+  assert.equal(saved.assignments[0].reports.length,1);
+  assert.throws(()=>changeLocation(saved,revision,"report-retry",{...operation,report:{...report,notes:"Conflicting retry"}},now),/IDEMPOTENCY_CONFLICT/);
+  assert.equal(saved.assignments[0].reports[0].notes,report.notes);
+});
 test("inspection needs a report before completion; another inspection uses a new assignment", () => {
   let saved = changeLocation(initial(), 1, "assign-1", assign, now);
   const complete = { kind: "status", assignmentId: "assign-1", status: "completed", actor: "Coordinator" };

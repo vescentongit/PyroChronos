@@ -10,7 +10,8 @@ import json
 from collections import defaultdict
 from datetime import date, timedelta
 
-from area_query import Polygon, months_between, period_minutes, query
+from area_query import Polygon as Polygon
+from area_query import months_between, period_minutes, query
 from detection_store import FORMAT_VERSION, minute_to_iso, source_coverage
 from firms_catalog import get_source
 

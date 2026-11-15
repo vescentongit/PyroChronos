@@ -13,7 +13,6 @@ import argparse
 import hashlib
 import json
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 import harmonize_config as config

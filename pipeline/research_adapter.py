@@ -19,6 +19,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+import harmonize_config as config
 from area_counts import (
     DEFAULT_SOURCES,
     QUALITY_POLICY,
@@ -27,15 +28,16 @@ from area_counts import (
     build_manifest,
     count_area,
     fetched_status,
-    source_coverage,
+)
+from area_counts import (
+    source_coverage as source_coverage,
 )
 from area_query import Polygon, months_between, period_minutes, query
-from detection_store import minute_to_iso
-import harmonize_config as config
-from research_export import write_aggregates, write_raw_hotspots
+from detection_store import minute_to_iso as minute_to_iso
+from firms_catalog import CATALOG_VERSION, FEATURED_REGIONS, get_source, parse_bbox
 from reference_baseline import anomaly as assess_anomaly
 from reference_baseline import harmonized_window, load_model, reference_values, support
-from firms_catalog import CATALOG_VERSION, FEATURED_REGIONS, get_source, parse_bbox
+from research_export import write_aggregates, write_raw_hotspots
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = "research-2"
@@ -54,7 +56,8 @@ def polygon_from_area(area):
         west, south, east, north = parse_bbox(area)
     if west > east:
         east += 360
-    shift = lambda lon: lon - 360 if lon > 180 else lon
+    def shift(lon):
+        return lon - 360 if lon > 180 else lon
     ring = [[shift(west), south], [shift(east), south], [shift(east), north], [shift(west), north], [shift(west), south]]
     return Polygon({"type": "Polygon", "coordinates": [ring]})
 

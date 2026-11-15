@@ -104,6 +104,15 @@ The worker never loads `.env`, creates identities, or supplies demo data.
 
 ## Policy
 
+Stage 3 retains these worker lease/time defaults and adds explicit submission
+guards and HTTP backoff in [research-capacity-1](bagas-sprint-3-backpressure.md).
+Submission backpressure does not run in the result/export read path.
+
+Sprint 3 B1 records measured synthetic producer/queue capacity, current anonymous
+vs legacy guards and reproduction commands in [the capacity report](bagas-sprint-3-capacity.md).
+The local measurements retain existing limits; they do not establish a deployment
+SLA, external pricing, or a reason to block old-result reads under submission load.
+
 `WorkerPolicy` is explicit constructor configuration. Defaults are an engineering
 starting point, not a measured capacity/SLA: lease 60s, heartbeat 15s, processor
 timeout 300s, maximum 3 attempts, retry delays 5s/10s/... capped at 60s, idle loop
@@ -112,6 +121,18 @@ Configure values for the runtime/producer before deployment. Retry timing comes
 from the latest immutable attempt, so restarting a worker does not erase it.
 
 ## Tests
+
+Stage 5 adds the [repeatable recovery runbook](bagas-sprint-3-recovery.md) and
+`node scripts/research-reconcile.mjs`: retain unreferenced private files, verify
+metadata references, optionally restore missing files from a verified backup.
+No history rows are deleted or recreated by the reconciler. Expired jobs/exports
+continue through their normal fenced worker claims.
+
+Sprint 3 Stage 4 adds native subprocess crash barriers before publication and
+inside the atomic publisher transaction, plus runtime timeout/transient/stop/signal
+checks followed by real CLI retries. See [process resilience evidence and platform
+limits](bagas-sprint-3-process-resilience.md). Orphan reconciliation and repeatable
+user-data recovery are covered by the Stage 5 runbook above.
 
 Unit tests cover orchestration, timeout/cancellation, lease loss, publication
 races, configuration and secret-safe failures. Native integration tests execute

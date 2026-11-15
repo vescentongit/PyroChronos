@@ -1,5 +1,13 @@
 # Vercel deployment
 
+Stage 7 adds [deployment/readiness and failure procedures](bagas-sprint-3-deployment-observability.md):
+`npm run deploy:check -- ROLE`, explicit opt-in `npm run deploy:migrate` for legacy
+staging only, public Node `/api/health` and `/api/ready`, private Python `/ready`,
+and operator-only `npm run research:status`. Build and HTTP handlers never apply
+migrations. [Stage 8 local handoff evidence and review gates](bagas-sprint-3-deployment-observability.md#tahap-8--simulasi-integrasi-lokal-15-november-2026)
+separate the built Next/PostgreSQL simulation from actual Preview/O4 review and
+provider rollout, which remain pending human verification and authorization.
+
 Updated 2026-11-15 for on-demand historical analysis and local verification. This is implementation/configuration, not evidence of a hosted deployment. The public app remains usable without login or Google OAuth. [Current verification and remaining gates](verification-2026-11-15.md).
 
 ## Services and routing
@@ -42,6 +50,46 @@ Saved snapshots are deliberately reused and do not automatically check upstream 
 
 Local detection stores and the legacy private Blob adapter remain supported. `.github/workflows/firms-dataset.yml` has no scheduled trigger; its manual legacy publisher remains guarded by `FIRMS_DATASET_SYNC_ENABLED=true`. Do not activate it or create/delete cloud resources as part of on-demand setup. Existing empty stores are left alone.
 
+## Merge integration with Sprint 3
+
+Durable monthly checkpoint records carry a local-only marker. Browser index
+recovery retains them for resume without promoting an unfinished stage into
+complete history or the last-result pointer. Completed results/reports remain
+intact. Selecting another saved result still updates the panel; unmount clears
+only the derived memory cache.
+Pre-merge checkpoints without the marker are also recognized from existing
+`pyro-stage-v1-*` resume pointers. Neither their bundles nor pointers are deleted
+or rewritten by recovery. Unmarked records whose resume metadata was also lost
+cannot be distinguished reliably from complete historical bundles; preserve
+them for manual inspection rather than inventing or deleting history.
+
+Deploy checks/readiness accept local on-demand configuration using a server-only
+`FIRMS_MAP_KEY`. This mode checks configuration only: probes never call NASA,
+validate the key against NASA, or promise source availability. Local stores still
+require an existing directory; private Blob fallback probes its catalog; hosted
+app readiness still probes the private binding. Legacy database checks and
+separate opt-in migrations remain required only when enabled.
+
+On-demand errors retain the structured `research-2` envelope, `requestId` and
+`retryable`. Safe diagnostics `NOT_CONFIGURED`, `NETWORK_ERROR`, `TIMEOUT` and
+`UPSTREAM_DENIED` are declared in the error schemas; arbitrary upstream messages
+remain hidden. The existing retryable policy is unchanged: capacity, rate limit
+and dependency unavailable advertise retry; the detailed on-demand diagnostics
+do not advertise automatic retry. B1 429/503 retry headers and non-retryable 413
+remain as specified below.
+
+Windows merge verification, 2026-11-15: 300/300 Node tests plus 13/13
+frontend/hotspots and 178/178 Python tests passed without skips using temporary
+PostgreSQL 16. Typecheck, lint (six existing warnings, exit 0), contracts, Ruff
+and the default `npm run build` passed. The built Next HTTP staging simulation
+also passed: health 200, ready 503 before separate migration and 200 afterwards,
+storage failure/recovery 503→200, two idempotent migration runs with seven
+unchanged migration rows after request/status reads, anonymous area 200 and
+oversized payload 413. Synthetic secrets were absent from captured outputs.
+The test server/schema/directories and temporary container were cleaned up.
+This is local synthetic verification, not a cloud deployment or new human O4
+acceptance. No automatic merge commit or abort was performed.
+
 ## Verification and release
 
 Run `npm test`, `npm run typecheck`, `npm run check:contracts`, `npm run build`, and Python unit tests with `pipeline/requirements-dev.txt` installed. `pipeline/test_firms_on_demand.py` exercises coverage, exact polygon filtering, deduplication, antimeridian planning, reference selection and fingerprints. `tests/research-on-demand.test.mjs` tests the browser client using storage doubles and the actual Next handler/Python HTTP service with synthetic NASA responses. The separate `scripts/research-on-demand-browser-check.mjs` exercises the rendered production app and real Chromium storage, including reload/resume, refresh, cancellation, storage failures, exports and mobile overflow. Neither establishes live NASA availability or hosted routing. Setup, evidence and limits are in the [15 November verification](verification-2026-11-15.md).
@@ -49,6 +97,8 @@ Run `npm test`, `npm run typecheck`, `npm run check:contracts`, `npm run build`,
 The earlier Linux session could build with Webpack but was blocked when the default Turbopack CSS worker bound a local port, including after permission changes. The subsequent Windows continuation verified production builds and expanded synthetic browser acceptance to 18 checkpoints, including cancellation during the final storage commit and saved-result selection while another analysis is running. See the verification report for the build and source scope of each run. This does not establish hosted readiness. The existing Vercel configuration passed the official JSON schema checked in the earlier session; remote configuration still requires verification. No linked project or Vercel authentication was found in that Linux session. The Windows continuation did not recheck cloud access or create replacement resources.
 
 For local Vercel routing, use `vercel dev --local`; plain `next dev` instead uses the Python subprocess. An earlier Windows session hit symlink EPERM in Vercel's local builder; that is not an established Linux limitation. Keep unrelated dev processes running. `.vercelignore` excludes local datasets, credentials and cache artifacts.
+
+The Python adapter accepts at most 100 KB of request JSON and 4,000,000 bytes of result JSON including the analyze envelope. The hosted app also bounds validated bundles; oversized payloads return HTTP 413 `PAYLOAD_TOO_LARGE` without Retry-After. Local subprocess output retains its 100 MB bound. Each on-demand stage uses one analyze invocation with its response-derived fingerprint; the producer timeout remains 120 seconds and the public route max duration 300 seconds. [Stage 3 policy](bagas-sprint-3-backpressure.md) retains one active analysis and 30 admissions per rolling minute per process. Busy admissions return 503 `CAPACITY_LIMIT` with `Retry-After: 2`; quota/upstream rate-limit responses return 429 `RATE_LIMITED` with `Retry-After: 60`. These are retry spacing, not ETA or distributed quotas. No AOI is silently truncated. Legacy queue recovery remains separate from synchronous anonymous monthly requests.
 
 Before deploying, review the existing project and service configuration; do not duplicate the project merely because a checkout lacks `.vercel/project.json`. Configure only required server secrets. Create an authorized Preview, verify `/`, `/simulation`, original recent hotspots and a small historical analysis, retry/resume, unavailable dates and browser exports. Confirm public `/health` and `/produce` do not expose Python handlers and the browser never sees a NASA key or binding URL. Promote only after hosted acceptance and deployment authorization. Do not apply legacy database migrations unless those features are explicitly being enabled.
 

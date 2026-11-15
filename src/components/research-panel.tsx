@@ -27,6 +27,8 @@ import {
   researchDays,
   researchDetections,
   lastResearchResult,
+  recoverLocalResearch,
+  releaseLocalResearchCache,
   researchHistory,
   openResearchResult,
   getBundle,
@@ -222,6 +224,8 @@ function ResearchPanel({
   const detailAbort = useRef<AbortController | null>(null);
   const pointAbort = useRef<AbortController | null>(null);
   const generation = useRef(0);
+  // Restoring the draft must not invalidate restoration of the saved result.
+  const resultGeneration = useRef(0);
   const busy = ["submitting", "queued", "running"].includes(status);
   const dirty = JSON.stringify(vertices) !== JSON.stringify(polygon?.coordinates[0].slice(0, -1) ?? []);
   const selectionKey = JSON.stringify({
@@ -268,23 +272,28 @@ function ResearchPanel({
   }, [draftLoaded, name, start, end, compare, compareStart, compareEnd, years, policy, polygon]);
   useEffect(() => {
     let active = true;
-    try { setHistory(researchHistory()); } catch { setError("STORAGE_UNAVAILABLE"); }
     const restore = () => {
-      const run = generation.current;
-      return lastResearchResult().then(saved => {
-        if (active && run === generation.current && saved) { publishResult(saved, "saved-local-result"); setHistory(researchHistory()); setStatus("succeeded"); }
-      }).catch(() => { if (active && run === generation.current) setError("STORAGE_UNAVAILABLE"); });
+      const run = resultGeneration.current;
+      return recoverLocalResearch().then(() => {
+        if (!active || run !== resultGeneration.current) return null;
+        setHistory(researchHistory());
+        return lastResearchResult();
+      }).then(saved => {
+        if (active && run === resultGeneration.current && saved) { publishResult(saved, "saved-local-result"); setHistory(researchHistory()); setStatus("succeeded"); }
+        if (!active) releaseLocalResearchCache();
+      }).catch(() => { if (active && run === resultGeneration.current) setError("STORAGE_UNAVAILABLE"); });
     };
     const selected = () => {
       abort.current?.abort();
       generation.current++;
+      resultGeneration.current++;
       setJob(null); setError("");
       setStageProgress(current => current.map(item => item.status === "loading" ? { ...item, status: "failed" } : item));
       void restore();
     };
     void restore();
     window.addEventListener("pyro-research-selected", selected);
-    return () => { active = false; window.removeEventListener("pyro-research-selected", selected); };
+    return () => { active = false; window.removeEventListener("pyro-research-selected", selected); releaseLocalResearchCache(); };
   }, []);
   useEffect(() => { if (reuse) reuseLocation(reuse.location); }, [reuse]);
   useEffect(() => {
@@ -394,6 +403,7 @@ function ResearchPanel({
   }
   async function analyze() {
     if (busy || !polygon || !workspace || drawing || dirty) return;
+    resultGeneration.current++;
     const key = selectionKey;
     const run = ++generation.current;
     abort.current?.abort();
@@ -473,6 +483,7 @@ function ResearchPanel({
     }
   }
   function preview() {
+    resultGeneration.current++;
     abort.current?.abort();
     generation.current++;
     const next = researchAnalysisResultSchema.parse(demo.result);
@@ -850,6 +861,7 @@ function ResearchPanel({
           <select value="" onChange={event => {
             const id = event.target.value;
             if (!id) return;
+            resultGeneration.current++;
             abort.current?.abort();
             const current = ++generation.current;
             void openResearchResult(id).then(saved => { if (current === generation.current) { publishResult(saved, "saved-local-result"); setJob(null); setError(""); setStatus("succeeded"); } }).catch(() => { if (current === generation.current) setError("STORAGE_UNAVAILABLE"); });

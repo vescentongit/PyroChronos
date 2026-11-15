@@ -1,5 +1,4 @@
 """Download changed FIRMS yearly archives and atomically publish a private Blob snapshot."""
-import argparse
 import copy
 import json
 import ssl
@@ -23,6 +22,7 @@ from firms_blob import (
     sha256,
 )
 from firms_catalog import archive_url, get_source
+from safe_cli import SafeArguments
 
 
 def probe_archive(url):
@@ -130,7 +130,7 @@ def sync(storage, sources, first_year, last_year, force=False, probe=probe_archi
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = SafeArguments(description=__doc__)
     parser.add_argument("--source", choices=SOURCES, help="Omit to synchronize both research sources")
     parser.add_argument("--start-year", type=int, default=2000)
     parser.add_argument("--end-year", type=int, default=datetime.now(timezone.utc).year)

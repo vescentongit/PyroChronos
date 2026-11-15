@@ -38,3 +38,10 @@ test("workspace writes use the request host for same-origin checks", async () =>
   assert.equal((await POST(request("http://localhost:3000"), context)).status, 400);
   assert.equal((await POST(request("http://attacker.example"), context)).status, 403);
 });
+
+test("legacy catch-all bounds streamed JSON before validating workspace input", async () => {
+  const response=await POST(new NextRequest("http://localhost/api/v2/workspaces",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name:"x".repeat(100_000)})}),{params:Promise.resolve({path:["workspaces"]})});
+  assert.equal(response.status,413);
+  assert.equal(response.headers.get("Retry-After"),null);
+  assert.equal((await response.json()).code,"PAYLOAD_TOO_LARGE");
+});

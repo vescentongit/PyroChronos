@@ -82,7 +82,6 @@ def compare(snapshot, store_dir):
     keep_item = accepts(QUALITY_POLICY)
     report = {}
     for name, area in snapshot["areas"].items():
-        days = sorted(area["dailyCounts"])
         first, last = date.fromisoformat(area["firstDay"]), date.fromisoformat(area["lastDay"])
         every_day = [(first + timedelta(days=i)).isoformat() for i in range((last - first).days + 1)]
         comparable = [d for d in every_day if month_status(coverage, d[:7]) == "observed"]

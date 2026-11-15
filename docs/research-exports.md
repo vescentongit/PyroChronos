@@ -120,6 +120,19 @@ failure aborts rather than inserting an error JSON document into CSV.
 
 ## Verification
 
+Stage 6 [isolation/retention audit](bagas-sprint-3-isolation-retention.md) adds
+response-boundary authorization and membership checks per CSV chunk, with stream
+prefetch disabled. Previously returned application download paths still require
+current membership. Already delivered bytes cannot be recalled. Archives have
+no automatic TTL/deletion; no valid export or history row is purged on revocation.
+
+Sprint 3 B1 adds a five-active-export guard per workspace after ready/queued cache
+reuse, retaining the existing receipt quota and size guards. CSV output is bounded
+before storage; overflow remains a terminal capacity error even when storage
+sanitizes stream exceptions. Terminal export DTO errors have retryable=false.
+Old status/download/manifest reads use neither submission capacity nor receipt
+quota. See [the backpressure policy and regression evidence](bagas-sprint-3-backpressure.md).
+
 Unit/Python, service/API, manifest-security and guarded native PostgreSQL tests cover
 formatting, missing versus zero, deduplication, access, retries, snapshot races,
 lease expiry, publication rollback and immutable history. Native tests require a

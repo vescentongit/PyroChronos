@@ -11,9 +11,20 @@ Dates are inclusive UTC days.
 import hashlib
 import json
 from datetime import date
-from math import cos, radians, sin
+from math import cos as cos
+from math import radians, sin
 
-from detection_store import RECORD, SCALE, StoreError, decode, day_start_minute, iter_tiles, month_path, source_coverage, tiles_for_bbox
+from detection_store import RECORD as RECORD
+from detection_store import (
+    SCALE,
+    StoreError,
+    day_start_minute,
+    decode,
+    iter_tiles,
+    month_path,
+    source_coverage,
+    tiles_for_bbox,
+)
 
 EARTH_RADIUS_KM = 6371.0088
 MAX_VERTICES = 10000
@@ -43,11 +54,11 @@ def _ring(points, name):
 
 
 def _crosses(ring):
-    return any(abs(b[0] - a[0]) > 180 for a, b in zip(ring, ring[1:]))
+    return any(abs(b[0] - a[0]) > 180 for a, b in zip(ring, ring[1:], strict=False))
 
 
 def _signed_area(ring):
-    return sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(ring, ring[1:])) / 2
+    return sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(ring, ring[1:], strict=False)) / 2
 
 
 def _segments_intersect(p1, p2, p3, p4):
@@ -65,7 +76,7 @@ def _segments_intersect(p1, p2, p3, p4):
 
 
 def _self_intersects(ring):
-    segments = list(zip(ring, ring[1:]))
+    segments = list(zip(ring, ring[1:], strict=False))
     count = len(segments)
     for i in range(count):
         for j in range(i + 1, count):
@@ -85,7 +96,7 @@ def _self_intersects(ring):
 
 
 def _on_ring(lon, lat, ring):
-    for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:], strict=False):
         cross = (x2 - x1) * (lat - y1) - (y2 - y1) * (lon - x1)
         if abs(cross) < 1e-10 and min(x1, x2) - 1e-10 <= lon <= max(x1, x2) + 1e-10 and min(y1, y2) - 1e-10 <= lat <= max(y1, y2) + 1e-10:
             return True
@@ -94,7 +105,7 @@ def _on_ring(lon, lat, ring):
 
 def _inside_ring(lon, lat, ring):
     inside = False
-    for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:], strict=False):
         if (y1 > lat) != (y2 > lat) and lon < (x2 - x1) * (lat - y1) / (y2 - y1) + x1:
             inside = not inside
     return inside
@@ -125,10 +136,10 @@ class Polygon:
             if not all(_inside_ring(lon, lat, self.exterior) or _on_ring(lon, lat, self.exterior) for lon, lat in hole[:-1]):
                 raise GeometryError(f"hole {index} is not inside the exterior ring")
             for other in self.holes[index:]:
-                if any(_segments_intersect(*a, *b) for a in zip(hole, hole[1:]) for b in zip(other, other[1:])) or any(_inside_ring(lon, lat, other) for lon, lat in hole[:-1]) or any(_inside_ring(lon, lat, hole) for lon, lat in other[:-1]):
+                if any(_segments_intersect(*a, *b) for a in zip(hole, hole[1:], strict=False) for b in zip(other, other[1:], strict=False)) or any(_inside_ring(lon, lat, other) for lon, lat in hole[:-1]) or any(_inside_ring(lon, lat, hole) for lon, lat in other[:-1]):
                     raise GeometryError("holes overlap, touch or are nested")
-            for a in zip(hole, hole[1:]):
-                if any(_segments_intersect(*a, *b) for b in zip(self.exterior, self.exterior[1:])):
+            for a in zip(hole, hole[1:], strict=False):
+                if any(_segments_intersect(*a, *b) for b in zip(self.exterior, self.exterior[1:], strict=False)):
                     raise GeometryError(f"hole {index} touches the exterior ring")
         longitudes = [lon for lon, _ in self.exterior]
         latitudes = [lat for _, lat in self.exterior]
@@ -149,7 +160,7 @@ class Polygon:
     def _area(self):
         def spherical(ring):
             total = 0.0
-            for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
+            for (x1, y1), (x2, y2) in zip(ring, ring[1:], strict=False):
                 total += radians(x2 - x1) * (2 + sin(radians(y1)) + sin(radians(y2)))
             return abs(total) * EARTH_RADIUS_KM**2 / 2
 

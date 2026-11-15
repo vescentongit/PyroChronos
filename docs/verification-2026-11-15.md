@@ -1,5 +1,19 @@
 # Verifikasi kelanjutan — 15 November 2026
 
+## Resolusi konflik PR #15 — bukti gabungan terbaru
+
+Penggabungan `dev` pada `d94a567` ke branch `Bagas-SPRINT-3-P2` pada `503985a` disiapkan di worktree terpisah. Empat konflik diselesaikan pada `research-panel.tsx`, `local-research-client.ts`, `research-producer.ts` dan `local-research-cache.test.mjs`. Pemulihan indeks/checkpoint, retensi tanpa delete otomatis, kapasitas/413/Retry-After serta tes PR dipertahankan bersama bug fixes storage, pembatalan, pergantian hasil dan sanitasi transport dari dev.
+
+QA browser mereproduksi masalah pemulihan hasil setelah reload: pemulihan draft mengubah generasi form dan membatalkan pemulihan hasil tersimpan. Pengaman generasi hasil sekarang terpisah dari perubahan form; analisis baru, preview dan pemilihan hasil tetap membatalkan pemulihan yang sudah kedaluwarsa. Regresi browser baru memastikan hasil lengkap kembali setelah reload dan pemulihan indeks. Kegagalan storage saat rekonstruksi indeks juga memakai kode publik `STORAGE_UNAVAILABLE`.
+
+- Suite Node gabungan: **310 kasus, 271 lulus, 39 skip, nol gagal**. Native PostgreSQL belum dikonfigurasi pada sesi ini; bukti native tanpa skip dari sesi Bagas sebelumnya tetap historis.
+- Python gabungan: **181 kasus, 164 lulus, 17 skip, nol gagal**.
+- Typecheck, kontrak, delapan frontend checks, lint producer/Ruff terarah dan build produksi Webpack lulus. Build default Turbopack tidak dijalankan ulang untuk resolusi PR ini.
+- QA browser pada build gabungan: **19 checkpoint, 20 request analisis sintetis, nol exception runtime**; desktop 1440 × 1000 dan viewport mobile ID 390 × 844. Mencakup reload/recovery serta seluruh skenario bug sweep di bawah.
+- Artefak lokal ada di worktree resolusi: `.cache/pr15-verification/node.log` dan `.cache/verification-2026-11-15/browser/`. `result.json` mencatat build ID dan timestamp run terbaru; `failure.*` menyimpan reproduksi masalah reload sebelum perbaikan.
+
+Checkout dev utama dipertahankan; resolusi ditujukan ke branch PR. Tidak ada deployment, migrasi database eksternal, perubahan secret atau resource cloud. FIRMS live, routing hosted dan review manusia tetap menjadi gate terpisah.
+
 ## Bug sweep lanjutan — hasil terbaru
 
 Basis tetap `26365c7`, dengan perubahan working tree dari kelanjutan Windows dan bug fixes berikut. Tidak ada commit, push, deployment atau operasi resource cloud. Kegagalan berikut direproduksi melalui tes regresi sebelum perbaikannya:

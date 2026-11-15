@@ -114,6 +114,7 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
     assert.deepEqual(progress.map(item => item.status), ["saved", "failed", "pending", "pending"]);
     assert.equal(metadata.has("pyro-last-research-v1"), false);
     assert.equal(stored.size, 1);
+    assert.equal([...stored.values()][0].localStageOnly, true, "durable monthly checkpoints must not be promoted into completed history by recovery");
     failSecond = false;
     // A page reload/new area identity must still reuse the same immutable geometry/date snapshot.
     const replacement = { ...area, id: "new-area-id" };

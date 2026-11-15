@@ -140,7 +140,9 @@ export async function failResearchExport(
 			[
 				retry ? "queued" : "failed",
 				retry ? null : now,
-				retry ? null : JSON.stringify(errorPayload(code)),
+				retry
+					? null
+					: JSON.stringify({ ...errorPayload(code), retryable: false }),
 				claim.job.id,
 			],
 		);
