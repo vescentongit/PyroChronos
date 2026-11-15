@@ -1,5 +1,11 @@
 # Vercel deployment
 
+Stage 7 adds [deployment/readiness and failure procedures](bagas-sprint-3-deployment-observability.md):
+`npm run deploy:check -- ROLE`, explicit opt-in `npm run deploy:migrate` for legacy
+staging only, public Node `/api/health` and `/api/ready`, private Python `/ready`,
+and operator-only `npm run research:status`. Build and HTTP handlers never apply
+migrations. Actual Preview/O4 verification and promotion remain Stage 8.
+
 Prepared 2026-11-14. Service names, public routing, and bindings require the owner's confirmation before deployment. The website remains usable without Google OAuth or a user account.
 
 ## Services and routing

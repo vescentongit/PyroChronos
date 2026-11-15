@@ -96,6 +96,15 @@ deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum d
 
 **Dependensi integrasi:** R2-P2-B1, R2-P2-B2
 
+**Tahap 7 — B4 bagian 1:** [runbook deployment dan observabilitas](../../docs/bagas-sprint-3-deployment-observability.md).
+
+- [x] Deploy check per role, penolakan public secret, konfigurasi legacy terpisah dari web anonim; output hanya field/kode aman.
+- [x] Migrasi hanya aksi deployment opt-in; tes native membuktikan migrate deploy berulang dan readiness tanpa migrasi dalam request.
+- [x] Health/readiness Node/Python dan kegagalan dependency diuji; status ingest/job/ekspor operator serta referensi kualitas Nathan N1–N4 tersedia tanpa membuka data workspace ke publik.
+- [x] Celah exception/argumen CLI Python dan logger Auth.js diperketat; regresi memakai sentinel sintetis tanpa secret asli.
+- [x] Verifikasi Tahap 7: 293/293 Node dan 168/168 Python tanpa skip dengan PostgreSQL native; typecheck, lint, contracts, ruff, build dan diff check lulus.
+- [ ] Tahap 8: handoff O4 dan verifikasi staging nyata bersama Orkhan/Nathan, review manusia, serta checklist akhir B4.
+
 ## Checklist sebelum membuat PR
 
 - [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.

@@ -32,6 +32,16 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 7 (B4 bagian 1): [runbook deployment/observabilitas](bagas-sprint-3-deployment-observability.md)
+menambahkan deploy check per role, migrasi opt-in terpisah dari HTTP/build,
+health/readiness minimal Node/Python dan status ingest/job/ekspor lewat CLI
+operator privat. Catatan kualitas N1–N4 dibedakan dari readiness teknis. Error
+CLI Python dan logger Auth.js disanitasi; native staging sintetis membuktikan
+migrate deploy berulang pada schema terisolasi. Belum ada deployment cloud,
+handoff O4, promosi atau secret aktual yang diaktifkan; Tahap 8 masih terbuka.
+Verifikasi Tahap 7: 293 tes Node dan 168 tes Python tanpa skip dengan PostgreSQL
+native aktif; typecheck/lint/contracts/ruff/build dan diff check lulus.
+
 Bagas Sprint 3 Tahap 6: [audit isolasi dan retensi](bagas-sprint-3-isolation-retention.md)
 menambahkan recheck membership sebelum respons dan setiap chunk unduhan CSV,
 tanpa prefetch stream aplikasi. Cross-workspace, revoke dan downgrade hak owner

@@ -28,6 +28,24 @@ def app(environ, start_response):
     path, method = environ.get("PATH_INFO"), environ.get("REQUEST_METHOD")
     if path == "/health" and method == "GET":
         return respond("200 OK", {"service": "pipeline", "status": "ok"})
+    if path == "/ready" and method == "GET":
+        try:
+            if os.environ.get("FIRMS_BLOB_BASE_URL"):
+                from firms_blob import BlobDataset, PrivateBlob
+
+                BlobDataset(PrivateBlob())
+            else:
+                configured = os.environ.get("RESEARCH_DATA_DIR")
+                if not configured:
+                    raise ValueError("UNAVAILABLE")
+                root = Path(configured)
+                if not root.is_absolute():
+                    root = Path(__file__).resolve().parent / root
+                if not root.is_dir():
+                    raise ValueError("UNAVAILABLE")
+            return respond("200 OK", {"status": "ready"})
+        except Exception:
+            return respond("503 Service Unavailable", {"status": "not_ready"})
     if path != "/produce":
         return respond("404 Not Found", {"code": "NOT_FOUND"})
     if method != "POST":

@@ -7,7 +7,6 @@ Usage:
 The MAP_KEY is read from FIRMS_MAP_KEY (environment or .env) and is never written to disk.
 """
 
-import argparse
 import hashlib
 import json
 import os
@@ -22,8 +21,18 @@ import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from firms_catalog import BOUNDARY_VERSION, CATALOG_VERSION, FEATURED_REGIONS, MAX_DAY_RANGE, area_url, get_source, redact, resolve_area
+from firms_catalog import (
+    BOUNDARY_VERSION,
+    CATALOG_VERSION,
+    FEATURED_REGIONS,
+    MAX_DAY_RANGE,
+    area_url,
+    get_source,
+    redact,
+    resolve_area,
+)
 from firms_parse import FirmsSchemaError, parse_batch
+from safe_cli import SafeArguments
 
 ROOT = Path(__file__).resolve().parent.parent
 RETRY_STATUS = {429, 500, 502, 503, 504}
@@ -152,7 +161,7 @@ def read_key():
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = SafeArguments(description=__doc__.splitlines()[0])
     parser.add_argument("--area", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument("--start", required=True, type=date.fromisoformat)
@@ -161,12 +170,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         entries = ingest(args.area, args.source, args.start, args.end, read_key(), args.out)
-    except (FirmsIngestError, ValueError) as error:
-        print(f"error: {error}", file=sys.stderr)
+    except Exception:
+        print("FIRMS_INGEST_FAILED", file=sys.stderr)
         return 1
     for entry in entries:
         counts = entry["counts"]
-        print(f"{entry['start_date']} +{entry['day_range']}d {entry['status']}: {counts['accepted']} accepted, {counts['rejected']} rejected, {counts['duplicates']} duplicates -> {entry['path']}")
+        print(f"INGEST_COMPLETED: {counts['accepted']} accepted, {counts['rejected']} rejected, {counts['duplicates']} duplicates")
     return 0
 
 
