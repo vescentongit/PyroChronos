@@ -104,61 +104,196 @@ export default function RotatingEarth({
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, w, h);
-      projection
-        .scale(radius * zoom)
-        .translate([w / 2, h / 2])
-        .rotate(rotation);
-      const center = projection.invert([w / 2, h / 2]) || [119, -4];
+      const now = performance.now();
+      const calm = motion.matches;
+      const cx = w / 2;
+      const cy = h / 2;
+      const scaled = radius * zoom;
+      projection.scale(scaled).translate([cx, cy]).rotate(rotation);
+      const center = projection.invert([cx, cy]) || [119, -4];
+      const family = getComputedStyle(canvas).fontFamily;
+      const lightX = cx - scaled * 0.5;
+      const lightY = cy - scaled * 0.55;
+      const orbitFade = Math.max(0, Math.min(1, (2.4 - zoom) / 1.2));
+
+      const halo = context.createRadialGradient(cx, cy, scaled * 0.94, cx, cy, scaled * 1.34);
+      halo.addColorStop(0, "rgba(148,226,255,0.5)");
+      halo.addColorStop(0.2, "rgba(96,165,250,0.2)");
+      halo.addColorStop(1, "rgba(96,165,250,0)");
+      context.fillStyle = halo;
+      context.beginPath();
+      context.arc(cx, cy, scaled * 1.34, 0, Math.PI * 2);
+      context.fill();
+
+      const orbits = [
+        { rx: 1.3, ry: 0.3, tilt: -0.42, speed: 0.00021, phase: 0.6, hue: "#ffffff" },
+        { rx: 1.42, ry: 0.4, tilt: 0.32, speed: -0.00015, phase: 2.4, hue: "#5eead4" },
+        { rx: 1.2, ry: 0.22, tilt: 1.05, speed: 0.00028, phase: 4.1, hue: "#ff7a1a" },
+      ];
+      if (orbitFade > 0) {
+        context.save();
+        context.translate(cx, cy);
+        for (const orbit of orbits) {
+          context.save();
+          context.rotate(orbit.tilt);
+          context.beginPath();
+          context.ellipse(0, 0, scaled * orbit.rx, scaled * orbit.ry, 0, 0, Math.PI * 2);
+          context.strokeStyle = "rgba(255,255,255,0.2)";
+          context.globalAlpha = orbitFade;
+          context.lineWidth = 0.8;
+          context.setLineDash([2, 6]);
+          context.stroke();
+          context.setLineDash([]);
+          context.restore();
+        }
+        context.restore();
+        context.globalAlpha = 1;
+      }
+
+      const body = context.createRadialGradient(lightX, lightY, scaled * 0.05, cx, cy, scaled * 1.02);
+      body.addColorStop(0, "#1b2a5c");
+      body.addColorStop(0.45, "#0d1633");
+      body.addColorStop(0.8, "#070b1d");
+      body.addColorStop(1, "#04060f");
       context.beginPath();
       path({ type: "Sphere" });
-      context.fillStyle = "#0e0e0e";
+      context.fillStyle = body;
       context.fill();
-      context.strokeStyle = "rgba(255,255,255,0.42)";
-      context.lineWidth = 1;
-      context.stroke();
+
+      context.save();
+      context.beginPath();
+      path({ type: "Sphere" });
+      context.clip();
       context.beginPath();
       path(graticule);
-      context.strokeStyle = "rgba(72,118,194,0.4)";
-      context.lineWidth = 0.65;
+      context.strokeStyle = "rgba(160,180,230,0.12)";
+      context.lineWidth = 0.6;
       context.stroke();
       if (land) {
         context.beginPath();
         path(land);
-        context.strokeStyle = "rgba(255,255,255,0.36)";
-        context.lineWidth = 0.65;
+        context.strokeStyle = "rgba(210,225,255,0.3)";
+        context.lineWidth = 0.7;
         context.stroke();
-        context.fillStyle = "rgba(255,255,255,0.68)";
-        context.beginPath();
+        const palette = ["150,215,240", "170,220,245", "190,225,250", "205,230,255", "220,235,255", "235,242,255"];
+        const buckets: Path2D[] = [];
+        for (let i = 0; i < palette.length * 3; i++) buckets.push(new Path2D());
+        const dotSize = Math.max(0.9, scaled / 420);
         for (const dot of dots) {
           if (!isFrontFacing(dot, center)) continue;
           const point = projection(dot);
           if (!point) continue;
-          context.moveTo(point[0] + 1.05, point[1]);
-          context.arc(point[0], point[1], 1.05, 0, Math.PI * 2);
+          const across = (point[0] - (cx - scaled)) / (2 * scaled);
+          const color = Math.max(0, Math.min(palette.length - 1, Math.floor(across * palette.length)));
+          const lit = 1 - Math.hypot(point[0] - lightX, point[1] - lightY) / (1.95 * scaled);
+          const level = lit > 0.62 ? 2 : lit > 0.34 ? 1 : 0;
+          const bucket = buckets[color * 3 + level];
+          bucket.moveTo(point[0] + dotSize, point[1]);
+          bucket.arc(point[0], point[1], dotSize, 0, Math.PI * 2);
         }
-        context.fill();
+        for (let color = 0; color < palette.length; color++)
+          for (let level = 0; level < 3; level++) {
+            context.fillStyle = `rgba(${palette[color]},${[0.4, 0.72, 1][level]})`;
+            context.fill(buckets[color * 3 + level]);
+          }
       }
+      const night = context.createRadialGradient(cx + scaled * 0.62, cy + scaled * 0.5, scaled * 0.1, cx + scaled * 0.62, cy + scaled * 0.5, scaled * 1.35);
+      night.addColorStop(0, "rgba(2,3,18,0.6)");
+      night.addColorStop(0.55, "rgba(2,3,18,0.3)");
+      night.addColorStop(1, "rgba(2,3,18,0)");
+      context.fillStyle = night;
+      context.fillRect(0, 0, w, h);
+      const inner = context.createRadialGradient(cx, cy, scaled * 0.84, cx, cy, scaled);
+      inner.addColorStop(0, "rgba(125,211,252,0)");
+      inner.addColorStop(1, "rgba(148,226,255,0.22)");
+      context.fillStyle = inner;
+      context.fillRect(0, 0, w, h);
+      context.restore();
+
+      const rim = context.createLinearGradient(cx - scaled, cy - scaled, cx + scaled, cy + scaled);
+      rim.addColorStop(0, "rgba(220,240,255,0.95)");
+      rim.addColorStop(0.55, "rgba(148,226,255,0.4)");
+      rim.addColorStop(1, "rgba(148,226,255,0.15)");
+      context.beginPath();
+      path({ type: "Sphere" });
+      context.strokeStyle = rim;
+      context.lineWidth = 1.5;
+      context.stroke();
+
+      if (orbitFade > 0) {
+        context.save();
+        context.translate(cx, cy);
+        for (const orbit of orbits) {
+          const angle = now * orbit.speed + orbit.phase;
+          for (let tail = 0; tail < 14; tail++) {
+            const a = angle - Math.sign(orbit.speed) * tail * 0.045;
+            const ox = Math.cos(a) * scaled * orbit.rx;
+            const oy = Math.sin(a) * scaled * orbit.ry;
+            const x = ox * Math.cos(orbit.tilt) - oy * Math.sin(orbit.tilt);
+            const y = ox * Math.sin(orbit.tilt) + oy * Math.cos(orbit.tilt);
+            const behind = Math.sin(a) < 0 && Math.hypot(x, y) < scaled;
+            if (behind) continue;
+            context.beginPath();
+            context.arc(x, y, tail === 0 ? 2.6 : 1.6 * (1 - tail / 14), 0, Math.PI * 2);
+            context.fillStyle = orbit.hue;
+            context.globalAlpha = orbitFade * (tail === 0 ? 1 : 0.5 * (1 - tail / 14));
+            context.shadowColor = orbit.hue;
+            context.shadowBlur = tail === 0 ? 12 : 0;
+            context.fill();
+          }
+        }
+        context.restore();
+        context.globalAlpha = 1;
+        context.shadowBlur = 0;
+      }
+
+      const flare = context.createRadialGradient(cx - scaled * 0.8, cy - scaled * 0.74, 0, cx - scaled * 0.8, cy - scaled * 0.74, scaled * 0.42);
+      flare.addColorStop(0, "rgba(255,255,255,0.95)");
+      flare.addColorStop(0.18, "rgba(200,230,255,0.45)");
+      flare.addColorStop(1, "rgba(120,170,255,0)");
+      context.globalCompositeOperation = "lighter";
+      context.fillStyle = flare;
+      context.fillRect(cx - scaled * 1.4, cy - scaled * 1.3, scaled * 1.2, scaled * 1.2);
+      context.globalCompositeOperation = "source-over";
+
       projected = [];
       if (show) {
-        for (const point of pointsRef.current) {
+        for (const [index, point] of pointsRef.current.entries()) {
           const coordinates: [number, number] = [point.lng, point.lat];
           if (!isFrontFacing(coordinates, center)) continue;
           const xy = projection(coordinates);
           if (!xy) continue;
           projected.push({ point, x: xy[0], y: xy[1] });
+          const isActive = active?.id === point.id;
+          const base = Math.min(5, 2 + Math.log10(point.count + 1)) * Math.min(1, size.radius / 250);
+          const radius = isActive ? 20 : 4 + base * 1.7;
+          const glow = context.createRadialGradient(xy[0], xy[1], 0, xy[0], xy[1], radius);
+          glow.addColorStop(0, "rgba(255,190,100,0.95)");
+          glow.addColorStop(0.35, "rgba(252,60,35,0.5)");
+          glow.addColorStop(1, "rgba(252,60,35,0)");
+          context.globalCompositeOperation = "lighter";
+          context.fillStyle = glow;
           context.beginPath();
-          context.arc(
-            xy[0],
-            xy[1],
-            active?.id === point.id ? 6 : Math.min(5, 2 + Math.log10(point.count + 1)) * Math.min(1, size.radius / 250),
-            0,
-            Math.PI * 2,
-          );
-          context.fillStyle = "#fc563e";
+          context.arc(xy[0], xy[1], radius, 0, Math.PI * 2);
           context.fill();
-          if (active?.id === point.id) {
+          context.globalCompositeOperation = "source-over";
+          if (!calm && isActive) {
+            const phase = (now / 1600 + index * 0.173) % 1;
             context.beginPath();
-            context.arc(xy[0], xy[1], 11, 0, Math.PI * 2);
+            context.arc(xy[0], xy[1], 4 + phase * (8 + base * 2), 0, Math.PI * 2);
+            context.strokeStyle = "#fc3c23";
+            context.globalAlpha = (1 - phase) * 0.55;
+            context.lineWidth = 1.2;
+            context.stroke();
+            context.globalAlpha = 1;
+          }
+          context.beginPath();
+          context.arc(xy[0], xy[1], isActive ? 3.6 : Math.max(1.6, base * 0.55), 0, Math.PI * 2);
+          context.fillStyle = "#fff7ed";
+          context.fill();
+          if (isActive) {
+            context.beginPath();
+            context.arc(xy[0], xy[1], 12, 0, Math.PI * 2);
             context.strokeStyle = "#ffffff";
             context.lineWidth = 1;
             context.stroke();
@@ -196,7 +331,7 @@ export default function RotatingEarth({
       if (!isPaused && !hover && !focused && !dragging)
         rotation[0] += elapsed * 0.004;
       render();
-      if (!isPaused && !hover && !focused && !dragging) schedule();
+      if (!motion.matches || (!isPaused && !hover && !focused && !dragging)) schedule();
     }
     function resize() {
       if (!host || !canvas) return;
@@ -438,7 +573,7 @@ export default function RotatingEarth({
     schedule();
     Promise.all([
       fetch("/geo/ne_110m_land.json", { signal: controller.signal }),
-      fetch("/geo/land-dots.json", { signal: controller.signal }),
+      fetch("/geo/land-dots-fine.json", { signal: controller.signal }),
     ])
       .then(async ([world, points]) => {
         if (!world.ok || !points.ok) throw new Error("Geography unavailable");
