@@ -1,0 +1,2804 @@
+{
+  "version": 1,
+  "historyId": "c4d36ef1-9fac-4e1e-a9d5-f3e29be66586",
+  "currentRevision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+  "pendingChanges": false,
+  "files": {
+    "AGENTS.md": {
+      "hash": "268ff46777938da818baa92a718571785e9acf2cef2d3ffbacbb93483dcba37a",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\26\\268ff46777938da818baa92a718571785e9acf2cef2d3ffbacbb93483dcba37a"
+    },
+    "CLAUDE.md": {
+      "hash": "268ff46777938da818baa92a718571785e9acf2cef2d3ffbacbb93483dcba37a",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\26\\268ff46777938da818baa92a718571785e9acf2cef2d3ffbacbb93483dcba37a"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "51e8b30f3aaafc856788c37d4947b78b14abe7110cac1dc35a8698765baa0ec1",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\51\\51e8b30f3aaafc856788c37d4947b78b14abe7110cac1dc35a8698765baa0ec1"
+    },
+    "meta.json": {
+      "hash": "81e4db1b85fcc716c7e846e3acf88a1909e82fce58de076677cb94a7af1bc5d4",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\81\\81e4db1b85fcc716c7e846e3acf88a1909e82fce58de076677cb94a7af1bc5d4"
+    },
+    "package.json": {
+      "hash": "a2cddcd9c04b6a1d71ddb3f0497967223f077a6c751702943f2c64a5dc2248be",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a2\\a2cddcd9c04b6a1d71ddb3f0497967223f077a6c751702943f2c64a5dc2248be"
+    },
+    "assets/analysis-result.png": {
+      "hash": "1aec12bc2667fba16dc9c2495066da950d0b82d7b6f533a18898cabc9e8c870a",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1a\\1aec12bc2667fba16dc9c2495066da950d0b82d7b6f533a18898cabc9e8c870a"
+    },
+    "assets/area-controls.png": {
+      "hash": "9cda978eace3da0c093407d58c5263e4028db0b0b856005dc8a6dcfbf45ebb0a",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9c\\9cda978eace3da0c093407d58c5263e4028db0b0b856005dc8a6dcfbf45ebb0a"
+    },
+    "assets/audio-timing.json": {
+      "hash": "d759cc5a8fef7f99c7765c70edf048edb52ca78dd3796a558f5a19f7f3aca4e0",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\d7\\d759cc5a8fef7f99c7765c70edf048edb52ca78dd3796a558f5a19f7f3aca4e0"
+    },
+    "assets/capture-provenance.json": {
+      "hash": "620f187ab7d3f42810824b5336f5e6e4b4ba5d8464448381391e95c75713abe3",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\62\\620f187ab7d3f42810824b5336f5e6e4b4ba5d8464448381391e95c75713abe3"
+    },
+    "assets/fonts/OFL.txt": {
+      "hash": "05831cfb0b8fbbb02633f7c8968684f43a3b25cb9ea7e45db10b24078ddb922f",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\05\\05831cfb0b8fbbb02633f7c8968684f43a3b25cb9ea7e45db10b24078ddb922f"
+    },
+    "assets/fonts/plus-jakarta-500.ttf": {
+      "hash": "076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\07\\076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852"
+    },
+    "assets/fonts/plus-jakarta-700.ttf": {
+      "hash": "076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\07\\076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852"
+    },
+    "assets/globe.png": {
+      "hash": "d81685b336aa4b1fa26bd62843faaa3221b645df563e95ba3b5a0af81ca73a76",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\d8\\d81685b336aa4b1fa26bd62843faaa3221b645df563e95ba3b5a0af81ca73a76"
+    },
+    "assets/gsap.min.js": {
+      "hash": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\92\\92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb"
+    },
+    "assets/home-ui.png": {
+      "hash": "7aa4d53a2352526a786dc8cdde3c193215d71b398976691774d04103c6eed746",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\7a\\7aa4d53a2352526a786dc8cdde3c193215d71b398976691774d04103c6eed746"
+    },
+    "assets/logo.png": {
+      "hash": "9cec1b3a0cce6dbf8c7f16ba88ae1c02c66bb4a3a1a3d74f9b31122bd21cf586",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9c\\9cec1b3a0cce6dbf8c7f16ba88ae1c02c66bb4a3a1a3d74f9b31122bd21cf586"
+    },
+    "assets/narration.wav": {
+      "hash": "6c7397fa43ac738e04d8d048ade9d270dc3a002c2194253b236795cfbffb706d",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\6c\\6c7397fa43ac738e04d8d048ade9d270dc3a002c2194253b236795cfbffb706d"
+    },
+    "assets/recordings/page@595f401ef857b4a3f5bc305e9bdb90ed.webm": {
+      "hash": "611583c43c7a2b5418e6866f298584d07c013ae41b45f607566b7c2d33766572",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\61\\611583c43c7a2b5418e6866f298584d07c013ae41b45f607566b7c2d33766572"
+    },
+    "assets/research-ui.png": {
+      "hash": "41939b2c6b294b919d83913bef781ef800848685622cbec92870b75241ec7fc0",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\41\\41939b2c6b294b919d83913bef781ef800848685622cbec92870b75241ec7fc0"
+    },
+    "assets/result-ui.png": {
+      "hash": "f126af7b062b769059f7f2f169d480105cb0cdc56ae19bb213dbe1ea47b52eb7",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f1\\f126af7b062b769059f7f2f169d480105cb0cdc56ae19bb213dbe1ea47b52eb7"
+    },
+    "assets/voice-00.wav": {
+      "hash": "1e7887fdf332f4e605dab79ebf9f8ae8894b84428f8afd5997708e9ff55fd6b8",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1e\\1e7887fdf332f4e605dab79ebf9f8ae8894b84428f8afd5997708e9ff55fd6b8"
+    },
+    "assets/voice-01.wav": {
+      "hash": "1cb5ec671b7733cd03cd8f762559c7fb008ec416f2d14967ca200f9de97caa04",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1c\\1cb5ec671b7733cd03cd8f762559c7fb008ec416f2d14967ca200f9de97caa04"
+    },
+    "assets/voice-02.wav": {
+      "hash": "2159728361b08c2c5c71d0c1d1cee19ddf4a1dafa405a683c9b3702cbc141dc9",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\21\\2159728361b08c2c5c71d0c1d1cee19ddf4a1dafa405a683c9b3702cbc141dc9"
+    },
+    "assets/voice-03.wav": {
+      "hash": "11cf8b981aa2d781ec7532a2fa43a0edf8b9755a9678504c198cec79ff1f2b1c",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\11\\11cf8b981aa2d781ec7532a2fa43a0edf8b9755a9678504c198cec79ff1f2b1c"
+    },
+    "assets/voice-04.wav": {
+      "hash": "1b9401f2d94a853f02cc5316fb38237e07ea9c11d3a9c9d7354796e23be3aed7",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1b\\1b9401f2d94a853f02cc5316fb38237e07ea9c11d3a9c9d7354796e23be3aed7"
+    },
+    "assets/voice-05.wav": {
+      "hash": "aee930b0eed2af510bb51cdb3440161c0fde3f71897c3f43afd339098c1a0cfb",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ae\\aee930b0eed2af510bb51cdb3440161c0fde3f71897c3f43afd339098c1a0cfb"
+    },
+    "assets/voice-06.wav": {
+      "hash": "24345e6c36b408187c31aa106ba01099f245fae63e22946c0efc85876d42b8b2",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\24\\24345e6c36b408187c31aa106ba01099f245fae63e22946c0efc85876d42b8b2"
+    },
+    "assets/workflow.webm": {
+      "hash": "acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ac\\acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1"
+    },
+    "build-audio.py": {
+      "hash": "ba3977d6d266b562fa3c5b9a1d0b94b3f383711f24f134f067e9c880cb63a2b9",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ba\\ba3977d6d266b562fa3c5b9a1d0b94b3f383711f24f134f067e9c880cb63a2b9"
+    },
+    "build-composition.py": {
+      "hash": "ad93ec4aba8b5afdfcddb7759fd238c674397351cfbd43fe74a10412cfb9eecc",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\ad93ec4aba8b5afdfcddb7759fd238c674397351cfbd43fe74a10412cfb9eecc"
+    },
+    "compositions/captions.html": {
+      "hash": "44b48c295d4bf16ed6d5588fae4622dd606cc12001b8a0e9a55beb36a8062fde",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\44\\44b48c295d4bf16ed6d5588fae4622dd606cc12001b8a0e9a55beb36a8062fde"
+    },
+    "compositions/choose.html": {
+      "hash": "f6f249ac116fd009df11dfd13ff14b48241ad0ea1e1b3475a554c46ae35290cf",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f6\\f6f249ac116fd009df11dfd13ff14b48241ad0ea1e1b3475a554c46ae35290cf"
+    },
+    "compositions/endcard.html": {
+      "hash": "2641e187243c254900ed5a19216893b902dc7ffe3d0b6e5228582247b658ed20",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\26\\2641e187243c254900ed5a19216893b902dc7ffe3d0b6e5228582247b658ed20"
+    },
+    "compositions/evidence.html": {
+      "hash": "a7d416aa903fd87719bf1762ad9142890c6eb34ee3ef4d2718578b64cb122761",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a7\\a7d416aa903fd87719bf1762ad9142890c6eb34ee3ef4d2718578b64cb122761"
+    },
+    "compositions/future.html": {
+      "hash": "1ff6b58c6aeccc9e044855a756b2861e50def096881e066e9edf22eb0f960e25",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1f\\1ff6b58c6aeccc9e044855a756b2861e50def096881e066e9edf22eb0f960e25"
+    },
+    "compositions/introduction.html": {
+      "hash": "a87fd85864427e26f329d94ba9fe785cc54cb16047724e6fa3c9ca604c0423ac",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a8\\a87fd85864427e26f329d94ba9fe785cc54cb16047724e6fa3c9ca604c0423ac"
+    },
+    "compositions/project.html": {
+      "hash": "41d50525140dd58ffe8005c36ed2ae3aea0580d564878a0fb230eadf641b314e",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\41\\41d50525140dd58ffe8005c36ed2ae3aea0580d564878a0fb230eadf641b314e"
+    },
+    "narration.json": {
+      "hash": "24bd8614578c8acd1d4eeb5678b70b5c04d3d97def70744fc4b2b66f6fe251b0",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\24\\24bd8614578c8acd1d4eeb5678b70b5c04d3d97def70744fc4b2b66f6fe251b0"
+    },
+    "PyroChronos-NasaCom.srt": {
+      "hash": "9fec206c0147a4a7c003a312855676cd00f5b2fc1f5cc216396d7e6267d6ce4c",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9f\\9fec206c0147a4a7c003a312855676cd00f5b2fc1f5cc216396d7e6267d6ce4c"
+    },
+    "SPEC.md": {
+      "hash": "8cd17989cccb18745ed4a2403d62f2ab4c1a399826c0cddc99d64d482d0f1783",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\8c\\8cd17989cccb18745ed4a2403d62f2ab4c1a399826c0cddc99d64d482d0f1783"
+    },
+    "assets/analyze-button.png": {
+      "hash": "2e5549170f04fafed290ba65dbba595612b63eef16d9e2a37f2512a0f1f1e837",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\2e\\2e5549170f04fafed290ba65dbba595612b63eef16d9e2a37f2512a0f1f1e837"
+    },
+    "assets/calendar-export.png": {
+      "hash": "8bda6577b82477a0ce11ddbd02020639d99e8e044bd2c33474d26a6840ba3bc4",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\8b\\8bda6577b82477a0ce11ddbd02020639d99e8e044bd2c33474d26a6840ba3bc4"
+    },
+    "assets/date-fields.png": {
+      "hash": "e8d6dc005c0bc1b9b2324e915c22d44be4795f7ca42dca86ca05a4ccdb5efd5d",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\e8\\e8d6dc005c0bc1b9b2324e915c22d44be4795f7ca42dca86ca05a4ccdb5efd5d"
+    },
+    "assets/recordings/page@870761a5529f6e64feb73b9f68ea0b09.webm": {
+      "hash": "acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ac\\acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1"
+    },
+    "main.motion.json": {
+      "hash": "75947162f5c175627be3e305449fea77f8496e4fdb80bc85c4b5a4e07ddd9dc5",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\75\\75947162f5c175627be3e305449fea77f8496e4fdb80bc85c4b5a4e07ddd9dc5"
+    },
+    "README.md": {
+      "hash": "5d4a0af15647ec28518eec3e86f52c23036027bc940454534bf92403de1f7c7f",
+      "content": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\5d\\5d4a0af15647ec28518eec3e86f52c23036027bc940454534bf92403de1f7c7f"
+    }
+  },
+  "revisions": {
+    "2be523a7-bbb8-439a-b847-e523c17d176c": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "Create a 30-second NasaCom PyroChronos demo video",
+      "startedAt": 1794707054168,
+      "endedAt": 1794708226257.952,
+      "files": {
+        "assets/analysis-result.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\c9\\c9ca2ef441040d4f29303750731bdc4ea5a923ed33c8d27c8859c7b57b690f2d"
+        },
+        "assets/area-controls.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9c\\9cda978eace3da0c093407d58c5263e4028db0b0b856005dc8a6dcfbf45ebb0a"
+        },
+        "assets/audio-timing.json": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\d7\\d759cc5a8fef7f99c7765c70edf048edb52ca78dd3796a558f5a19f7f3aca4e0"
+        },
+        "assets/capture-provenance.json": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\62\\620f187ab7d3f42810824b5336f5e6e4b4ba5d8464448381391e95c75713abe3"
+        },
+        "assets/fonts/OFL.txt": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\05\\05831cfb0b8fbbb02633f7c8968684f43a3b25cb9ea7e45db10b24078ddb922f"
+        },
+        "assets/fonts/plus-jakarta-500.ttf": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\07\\076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852"
+        },
+        "assets/fonts/plus-jakarta-700.ttf": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\07\\076831b98043f50f829b6c91db3be4a844641f1c95bccff5c886ed87c661a852"
+        },
+        "assets/globe.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\ada98f2639e38a35c59d4fb12c60a9d94008f92e24fff100f4d83d10348cf722"
+        },
+        "assets/gsap.min.js": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\92\\92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb"
+        },
+        "assets/home-ui.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\adbdaecd7c9985c2948d9423a38ef441a39ade6a4bd3329fbe711bc26bf5be7c"
+        },
+        "assets/logo.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9c\\9cec1b3a0cce6dbf8c7f16ba88ae1c02c66bb4a3a1a3d74f9b31122bd21cf586"
+        },
+        "assets/narration.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\6c\\6c7397fa43ac738e04d8d048ade9d270dc3a002c2194253b236795cfbffb706d"
+        },
+        "assets/recordings/page@595f401ef857b4a3f5bc305e9bdb90ed.webm": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\61\\611583c43c7a2b5418e6866f298584d07c013ae41b45f607566b7c2d33766572"
+        },
+        "assets/research-ui.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f3\\f344694b36dd8f84ca87a3a914f2b7eb1e99294fdbbcd5fba8a61ecabbd51a2b"
+        },
+        "assets/result-ui.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f1\\f126af7b062b769059f7f2f169d480105cb0cdc56ae19bb213dbe1ea47b52eb7"
+        },
+        "assets/voice-00.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1e\\1e7887fdf332f4e605dab79ebf9f8ae8894b84428f8afd5997708e9ff55fd6b8"
+        },
+        "assets/voice-01.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1c\\1cb5ec671b7733cd03cd8f762559c7fb008ec416f2d14967ca200f9de97caa04"
+        },
+        "assets/voice-02.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\21\\2159728361b08c2c5c71d0c1d1cee19ddf4a1dafa405a683c9b3702cbc141dc9"
+        },
+        "assets/voice-03.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\11\\11cf8b981aa2d781ec7532a2fa43a0edf8b9755a9678504c198cec79ff1f2b1c"
+        },
+        "assets/voice-04.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1b\\1b9401f2d94a853f02cc5316fb38237e07ea9c11d3a9c9d7354796e23be3aed7"
+        },
+        "assets/voice-05.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ae\\aee930b0eed2af510bb51cdb3440161c0fde3f71897c3f43afd339098c1a0cfb"
+        },
+        "assets/voice-06.wav": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\24\\24345e6c36b408187c31aa106ba01099f245fae63e22946c0efc85876d42b8b2"
+        },
+        "assets/workflow.webm": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\61\\611583c43c7a2b5418e6866f298584d07c013ae41b45f607566b7c2d33766572"
+        },
+        "build-audio.py": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ba\\ba3977d6d266b562fa3c5b9a1d0b94b3f383711f24f134f067e9c880cb63a2b9"
+        },
+        "build-composition.py": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\57\\572b59b28947769706d7452a6e95db085cba7bb50c63dce6cf71fe31cf1fe797"
+        },
+        "compositions/captions.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\4f\\4f8774658127588fa93e6b56c45a426d9afa0efc1430888e350c3b73b7b07905"
+        },
+        "compositions/choose.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\cb\\cb81845b2da94f9585be784d3249d715adb490ed73886b425b2e355220c65e2b"
+        },
+        "compositions/endcard.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\26\\2641e187243c254900ed5a19216893b902dc7ffe3d0b6e5228582247b658ed20"
+        },
+        "compositions/evidence.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f8\\f8ee8bb8dfa9993f109f16e0e636882fc002c728e7fff1d6f41f3b2f5f6c639f"
+        },
+        "compositions/future.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\44\\4497927a7ad73dc69418ce09d330e53fc17f4e372fc2ba807af6ad93f3c40ba2"
+        },
+        "compositions/introduction.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a8\\a87fd85864427e26f329d94ba9fe785cc54cb16047724e6fa3c9ca604c0423ac"
+        },
+        "compositions/project.html": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\56\\5660defa84570ce8bd9acf2e817201d773628668fad27f032bcc364bd447708b"
+        },
+        "index.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a3\\a35377c9ff2d5da65016adf630765a6818d5faa08e8cb7f2820460e0ac7057b8",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\51\\51e8b30f3aaafc856788c37d4947b78b14abe7110cac1dc35a8698765baa0ec1"
+        },
+        "narration.json": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\24\\24bd8614578c8acd1d4eeb5678b70b5c04d3d97def70744fc4b2b66f6fe251b0"
+        },
+        "PyroChronos-NasaCom.srt": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\9f\\9fec206c0147a4a7c003a312855676cd00f5b2fc1f5cc216396d7e6267d6ce4c"
+        },
+        "SPEC.md": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\8c\\8cd17989cccb18745ed4a2403d62f2ab4c1a399826c0cddc99d64d482d0f1783"
+        }
+      }
+    },
+    "8db5a39f-b2fd-4d48-8fe4-bcf38284d409": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "Create a 30-second NasaCom PyroChronos demo video",
+      "startedAt": 1794707054168,
+      "endedAt": 1794708612667.2715,
+      "files": {
+        "assets/analysis-result.png": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\c9\\c9ca2ef441040d4f29303750731bdc4ea5a923ed33c8d27c8859c7b57b690f2d",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1a\\1aec12bc2667fba16dc9c2495066da950d0b82d7b6f533a18898cabc9e8c870a"
+        },
+        "assets/analyze-button.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\2e\\2e5549170f04fafed290ba65dbba595612b63eef16d9e2a37f2512a0f1f1e837"
+        },
+        "assets/calendar-export.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\8b\\8bda6577b82477a0ce11ddbd02020639d99e8e044bd2c33474d26a6840ba3bc4"
+        },
+        "assets/date-fields.png": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\e8\\e8d6dc005c0bc1b9b2324e915c22d44be4795f7ca42dca86ca05a4ccdb5efd5d"
+        },
+        "assets/globe.png": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\ada98f2639e38a35c59d4fb12c60a9d94008f92e24fff100f4d83d10348cf722",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\d8\\d81685b336aa4b1fa26bd62843faaa3221b645df563e95ba3b5a0af81ca73a76"
+        },
+        "assets/home-ui.png": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\adbdaecd7c9985c2948d9423a38ef441a39ade6a4bd3329fbe711bc26bf5be7c",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\7a\\7aa4d53a2352526a786dc8cdde3c193215d71b398976691774d04103c6eed746"
+        },
+        "assets/recordings/page@870761a5529f6e64feb73b9f68ea0b09.webm": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ac\\acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1"
+        },
+        "assets/research-ui.png": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f3\\f344694b36dd8f84ca87a3a914f2b7eb1e99294fdbbcd5fba8a61ecabbd51a2b",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\41\\41939b2c6b294b919d83913bef781ef800848685622cbec92870b75241ec7fc0"
+        },
+        "assets/workflow.webm": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\61\\611583c43c7a2b5418e6866f298584d07c013ae41b45f607566b7c2d33766572",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ac\\acdf063319fca2246e8a2964701c54b6b4a5a7b41229b71740e310ba3a33a1a1"
+        },
+        "build-composition.py": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\57\\572b59b28947769706d7452a6e95db085cba7bb50c63dce6cf71fe31cf1fe797",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\67\\6751565f6f02fe75af182d312674f38f5524f2ad1e8a91cb46fb657583f75af5"
+        },
+        "compositions/captions.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\4f\\4f8774658127588fa93e6b56c45a426d9afa0efc1430888e350c3b73b7b07905",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\44\\44b48c295d4bf16ed6d5588fae4622dd606cc12001b8a0e9a55beb36a8062fde"
+        },
+        "compositions/choose.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\cb\\cb81845b2da94f9585be784d3249d715adb490ed73886b425b2e355220c65e2b",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f4\\f4537935ea72d6f5aab3affcc160dc628c251e7a6ac10ad3b49e74ad53b39ebd"
+        },
+        "compositions/evidence.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f8\\f8ee8bb8dfa9993f109f16e0e636882fc002c728e7fff1d6f41f3b2f5f6c639f",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\a7\\a7d416aa903fd87719bf1762ad9142890c6eb34ee3ef4d2718578b64cb122761"
+        },
+        "compositions/future.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\44\\4497927a7ad73dc69418ce09d330e53fc17f4e372fc2ba807af6ad93f3c40ba2",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\1f\\1ff6b58c6aeccc9e044855a756b2861e50def096881e066e9edf22eb0f960e25"
+        },
+        "main.motion.json": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\cc\\cca98fbdf0e2470ed401d24286b4a4f05a0b3100478cf22c8ec2c1c36e3ddf1d"
+        }
+      }
+    },
+    "fffaadc0-635e-4198-80cc-8edfa5fb3cc5": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "Create a 30-second NasaCom PyroChronos demo video",
+      "startedAt": 1794707054168,
+      "endedAt": 1794708933595.7014,
+      "files": {
+        "build-composition.py": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\67\\6751565f6f02fe75af182d312674f38f5524f2ad1e8a91cb46fb657583f75af5",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\e7\\e705e3f477db45c2e11b3624c6ee768d862b7f4c8101722722d5813a2c6a812b"
+        },
+        "compositions/project.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\56\\5660defa84570ce8bd9acf2e817201d773628668fad27f032bcc364bd447708b",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\41\\41d50525140dd58ffe8005c36ed2ae3aea0580d564878a0fb230eadf641b314e"
+        },
+        "main.motion.json": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\cc\\cca98fbdf0e2470ed401d24286b4a4f05a0b3100478cf22c8ec2c1c36e3ddf1d",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\75\\75947162f5c175627be3e305449fea77f8496e4fdb80bc85c4b5a4e07ddd9dc5"
+        }
+      }
+    },
+    "3c360ef0-7f3b-479b-8fd3-20c9179715f9": {
+      "actor": {
+        "kind": "agent",
+        "name": "codex"
+      },
+      "label": "Create a 30-second NasaCom PyroChronos demo video",
+      "startedAt": 1794707054168,
+      "endedAt": 1794709169794.0293,
+      "files": {
+        "build-composition.py": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\e7\\e705e3f477db45c2e11b3624c6ee768d862b7f4c8101722722d5813a2c6a812b",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\ad\\ad93ec4aba8b5afdfcddb7759fd238c674397351cfbd43fe74a10412cfb9eecc"
+        },
+        "compositions/choose.html": {
+          "before": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f4\\f4537935ea72d6f5aab3affcc160dc628c251e7a6ac10ad3b49e74ad53b39ebd",
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\f6\\f6f249ac116fd009df11dfd13ff14b48241ad0ea1e1b3475a554c46ae35290cf"
+        },
+        "README.md": {
+          "before": null,
+          "after": "C:\\Users\\Orkhan\\.cache\\hyperframes\\history\\c4d36ef1-9fac-4e1e-a9d5-f3e29be66586\\blobs\\5d\\5d4a0af15647ec28518eec3e86f52c23036027bc940454534bf92403de1f7c7f"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+      "id": "e6131233-7bae-40a2-85de-a1c2367cee29"
+    },
+    "revisions": {
+      "2be523a7-bbb8-439a-b847-e523c17d176c": [
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+          "scope": "project",
+          "report": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\checks\\fc2fd633-8db7-48a0-9b41-19d7f379147c.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "at": [
+                0,
+                1,
+                2.7,
+                7,
+                11.5,
+                16,
+                18,
+                22,
+                28
+              ],
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 20000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": true,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "1f66f511d49c476a49624c8ccae272791316e5acf850c09cd0b3d997b569ab3a",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "8db5a39f-b2fd-4d48-8fe4-bcf38284d409": [
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6",
+          "scope": "project",
+          "report": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\checks\\36da75a3-f33e-4658-906f-9039112265b6.json",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "at": [
+                0,
+                1,
+                2.7,
+                7,
+                11.5,
+                16,
+                18,
+                22,
+                28
+              ],
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 20000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": true,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1794708817972,
+          "contentHash": "8d6ae09448c9c6ffed9b7ba554d071681f5125fc40cc176d9c17806162ac5635",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "fffaadc0-635e-4198-80cc-8edfa5fb3cc5": [
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+          "scope": "project",
+          "report": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\checks\\3f520ac7-2d6c-47a1-8884-fe6df3e72bb1.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "at": [
+                0,
+                1,
+                2.7,
+                7,
+                11.5,
+                16,
+                18,
+                22,
+                28
+              ],
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 20000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": true,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1794709042913,
+          "contentHash": "e614f1c53298e0449625eab72419fe27aa0b7794ed53cb87934e066f69e1d396",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "3c360ef0-7f3b-479b-8fd3-20c9179715f9": [
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29",
+          "scope": "project",
+          "report": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\checks\\e6131233-7bae-40a2-85de-a1c2367cee29.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "at": [
+                0,
+                2.7,
+                7,
+                11.5,
+                13,
+                16,
+                18,
+                22,
+                28
+              ],
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 20000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": true,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1794709194254,
+          "contentHash": "2d1e650cfc31c19e1c5bd20ce9bc4100616dc70a1b63acfcf4113f1e42febdaa",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+      "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-36"
+    },
+    "revisions": {
+      "2be523a7-bbb8-439a-b847-e523c17d176c": [
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c-0",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\10a01481-e69a-4240-abb0-536d1c4b3aa2\\frame-00-at-0.0s.png",
+          "time": 0,
+          "metadata": {
+            "checkId": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "a08d8bb151124b5494132d3590fdda8a19ae354d4f04d1212ebf64efb0445577",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c-1",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\10a01481-e69a-4240-abb0-536d1c4b3aa2\\frame-01-at-2.7s.png",
+          "time": 2.7,
+          "metadata": {
+            "checkId": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "b4546ebd7fe05f263038d9c63a93e80b98aed6fe4a23ede7e5dae569bbe9adb8",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c-2",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\10a01481-e69a-4240-abb0-536d1c4b3aa2\\frame-02-at-11.5s.png",
+          "time": 11.5,
+          "metadata": {
+            "checkId": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "89bc1d8bf77645ca620217d8d103089003b578d06c4ce8fb55feb02e1567e628",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c-3",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\10a01481-e69a-4240-abb0-536d1c4b3aa2\\frame-03-at-18.0s.png",
+          "time": 18,
+          "metadata": {
+            "checkId": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "596157489300dd5f2aaeff97ba04974c4f39446bcef0821063e5101b4cf37652",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "fc2fd633-8db7-48a0-9b41-19d7f379147c-4",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\10a01481-e69a-4240-abb0-536d1c4b3aa2\\frame-04-at-28.0s.png",
+          "time": 28,
+          "metadata": {
+            "checkId": "fc2fd633-8db7-48a0-9b41-19d7f379147c",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708333658,
+          "contentHash": "80fe3206aa9244d3e796ca0d1375e3c5baf11c083ebec3f7987038d792cdcf27",
+          "revision": "2be523a7-bbb8-439a-b847-e523c17d176c",
+          "inputFingerprint": "46bac273de58a67ac41ee66a9dfdd93b6cce349abcbee688dbda443b658ee031",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "8db5a39f-b2fd-4d48-8fe4-bcf38284d409": [
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6-0",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\02682fe6-a242-4c14-a0ec-d8d4da32e725\\frame-00-at-0.0s.png",
+          "time": 0,
+          "metadata": {
+            "checkId": "36da75a3-f33e-4658-906f-9039112265b6",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708817973,
+          "contentHash": "d5a0f282df3d5b4fac947ef03a3f65d31b8d03039e9c263c083e2e89380a76b0",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6-1",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\02682fe6-a242-4c14-a0ec-d8d4da32e725\\frame-01-at-2.7s.png",
+          "time": 2.7,
+          "metadata": {
+            "checkId": "36da75a3-f33e-4658-906f-9039112265b6",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708817973,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6-2",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\02682fe6-a242-4c14-a0ec-d8d4da32e725\\frame-02-at-11.5s.png",
+          "time": 11.5,
+          "metadata": {
+            "checkId": "36da75a3-f33e-4658-906f-9039112265b6",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708817973,
+          "contentHash": "aa9932a1f9b486aba4f9319cc4648fe18db4014ce2156e95ad81299a52c0dd8e",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6-3",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\02682fe6-a242-4c14-a0ec-d8d4da32e725\\frame-03-at-18.0s.png",
+          "time": 18,
+          "metadata": {
+            "checkId": "36da75a3-f33e-4658-906f-9039112265b6",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708817973,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "36da75a3-f33e-4658-906f-9039112265b6-4",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\02682fe6-a242-4c14-a0ec-d8d4da32e725\\frame-04-at-28.0s.png",
+          "time": 28,
+          "metadata": {
+            "checkId": "36da75a3-f33e-4658-906f-9039112265b6",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794708817973,
+          "contentHash": "45527f0b6c73146e97c428598decb61012fbdd427c18772bea696c70e3f02ee5",
+          "revision": "8db5a39f-b2fd-4d48-8fe4-bcf38284d409",
+          "inputFingerprint": "99e1b72a45d3745686462a21bf349e066437774ce9ddd74212591a133f508c29",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "fffaadc0-635e-4198-80cc-8edfa5fb3cc5": [
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1-0",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\a5032d51-6316-466b-8586-008671d5a960\\frame-00-at-0.0s.png",
+          "time": 0,
+          "metadata": {
+            "checkId": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709042914,
+          "contentHash": "d5a0f282df3d5b4fac947ef03a3f65d31b8d03039e9c263c083e2e89380a76b0",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1-1",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\a5032d51-6316-466b-8586-008671d5a960\\frame-01-at-2.7s.png",
+          "time": 2.7,
+          "metadata": {
+            "checkId": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709042916,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1-2",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\a5032d51-6316-466b-8586-008671d5a960\\frame-02-at-11.5s.png",
+          "time": 11.5,
+          "metadata": {
+            "checkId": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709042917,
+          "contentHash": "aa9932a1f9b486aba4f9319cc4648fe18db4014ce2156e95ad81299a52c0dd8e",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1-3",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\a5032d51-6316-466b-8586-008671d5a960\\frame-03-at-18.0s.png",
+          "time": 18,
+          "metadata": {
+            "checkId": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709042919,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1-4",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\a5032d51-6316-466b-8586-008671d5a960\\frame-04-at-28.0s.png",
+          "time": 28,
+          "metadata": {
+            "checkId": "3f520ac7-2d6c-47a1-8884-fe6df3e72bb1",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709042920,
+          "contentHash": "45527f0b6c73146e97c428598decb61012fbdd427c18772bea696c70e3f02ee5",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-0",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-01-at-0.3s.png",
+          "time": 0.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "introduction"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057401,
+          "contentHash": "1168a21fdc29a8c0760de705676ba97ea45f6853132b0578b863fa222520206b",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-1",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-02-at-2.5s.png",
+          "time": 2.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "introduction mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057403,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-2",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-03-at-5.3s.png",
+          "time": 5.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "project"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057404,
+          "contentHash": "a831da0393f32ceb5943baa206188bdb79ae8321274fd66b152bca247716498f",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-3",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-04-at-7.5s.png",
+          "time": 7.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "project mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057405,
+          "contentHash": "8f06cc11d6de998a86689e72ef9e23bdee0bf3739194d28ab98b0d6550b27e68",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-4",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-05-at-10.3s.png",
+          "time": 10.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "choose"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057406,
+          "contentHash": "f9f4c98816590bd380e0c649d740737fe104a0616f3632b80426c71038bc3568",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-5",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-06-at-12s.png",
+          "time": 12,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "choose mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057407,
+          "contentHash": "d7af9f4a99bba7d631efcbd6bef470918c783d8daf448789a9754f114b858e99",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-6",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-07-at-14.3s.png",
+          "time": 14.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "evidence"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057408,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-7",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-08-at-17s.png",
+          "time": 17,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "evidence mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057409,
+          "contentHash": "c449a92ee61fde7f3d787973c7f113030ae8ea598b421b8e553a99ed865accba",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-8",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-09-at-20.3s.png",
+          "time": 20.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "future"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057410,
+          "contentHash": "e1a4a4a61b8559bb96d83fa331f14bba820745f68dbfefa7469737c8d44f9da0",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-9",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-10-at-23s.png",
+          "time": 23,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "future mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057412,
+          "contentHash": "937eb0ce9b4024b5e0c4d1b4816d8663d47c1b3581fd4a94b5cdbbed07f0190e",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-10",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-11-at-26.3s.png",
+          "time": 26.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "endcard"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057413,
+          "contentHash": "6c6d69a3647e50799a2f15a523db1a145ed7a9f2aebf005ad3433cd068eacdc5",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-11",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\beat-12-at-28s.png",
+          "time": 28,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "endcard mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057414,
+          "contentHash": "45527f0b6c73146e97c428598decb61012fbdd427c18772bea696c70e3f02ee5",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-12",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-01-1-at-4.8s.png",
+          "time": 4.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057416,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-13",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-01-2-at-4.9s.png",
+          "time": 4.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057417,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-14",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-01-3-at-5s.png",
+          "time": 5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut introduction -> project"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057419,
+          "contentHash": "f65d189b16b17773a823a9c14e104e09890d1504a417630d25f89a83508fdc20",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-15",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-01-4-at-5.1s.png",
+          "time": 5.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057421,
+          "contentHash": "006d511b4ce836993dc6744bc6e67dc2a37324df2150908f1d98eba8e97f6880",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-16",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-01-5-at-5.2s.png",
+          "time": 5.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057423,
+          "contentHash": "281b989bd2aa0a5fbeb2e5b6872ba0d790aed350d4bb3e616ec5a561428646a7",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-17",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-02-1-at-9.8s.png",
+          "time": 9.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057425,
+          "contentHash": "20721b1f40e7717a7423f03020b29af202325df902d4ec89dda83a56b0532255",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-18",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-02-2-at-9.9s.png",
+          "time": 9.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057426,
+          "contentHash": "20721b1f40e7717a7423f03020b29af202325df902d4ec89dda83a56b0532255",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-19",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-02-3-at-10s.png",
+          "time": 10,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut project -> choose"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057428,
+          "contentHash": "4c50c5ecf760685dcb11cba52b53ea413fc32e834128832334007feece4139fc",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-20",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-02-4-at-10.1s.png",
+          "time": 10.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057430,
+          "contentHash": "df6341511e3db528838557f709b189c347873be1f3949a48de698171cef04972",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-21",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-02-5-at-10.2s.png",
+          "time": 10.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057432,
+          "contentHash": "b5c6ba1854416dbab99722ca15995131ec4bb5c9c0ec531df77a2131f66ed057",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-22",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-03-1-at-13.8s.png",
+          "time": 13.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057434,
+          "contentHash": "bbf3ef8ba21d2ef549ba3fb414df3755da17fa1fccfd81ff851a58496563e933",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-23",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-03-2-at-13.9s.png",
+          "time": 13.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057436,
+          "contentHash": "bbf3ef8ba21d2ef549ba3fb414df3755da17fa1fccfd81ff851a58496563e933",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-24",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-03-3-at-14s.png",
+          "time": 14,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut choose -> evidence"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057438,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-25",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-03-4-at-14.1s.png",
+          "time": 14.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057440,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-26",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-03-5-at-14.2s.png",
+          "time": 14.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057442,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-27",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-04-1-at-19.8s.png",
+          "time": 19.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057446,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-28",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-04-2-at-19.9s.png",
+          "time": 19.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057448,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-29",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-04-3-at-20s.png",
+          "time": 20,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut evidence -> future"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057451,
+          "contentHash": "82d65da57fa9d362d48a8ae0a0b397580a198a24405d21bec5e5e550161d2c2a",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-30",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-04-4-at-20.1s.png",
+          "time": 20.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057453,
+          "contentHash": "66a9ab6d6ea728bf598edde598392a4be3632905c7a70a1ee71e1eadf1583d77",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-31",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-04-5-at-20.2s.png",
+          "time": 20.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057456,
+          "contentHash": "816418a5f90e78fae08fddd3fdc30cf91d782cafbdf930a477980376ee1d57c1",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-32",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-05-1-at-25.8s.png",
+          "time": 25.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057458,
+          "contentHash": "6af531d45318f90292e36966154d02b4d1f1c93a323559c50f3f0eff9d469504",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-33",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-05-2-at-25.9s.png",
+          "time": 25.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057460,
+          "contentHash": "6af531d45318f90292e36966154d02b4d1f1c93a323559c50f3f0eff9d469504",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-34",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-05-3-at-26s.png",
+          "time": 26,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut future -> endcard"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057465,
+          "contentHash": "437aa67d5c20655ecacc09afca06254d4605f12d07c66ebc8d9c5f3700bf4c6b",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-35",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-05-4-at-26.1s.png",
+          "time": 26.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057467,
+          "contentHash": "b67a27dc14cb2bb97f95ef0034d996bff7f40e1b7f98829b54b1793d97a5e617",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "13f799ec-ef53-4865-95b3-dc6678a817ca-36",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f0610551-1485-4095-bf2b-dc37f51b42f0\\seam-05-5-at-26.2s.png",
+          "time": 26.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709057470,
+          "contentHash": "4d672e2265784bb96d66675b0f4cddd5814a610f04cbd613c8f3ed047773e9ca",
+          "revision": "fffaadc0-635e-4198-80cc-8edfa5fb3cc5",
+          "inputFingerprint": "208bc6bcb09ba59d5e45b24c4d57bfd8bfa2e790b7e6c482ec483f4ba286d674",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "3c360ef0-7f3b-479b-8fd3-20c9179715f9": [
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29-0",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\984cd5f8-2908-48e9-b24f-5f106dbac6fa\\frame-00-at-0.0s.png",
+          "time": 0,
+          "metadata": {
+            "checkId": "e6131233-7bae-40a2-85de-a1c2367cee29",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709194255,
+          "contentHash": "d5a0f282df3d5b4fac947ef03a3f65d31b8d03039e9c263c083e2e89380a76b0",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29-1",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\984cd5f8-2908-48e9-b24f-5f106dbac6fa\\frame-01-at-7.0s.png",
+          "time": 7,
+          "metadata": {
+            "checkId": "e6131233-7bae-40a2-85de-a1c2367cee29",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709194257,
+          "contentHash": "be504ab34dbd44974d3903fb872061e312f436ab800e3c218681da0b9285d5d1",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29-2",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\984cd5f8-2908-48e9-b24f-5f106dbac6fa\\frame-02-at-13.0s.png",
+          "time": 13,
+          "metadata": {
+            "checkId": "e6131233-7bae-40a2-85de-a1c2367cee29",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709194260,
+          "contentHash": "998a2b3cb69afab562166b7f19c67cc5da4b4f1cf6cf9094932c4e7c662baa72",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29-3",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\984cd5f8-2908-48e9-b24f-5f106dbac6fa\\frame-03-at-18.0s.png",
+          "time": 18,
+          "metadata": {
+            "checkId": "e6131233-7bae-40a2-85de-a1c2367cee29",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709194263,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "id": "e6131233-7bae-40a2-85de-a1c2367cee29-4",
+          "scope": "full",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\984cd5f8-2908-48e9-b24f-5f106dbac6fa\\frame-04-at-28.0s.png",
+          "time": 28,
+          "metadata": {
+            "checkId": "e6131233-7bae-40a2-85de-a1c2367cee29",
+            "width": 1920,
+            "height": 1080
+          },
+          "createdAt": 1794709194266,
+          "contentHash": "45527f0b6c73146e97c428598decb61012fbdd427c18772bea696c70e3f02ee5",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-0",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-01-at-0.3s.png",
+          "time": 0.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "introduction"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212233,
+          "contentHash": "1168a21fdc29a8c0760de705676ba97ea45f6853132b0578b863fa222520206b",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-1",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-02-at-2.5s.png",
+          "time": 2.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "introduction mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212234,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-2",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-03-at-5.3s.png",
+          "time": 5.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "project"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212235,
+          "contentHash": "a831da0393f32ceb5943baa206188bdb79ae8321274fd66b152bca247716498f",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-3",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-04-at-7.5s.png",
+          "time": 7.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "project mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212235,
+          "contentHash": "8f06cc11d6de998a86689e72ef9e23bdee0bf3739194d28ab98b0d6550b27e68",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-4",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-05-at-10.3s.png",
+          "time": 10.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "choose"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212236,
+          "contentHash": "f9f4c98816590bd380e0c649d740737fe104a0616f3632b80426c71038bc3568",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-5",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-06-at-12s.png",
+          "time": 12,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "choose mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212237,
+          "contentHash": "2621618afcf718f2d24c916677c83375c98f29accb6bc5a2e482cc870b00f4f4",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-6",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-07-at-14.3s.png",
+          "time": 14.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "evidence"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212237,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-7",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-08-at-17s.png",
+          "time": 17,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "evidence mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212238,
+          "contentHash": "c449a92ee61fde7f3d787973c7f113030ae8ea598b421b8e553a99ed865accba",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-8",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-09-at-20.3s.png",
+          "time": 20.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "future"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212238,
+          "contentHash": "e1a4a4a61b8559bb96d83fa331f14bba820745f68dbfefa7469737c8d44f9da0",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-9",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-10-at-23s.png",
+          "time": 23,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "future mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212239,
+          "contentHash": "937eb0ce9b4024b5e0c4d1b4816d8663d47c1b3581fd4a94b5cdbbed07f0190e",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-10",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-11-at-26.3s.png",
+          "time": 26.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "endcard"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212240,
+          "contentHash": "6c6d69a3647e50799a2f15a523db1a145ed7a9f2aebf005ad3433cd068eacdc5",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-11",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\beat-12-at-28s.png",
+          "time": 28,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "beat",
+              "label": "endcard mid"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212240,
+          "contentHash": "45527f0b6c73146e97c428598decb61012fbdd427c18772bea696c70e3f02ee5",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-12",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-01-1-at-4.8s.png",
+          "time": 4.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212241,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-13",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-01-2-at-4.9s.png",
+          "time": 4.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212242,
+          "contentHash": "fc475e89ee5bbb26559fb94ccd1ee04aabe3104a9355a461da6bcf362396d86f",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-14",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-01-3-at-5s.png",
+          "time": 5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut introduction -> project"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212242,
+          "contentHash": "f65d189b16b17773a823a9c14e104e09890d1504a417630d25f89a83508fdc20",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-15",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-01-4-at-5.1s.png",
+          "time": 5.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212243,
+          "contentHash": "006d511b4ce836993dc6744bc6e67dc2a37324df2150908f1d98eba8e97f6880",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-16",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-01-5-at-5.2s.png",
+          "time": 5.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212244,
+          "contentHash": "281b989bd2aa0a5fbeb2e5b6872ba0d790aed350d4bb3e616ec5a561428646a7",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-17",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-02-1-at-9.8s.png",
+          "time": 9.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212245,
+          "contentHash": "20721b1f40e7717a7423f03020b29af202325df902d4ec89dda83a56b0532255",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-18",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-02-2-at-9.9s.png",
+          "time": 9.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212245,
+          "contentHash": "20721b1f40e7717a7423f03020b29af202325df902d4ec89dda83a56b0532255",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-19",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-02-3-at-10s.png",
+          "time": 10,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut project -> choose"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212246,
+          "contentHash": "4c50c5ecf760685dcb11cba52b53ea413fc32e834128832334007feece4139fc",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-20",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-02-4-at-10.1s.png",
+          "time": 10.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212247,
+          "contentHash": "df6341511e3db528838557f709b189c347873be1f3949a48de698171cef04972",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-21",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-02-5-at-10.2s.png",
+          "time": 10.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212247,
+          "contentHash": "b5c6ba1854416dbab99722ca15995131ec4bb5c9c0ec531df77a2131f66ed057",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-22",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-03-1-at-13.8s.png",
+          "time": 13.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212248,
+          "contentHash": "6c0448abbb7a1a445618fe2d5e09f28584d1be406aa0137cb0b30cd4f7916f84",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-23",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-03-2-at-13.9s.png",
+          "time": 13.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212249,
+          "contentHash": "5ac71d43e18bbc5f2cba23ace6ae5a6fb28c5dc7878ec3ed43261f75c6312f1f",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-24",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-03-3-at-14s.png",
+          "time": 14,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut choose -> evidence"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212250,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-25",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-03-4-at-14.1s.png",
+          "time": 14.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212251,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-26",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-03-5-at-14.2s.png",
+          "time": 14.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212251,
+          "contentHash": "5cd445b9bf7e0b02cd3b853dc500a20456ce5f92172248ee3adda7b1e034c6e2",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-27",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-04-1-at-19.8s.png",
+          "time": 19.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212252,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-28",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-04-2-at-19.9s.png",
+          "time": 19.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212253,
+          "contentHash": "1f65aaca58abad3cae59dce333801f56484b3fb9c912750bca2721563f9e69f8",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-29",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-04-3-at-20s.png",
+          "time": 20,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut evidence -> future"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212254,
+          "contentHash": "82d65da57fa9d362d48a8ae0a0b397580a198a24405d21bec5e5e550161d2c2a",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-30",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-04-4-at-20.1s.png",
+          "time": 20.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212255,
+          "contentHash": "66a9ab6d6ea728bf598edde598392a4be3632905c7a70a1ee71e1eadf1583d77",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-31",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-04-5-at-20.2s.png",
+          "time": 20.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212255,
+          "contentHash": "816418a5f90e78fae08fddd3fdc30cf91d782cafbdf930a477980376ee1d57c1",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-32",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-05-1-at-25.8s.png",
+          "time": 25.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut -0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212256,
+          "contentHash": "6af531d45318f90292e36966154d02b4d1f1c93a323559c50f3f0eff9d469504",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-33",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-05-2-at-25.9s.png",
+          "time": 25.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "-0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212257,
+          "contentHash": "6af531d45318f90292e36966154d02b4d1f1c93a323559c50f3f0eff9d469504",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-34",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-05-3-at-26s.png",
+          "time": 26,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "cut future -> endcard"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212258,
+          "contentHash": "437aa67d5c20655ecacc09afca06254d4605f12d07c66ebc8d9c5f3700bf4c6b",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-35",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-05-4-at-26.1s.png",
+          "time": 26.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.1"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212259,
+          "contentHash": "b67a27dc14cb2bb97f95ef0034d996bff7f40e1b7f98829b54b1793d97a5e617",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "2bfb1589-77c7-4a7e-8a83-87fbb84bc434-36",
+          "image": "D:\\NASA\\video-demo\\.hyperframes\\artifacts\\snapshots\\f7e529b6-adc6-49b2-8b13-6a9fa58d948c\\seam-05-5-at-26.2s.png",
+          "time": 26.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "review": {
+              "role": "seam",
+              "label": "+0.2"
+            },
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1794709212259,
+          "contentHash": "4d672e2265784bb96d66675b0f4cddd5814a610f04cbd613c8f3ed047773e9ca",
+          "revision": "3c360ef0-7f3b-479b-8fd3-20c9179715f9",
+          "inputFingerprint": "73e4ed705486322e88996a4f2d16775b5ad84827801aec8c19ad14ac4b30cacf",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  }
+}

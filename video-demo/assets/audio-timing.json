@@ -1,0 +1,48 @@
+{
+  "voice": "Microsoft Zira Desktop",
+  "duration": 30.0,
+  "segments": [
+    {
+      "segment": 0,
+      "sourceSeconds": 1.6143310657596373,
+      "slotSeconds": 2,
+      "tempo": 1
+    },
+    {
+      "segment": 1,
+      "sourceSeconds": 3.7788662131519275,
+      "slotSeconds": 3,
+      "tempo": 1.325917969526992
+    },
+    {
+      "segment": 2,
+      "sourceSeconds": 4.633968253968254,
+      "slotSeconds": 5,
+      "tempo": 1
+    },
+    {
+      "segment": 3,
+      "sourceSeconds": 4.9287981859410435,
+      "slotSeconds": 4,
+      "tempo": 1.2802073210236475
+    },
+    {
+      "segment": 4,
+      "sourceSeconds": 6.773151927437642,
+      "slotSeconds": 6,
+      "tempo": 1.1578037482799388
+    },
+    {
+      "segment": 5,
+      "sourceSeconds": 6.763174603174603,
+      "slotSeconds": 6,
+      "tempo": 1.1560982227648895
+    },
+    {
+      "segment": 6,
+      "sourceSeconds": 4.243854875283446,
+      "slotSeconds": 4,
+      "tempo": 1.10229996760609
+    }
+  ]
+}

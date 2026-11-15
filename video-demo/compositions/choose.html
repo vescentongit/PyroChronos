@@ -1,0 +1,23 @@
+<template><style>@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-500.ttf');font-weight:500}@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-700.ttf');font-weight:700}*{box-sizing:border-box}#root{position:absolute;inset:0;background:#0e0e0e;color:#fff;font-family:Jakarta,sans-serif;overflow:hidden}h1,h2,p{margin:0;font-weight:500}h1,h2{font-weight:700;letter-spacing:-.035em}img{object-fit:contain}.accent{color:#ff715c}.small{font-size:32px;line-height:1.5;color:#d8e4f7}
+#choose-root{position:absolute;inset:0;background:#0a3c91}
+#choose-title{position:absolute;left:192px;top:196px;width:440px;font-size:72px;line-height:1.2}
+#choose-note{position:absolute;left:192px;top:565px;width:410px;font-size:32px;line-height:1.5;color:#dbe7fc}
+#choose-screen{position:absolute;left:670px;top:135px;width:1060px;height:610px;overflow:hidden;border-radius:12px;background:#0e0e0e}
+#choose-controls{position:absolute;left:0;top:0;width:1484px;height:auto}
+#choose-workflow{position:absolute;left:-285px;top:-200px;right:auto;bottom:auto;width:1500px;height:1042px;object-fit:contain;z-index:2}
+#choose-label{position:absolute;left:670px;top:780px;font-size:29px;color:#e4edff}
+</style><div id="root" data-composition-id="choose" data-width="1920" data-height="1080">
+<div id="choose-root"></div>
+<h1 id="choose-title">Choose<br>an area.<br>Set a period.</h1>
+<p id="choose-note">Same polygon.<br>Clear source records.</p>
+<div id="choose-screen"><img id="choose-controls" data-layout-allow-overflow src="assets/area-controls.png" alt="Actual area and date controls from the working prototype"><video id="choose-workflow" class="clip" data-start="2" data-duration="2" data-media-start="3.8" data-track-index="2" data-layout-allow-overflow src="assets/workflow.webm" muted playsinline></video></div>
+<p id="choose-label">Working prototype · illustrative analysis</p>
+</div><script>
+const tl=gsap.timeline({paused:true});
+
+tl.fromTo("#choose-screen",{x:90,opacity:.5},{x:0,opacity:1,duration:.5,ease:"power3.out"},0);
+tl.fromTo("#choose-controls",{x:-400,y:-95},{x:-400,y:-95,duration:.1},0);
+tl.to("#choose-controls",{x:0,y:-385,duration:.65,ease:"power2.inOut"},1.8);
+
+window.__timelines=window.__timelines||{};window.__timelines["choose"]=tl;
+</script></template>

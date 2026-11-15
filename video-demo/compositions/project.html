@@ -1,0 +1,19 @@
+<template><style>@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-500.ttf');font-weight:500}@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-700.ttf');font-weight:700}*{box-sizing:border-box}#root{position:absolute;inset:0;background:#0e0e0e;color:#fff;font-family:Jakarta,sans-serif;overflow:hidden}h1,h2,p{margin:0;font-weight:500}h1,h2{font-weight:700;letter-spacing:-.035em}img{object-fit:contain}.accent{color:#ff715c}.small{font-size:32px;line-height:1.5;color:#d8e4f7}
+#project-globe{position:absolute;left:1000px;top:72px;width:820px;height:690px}
+#project-name{position:absolute;left:192px;top:230px;font-size:112px;line-height:1.15}
+#project-tagline{position:absolute;left:192px;top:425px;font-size:62px;line-height:1.35}
+#project-source{position:absolute;left:192px;top:690px;font-size:31px;color:#d8e4f7;line-height:1.55}
+</style><div id="root" data-composition-id="project" data-width="1920" data-height="1080">
+<img id="project-globe" src="assets/globe.png" alt="Real project globe, not a fabricated dashboard">
+<h1 id="project-name" data-hold>PyroChronos</h1>
+<p id="project-tagline">See the fire.<br><span class="accent">Read the pattern.</span></p>
+<p id="project-source">Harmonizing MODIS + VIIRS hotspots<br>NASA FIRMS · free, open observations</p>
+</div><script>
+const tl=gsap.timeline({paused:true});
+
+tl.fromTo("#project-name",{opacity:.4,x:-32},{opacity:1,x:0,duration:.45,ease:"power4.out"},0);
+tl.fromTo("#project-tagline",{opacity:0},{opacity:1,duration:.4},.7);
+tl.fromTo("#project-source",{opacity:0},{opacity:1,duration:.4},2.4);
+
+window.__timelines=window.__timelines||{};window.__timelines["project"]=tl;
+</script></template>

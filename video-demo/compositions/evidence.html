@@ -1,0 +1,23 @@
+<template><style>@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-500.ttf');font-weight:500}@font-face{font-family:Jakarta;src:url('assets/fonts/plus-jakarta-700.ttf');font-weight:700}*{box-sizing:border-box}#root{position:absolute;inset:0;background:#0e0e0e;color:#fff;font-family:Jakarta,sans-serif;overflow:hidden}h1,h2,p{margin:0;font-weight:500}h1,h2{font-weight:700;letter-spacing:-.035em}img{object-fit:contain}.accent{color:#ff715c}.small{font-size:32px;line-height:1.5;color:#d8e4f7}
+#evidence-title{position:absolute;left:192px;top:205px;width:430px;font-size:74px;line-height:1.2}
+#evidence-second{position:absolute;left:192px;top:205px;width:430px;font-size:74px;line-height:1.2}
+#evidence-note{position:absolute;left:192px;top:588px;width:420px;font-size:30px;line-height:1.55;color:#d8e4f7}
+#evidence-panel{position:absolute;left:670px;top:135px;width:1060px;height:610px;overflow:hidden;border-radius:12px;background:#0e0e0e}
+#evidence-result{position:absolute;left:0;top:0;width:1640px;height:auto}
+#evidence-label{position:absolute;left:670px;top:780px;font-size:29px;color:#ffb2a6}
+</style><div id="root" data-composition-id="evidence" data-width="1920" data-height="1080">
+<h1 id="evidence-title">Read the<br>pattern.</h1>
+<h2 id="evidence-second">Keep the<br>evidence.</h2>
+<p id="evidence-note">Calendar · source comparison<br>CSV / JSON / PNG exports<br>Model limits stay visible.</p>
+<div id="evidence-panel"><img id="evidence-result" data-layout-allow-overflow src="assets/analysis-result.png" alt="Actual calendar and export controls with illustrative prototype responses"></div>
+<p id="evidence-label">Illustrative prototype data · not live conditions</p>
+</div><script>
+const tl=gsap.timeline({paused:true});
+
+tl.fromTo("#evidence-result",{x:0,y:-20},{x:0,y:-20,duration:.1},0);
+tl.fromTo("#evidence-title",{opacity:1},{opacity:0,duration:.2},2.8);
+tl.fromTo("#evidence-second",{opacity:0},{opacity:1,duration:.3},3);
+tl.to("#evidence-result",{y:-690,duration:.7,ease:"power2.inOut"},3.1);
+
+window.__timelines=window.__timelines||{};window.__timelines["evidence"]=tl;
+</script></template>
