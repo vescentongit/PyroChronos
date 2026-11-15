@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUpRight, ArrowRightLeft } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUpRight, ArrowRightLeft } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import RotatingEarth from "@/components/ui/wireframe-dotted-globe";
+import RotatingEarth, { type GlobeHandle } from "@/components/ui/wireframe-dotted-globe";
 import { globeMapHref, globePoints, type GlobeHotspot, type GlobeLocation } from "@/lib/globe-geometry";
 import type { Language } from "@/lib/regions";
 import snapshot from "@/data/globe-hotspots.json";
@@ -17,10 +17,43 @@ export default function HomePage() {
   const [active, setActive] = useState<GlobeHotspot | null>(null);
   const router = useRouter();
   const t = (id: string, en: string) => (language === "id" ? id : en);
-  const selectHotspot = useCallback(
-    (point: GlobeLocation) => router.push(globeMapHref(point)),
-    [router],
-  );
+  const [phase, setPhase] = useState<"idle" | "flying" | "card" | "warp">("idle");
+  const [selected, setSelected] = useState<{ place: GlobeLocation; hotspot?: GlobeHotspot } | null>(null);
+  const [cardOpen, setCardOpen] = useState(false);
+  const globe = useRef<GlobeHandle | null>(null);
+  const cardTitle = useRef<HTMLHeadingElement>(null);
+  const startFlight = useCallback(() => setPhase("flying"), []);
+  const selectHotspot = useCallback((place: GlobeLocation, hotspot?: GlobeHotspot) => {
+    setSelected({ place, hotspot });
+    setCardOpen(true);
+    setPhase("card");
+  }, []);
+  const released = useCallback(() => {
+    setSelected(null);
+    setPhase("idle");
+  }, []);
+  const closeCard = useCallback(() => {
+    setCardOpen(false);
+    setPhase("idle");
+    globe.current?.release();
+  }, []);
+  const openMap = useCallback(() => {
+    if (!selected) return;
+    const target = globeMapHref(selected.place);
+    router.prefetch(target);
+    setPhase("warp");
+    window.setTimeout(() => router.push(target), 340);
+  }, [router, selected]);
+  useEffect(() => {
+    if (!cardOpen) return;
+    cardTitle.current?.focus({ preventScroll: true });
+    if (window.innerWidth <= 1000) cardTitle.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeCard();
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [cardOpen, closeCard]);
   useEffect(() => { router.prefetch("/simulation"); }, [router]);
   const utc = (value: string) => `${new Date(value).toLocaleString(language === "id" ? "id-ID" : "en-GB", {
     timeZone: "UTC", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
@@ -46,7 +79,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="landing">
+    <div className="landing" data-phase={phase}>
       <a className="landing-skip" href="#home-content">
         {t("Lewati ke konten", "Skip to content")}
       </a>
@@ -122,6 +155,70 @@ export default function HomePage() {
               {t("Di balik titik api", "Behind the fire points")}
             </a>
           </div>
+          {selected && (
+            <aside
+              className="landing-hotspot"
+              data-open={cardOpen ? "true" : "false"}
+              role="dialog"
+              aria-labelledby="hotspot-title"
+              aria-modal="false"
+            >
+              <span className="landing-hotspot-tag">
+                <i />
+                {t("NASA FIRMS · VIIRS NOAA-20 · SNAPSHOT TETAP", "NASA FIRMS · VIIRS NOAA-20 · FIXED SNAPSHOT")}
+              </span>
+              <h2 id="hotspot-title" ref={cardTitle} tabIndex={-1}>
+                {`${Math.abs(selected.place.lat).toFixed(2)}°${selected.place.lat < 0 ? "S" : "N"} · ${Math.abs(selected.place.lng).toFixed(2)}°${selected.place.lng < 0 ? "W" : "E"}`}
+              </h2>
+              <p className="landing-hotspot-place">
+                {selected.hotspot
+                  ? t("Area 2° × 2° yang dikelompokkan", "Grouped 2° × 2° area")
+                  : t("Titik yang Anda pilih di globe", "The point you picked on the globe")}
+              </p>
+              {selected.hotspot ? (
+                <dl className="landing-hotspot-grid">
+                  <div className="landing-hotspot-tile">
+                    <dt>{t("Deteksi di area ini", "Detections in this area")}</dt>
+                    <dd>{selected.hotspot.count.toLocaleString(language === "id" ? "id-ID" : "en-GB")}</dd>
+                  </div>
+                  <div className="landing-hotspot-tile">
+                    <dt>{t("Bagian dari snapshot", "Share of the snapshot")}</dt>
+                    <dd>
+                      {(100 * selected.hotspot.count / snapshot.total).toLocaleString(language === "id" ? "id-ID" : "en-GB", { maximumSignificantDigits: 2 })}
+                      <i>%</i>
+                    </dd>
+                  </div>
+                  <div className="landing-hotspot-tile landing-hotspot-wide">
+                    <dt>{t("Deteksi terbaru", "Latest detection")}</dt>
+                    <dd className="landing-hotspot-time">{utc(selected.hotspot.observedAt)}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="landing-hotspot-empty">
+                  {t(
+                    "Tidak ada deteksi yang dikelompokkan di titik ini pada snapshot 8–14 November 2026. Itu belum berarti tidak ada api; buka peta untuk periode dan sensor lain.",
+                    "No detections are grouped at this point in the 8–14 November 2026 snapshot. That does not mean there is no fire; open the map for other periods and sensors.",
+                  )}
+                </p>
+              )}
+              <div className="landing-hotspot-actions">
+                <button type="button" className="landing-hotspot-back" onClick={closeCard}>
+                  <ArrowLeft size={16} />
+                  {t("Kembali ke globe", "Back to globe")}
+                </button>
+                <button type="button" className="landing-primary" onClick={openMap}>
+                  {t("Buka di peta hotspot", "Open on the hotspot map")}
+                  <ArrowUpRight size={18} />
+                </button>
+              </div>
+              <small className="landing-hotspot-note">
+                {t(
+                  "Titik mengelompokkan deteksi panas per area 2°; ini bukan konfirmasi kebakaran.",
+                  "Points group heat detections per 2° area; this is not a confirmed fire.",
+                )}
+              </small>
+            </aside>
+          )}
           <div className="landing-earth-column">
             <div className="landing-earth-stage">
               <RotatingEarth
@@ -129,6 +226,9 @@ export default function HomePage() {
                 hotspots={points}
                 onHotspotChange={setActive}
                 onLocationSelect={selectHotspot}
+                onFlightStart={startFlight}
+                onRelease={released}
+                controlRef={globe}
               />
               <span className="landing-earth-caption">
                 {t("NASA FIRMS · SELURUH DUNIA", "NASA FIRMS · WORLDWIDE")}
@@ -212,6 +312,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+      <div className="landing-warp" aria-hidden="true" />
       <footer className="landing-footer">
         <Link href="/" className="landing-brand">
           <BrandMark size={28} />
