@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUpRight, ArrowRightLeft, Flame } from "lucide-react";
-import RotatingEarth, {
-  type GlobeHotspot,
-} from "@/components/ui/wireframe-dotted-globe";
+import { ArrowDown, ArrowUpRight, ArrowRightLeft } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
+import RotatingEarth from "@/components/ui/wireframe-dotted-globe";
+import { globeMapHref, globePoints, type GlobeHotspot, type GlobeLocation } from "@/lib/globe-geometry";
 import type { Language } from "@/lib/regions";
+import snapshot from "@/data/globe-hotspots.json";
+
+const points = globePoints(snapshot.points);
 
 export default function HomePage() {
   const [language, setLanguage] = useState<Language>("en");
@@ -15,9 +18,13 @@ export default function HomePage() {
   const router = useRouter();
   const t = (id: string, en: string) => (language === "id" ? id : en);
   const selectHotspot = useCallback(
-    (point: GlobeHotspot) => router.push(`/simulation?region=${point.region}`),
+    (point: GlobeLocation) => router.push(globeMapHref(point)),
     [router],
   );
+  useEffect(() => { router.prefetch("/simulation"); }, [router]);
+  const utc = (value: string) => `${new Date(value).toLocaleString(language === "id" ? "id-ID" : "en-GB", {
+    timeZone: "UTC", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+  })} UTC`;
   useEffect(() => {
     try {
       const saved = localStorage.getItem("pyro-language");
@@ -45,7 +52,7 @@ export default function HomePage() {
       </a>
       <header className="landing-header">
         <Link href="/" className="landing-brand" aria-label="PyroChronos Home">
-          <Flame size={24} strokeWidth={1.6} />
+          <BrandMark size={40} />
           <span>
             PyroChronos<span className="landing-brand-dot">.</span>
           </span>
@@ -89,8 +96,8 @@ export default function HomePage() {
             </h1>
             <p className="landing-description">
               {t(
-                "Dari satu titik di bumi, lihat cerita yang lebih besar. Jelajahi aktivitas kebakaran di Kalimantan dan Papua dengan perspektif dua sensor satelit.",
-                "One point on Earth opens a bigger story.",
+                "Jelajahi rekaman tujuh hari deteksi panas di seluruh dunia dari NASA FIRMS. Pilih lokasi di globe untuk membuka peta.",
+                "Explore a seven-day snapshot of heat detections worldwide from NASA FIRMS. Pick a place on the globe to open the map.",
               )}
             </p>
             <div className="landing-sensors">
@@ -119,31 +126,28 @@ export default function HomePage() {
             <div className="landing-earth-stage">
               <RotatingEarth
                 language={language}
+                hotspots={points}
                 onHotspotChange={setActive}
-                onHotspotSelect={selectHotspot}
+                onLocationSelect={selectHotspot}
               />
               <span className="landing-earth-caption">
-                {t("BUMI, DALAM PERSPEKTIF", "EARTH, IN PERSPECTIVE")}
+                {t("NASA FIRMS · SELURUH DUNIA", "NASA FIRMS · WORLDWIDE")}
               </span>
             </div>
-            <div className="landing-readout" aria-live="polite">
-              <span className="landing-demo-dot" />
+            <div className="landing-readout" data-feed-state="snapshot" aria-live="polite">
+              <span className="landing-feed-dot" />
               <div>
                 <strong>
                   {active
-                    ? active.name
-                    : t("Arahkan kursor ke globe.", "Hover over the globe.")}
+                    ? `${active.count.toLocaleString()} ${t("deteksi di area ini", "detections in this area")}`
+                    : `${snapshot.total.toLocaleString(language === "id" ? "id-ID" : "en-GB")} ${t("deteksi · 7 hari", "detections · 7 days")}`}
                 </strong>
                 <span>
                   {active
-                    ? `${active.sensor} · ${t("data ilustratif", "illustrative data")}`
-                    : t(
-                        "Geser untuk memutar. Sentuh Hotspot demo untuk menampilkan titik.",
-                        "Drag to rotate. Tap Demo hotspots to reveal the points.",
-                      )}
+                    ? `${active.lat.toFixed(2)}°, ${active.lng.toFixed(2)}° · ${t("Terbaru", "Latest")} ${utc(active.observedAt)}`
+                    : t("8–14 November 2026 UTC · snapshot tetap", "8–14 November 2026 UTC · fixed snapshot")}
                 </span>
               </div>
-              <span className="landing-demo-label">DEMO</span>
             </div>
             <div className="landing-cta">
               <Link href="/simulation" className="landing-primary">
@@ -152,10 +156,13 @@ export default function HomePage() {
               </Link>
               <p>
                 {t(
-                  "Jelajahi dashboard. Hotspot di globe adalah ilustrasi, bukan kondisi terkini.",
-                  "Explore the dashboard. Globe hotspots are illustrative, not current conditions.",
+                  "VIIRS NOAA-20 · titik mengelompokkan deteksi panas per area 2°, bukan konfirmasi kebakaran. Geser untuk memutar; klik untuk membuka peta terkini.",
+                  "VIIRS NOAA-20 · points group heat detections into 2° areas, not confirmed fires. Drag to rotate; click to open the current map.",
                 )}
               </p>
+              <a className="landing-snapshot-source" href={snapshot.providerUrl} target="_blank" rel="noreferrer">
+                {snapshot.attribution}<ArrowUpRight size={12} />
+              </a>
             </div>
           </div>
         </section>
@@ -207,7 +214,7 @@ export default function HomePage() {
       </main>
       <footer className="landing-footer">
         <Link href="/" className="landing-brand">
-          <Flame size={20} strokeWidth={1.6} />
+          <BrandMark size={28} />
           PyroChronos.
         </Link>
         <span>NASA Space Apps Challenge 2026</span>

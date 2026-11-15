@@ -13,6 +13,7 @@ import {
   type AreaPolygon,
 } from "@/lib/research-geometry";
 import type { LocalLocation } from "@/lib/local-monitoring";
+import { globeLocationBounds, readGlobeLocation, type GlobeLocation } from "@/lib/globe-geometry";
 import { satelliteStyle } from "@/lib/map-style";
 import {
   boundsSchema,
@@ -77,6 +78,7 @@ const firmsFailureMessages: Record<string, [string, string]> = {
 type Controller = { fit: (bounds: Bounds) => void };
 
 function HeatSurface({
+  initialLocation,
   query,
   data,
   language,
@@ -90,6 +92,7 @@ function HeatSurface({
   onAddVertex,
   toolsHostRef,
 }: {
+  initialLocation: GlobeLocation | null;
   query: HotspotQuery;
   data: Hotspots | null;
   language: Language;
@@ -151,8 +154,8 @@ function HeatSurface({
       );
       map = new maplibregl.Map({
         container: host.current,
-        center: [115, -3],
-        zoom: 2,
+        center: initialLocation ? [initialLocation.lng, Math.max(-85, Math.min(85, initialLocation.lat))] : [115, -3],
+        zoom: initialLocation ? 4 : 2,
         minZoom: 0,
         maxZoom: 19,
         attributionControl: { compact: true },
@@ -525,7 +528,9 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
   reuse?: { location: LocalLocation } | null;
   active?: boolean;
 }) {
-  const [query, setQuery] = useState<HotspotQuery>(initial),
+  const [initialLocation] = useState(() => readGlobeLocation(new URLSearchParams(window.location.search)));
+  const [query, setQuery] = useState<HotspotQuery>(() => initialLocation
+    ? { ...initial, bbox: globeLocationBounds(initialLocation), zoom: 4 } : initial),
     [refresh, setRefresh] = useState(0),
     [now, setNow] = useState(Date.now()),
     [boundsError, setBoundsError] = useState(false);
@@ -849,6 +854,7 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
         </button>
       </div>
       <HeatSurface
+        initialLocation={initialLocation}
         query={query}
         data={data}
         language={language}
