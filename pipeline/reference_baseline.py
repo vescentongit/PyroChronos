@@ -13,13 +13,14 @@ import json
 import sys
 from calendar import monthrange
 from datetime import date
-from math import isfinite
+from math import isfinite as isfinite
 from pathlib import Path
 from statistics import median
 
 import harmonize_config as config
 from area_counts import QUALITY_POLICY, accepts, source_coverage
-from area_query import Polygon, query
+from area_query import Polygon as Polygon
+from area_query import query
 from detection_store import minute_to_iso
 from harmonize_pairs import ROOT, cell_center, load_counts, month_range
 

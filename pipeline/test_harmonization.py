@@ -49,7 +49,7 @@ def history(root, counts):
 class ConfigTests(unittest.TestCase):
     def test_split_years_are_disjoint_and_ordered(self):
         spans = [config.SPLIT[name] for name in ("train", "validation", "test")]
-        for earlier, later in zip(spans, spans[1:]):
+        for earlier, later in zip(spans, spans[1:], strict=False):
             self.assertLess(earlier["end"], later["start"])
         self.assertEqual(config.split_of("2019-05"), "validation")
         self.assertIsNone(config.split_of("2012-12"))
@@ -64,7 +64,7 @@ class ConfigTests(unittest.TestCase):
 def synthetic_rows(domains, ratios, train=400, validation=200, test=600):
     rows, cell = [], 0
     layout = (("train", train, "2013-{:02d}"), ("validation", validation, "2019-{:02d}"), ("test", test, "2021-{:02d}"))
-    for domain, ratio in zip(domains, ratios):
+    for domain, ratio in zip(domains, ratios, strict=False):
         for split, count, pattern in layout:
             for index in range(count):
                 viirs = 1 + (index * 7) % 60
@@ -167,6 +167,7 @@ class ReferenceTests(unittest.TestCase):
 
     def test_anonymous_worker_passes_model_to_months_days_and_comparison(self):
         from unittest.mock import patch
+
         from research_worker import fingerprint, produce
         run = {"id": "synthetic-run", "workspaceId": "local", "input": {
             "area": {"id": "synthetic-area", "name": "Synthetic", "geometry": KALTENG.geometry, "geometryHash": "synthetic"},

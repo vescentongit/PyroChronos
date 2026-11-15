@@ -57,7 +57,7 @@ def build(grid_dir, source_id, area, include_low=False, fire_types=DEFAULT_TYPES
     confidences = {"low", "nominal", "high"} if include_low else {"nominal", "high"}
     cell = next(iter(years.values()))["cell_degrees"]
     sums = {}
-    for year, entry in years.items():
+    for _year, entry in years.items():
         path = Path(grid_dir) / entry["grid_path"]
         with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
             for row in csv.DictReader(handle):

@@ -30,6 +30,7 @@
 			"scripts/check-runtime.mjs",
 			"scripts/deploy-migrate.mjs",
 			"scripts/research-status.mjs",
+			"scripts/verify-staging-handoff.mjs",
 			"tests/research-deployment*.test.mjs",
 			"src/app/api/health/route.ts",
 			"src/app/api/ready/route.ts",

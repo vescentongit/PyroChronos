@@ -1,8 +1,126 @@
-# Tahap 7 — konfigurasi, migrasi terpisah dan observabilitas
+# Tahap 7–8 — deployment, observabilitas dan handoff staging
 
 R2-P2-B4 bagian 1, 15 November 2026. Persiapan teknis staging saja: tidak
 menjalankan deployment cloud, aktivasi scheduler, backfill, promosi produksi,
-atau migrasi database pengguna. Handoff O4 bersama Orkhan/Nathan tetap Tahap 8.
+atau migrasi database pengguna. Handoff lokal Tahap 8 tercatat di bawah;
+acceptance O4 bersama Orkhan/Nathan pada provider tetap memerlukan review manusia.
+
+## Tahap 8 — simulasi integrasi lokal, 15 November 2026
+
+Runner `scripts/verify-staging-handoff.mjs` menggunakan server **Next hasil build
+melalui HTTP**, konfigurasi sintetis, direktori dataset kosong dan artefak privat
+temporer, serta schema acak `handoff_test_*` pada PostgreSQL 16 sementara.
+Runner menolak host selain localhost dan database selain `research_worker_test`.
+Ia menutup server, membuang schema uji dan direktori miliknya di `finally`;
+container harus dihentikan operator setelah seluruh suite selesai.
+
+Urutan yang dapat diulang (Git Bash, Python/env uji disediakan lokal):
+
+```bash
+npm run build
+node scripts/verify-staging-handoff.mjs docs/benchmarks/bagas-sprint-3-staging-handoff.json
+```
+
+Runner membutuhkan `RESEARCH_TEST_DATABASE_URL` untuk database container khusus
+tes. Jangan arahkan ke database staging bersama/produksi. Tidak memerlukan
+credential provider sebenarnya. Output hanya ringkasan aman; exception dan log
+child tidak diteruskan mentah ke terminal. File JSON ditulis setelah cleanup
+berhasil dan ditimpa saat rerun; cocokkan dokumentasi dengan hasil terbaru.
+
+Rantai pemeriksaan: `check-runtime` app/migration/worker/export-worker/pipeline →
+deploy-migrate tanpa opt-in ditolak → server HTTP hidup tetapi schema belum siap →
+deploy-migrate opt-in dua kali → `research-status` → readiness berulang →
+request area anonim dan penolakan payload berlebih → hilangkan/pulihkan directory
+dataset milik tes. Jumlah `_prisma_migrations` sebelum/sesudah pembacaan status
+dan request harus sama. Sentinel credential sintetis diperiksa pada output CLI,
+log Next yang ditangkap dan body respons yang diperiksa.
+
+Ini pengukuran perilaku runtime nyata dengan **input sintetis**, bukan benchmark
+dataset FIRMS aktif, validasi model, biaya provider, SLA atau ETA. Dataset kosong
+menghasilkan daftar ingest/job/ekspor kosong dan provenance dataset `null` di CLI;
+readiness teknis tidak mengubahnya menjadi data validated. Bukti kasus status
+sukses/gagal dan proyeksi provenance ada di suite operasional; B1 capacity/quota,
+B2 crash/restore dan B3 revoke/isolation dibuktikan oleh regresi penuh terpisah,
+bukan diklaim seluruhnya dilalui lewat sesi browser HTTP ini.
+
+Hasil run 15 November 2026, 04:21 UTC (11:21 WIB), tersimpan pada
+[JSON aktual](benchmarks/bagas-sprint-3-staging-handoff.json):
+
+| Pemeriksaan nyata | Hasil |
+| --- | --- |
+| Deploy check lima role; migrasi tanpa opt-in | Lima valid; migrasi ditolak dengan MIGRATION_CONFIG_INVALID |
+| HTTP health; ready sebelum migrasi | 200 ok; 503 not_ready |
+| Migrasi deployment terpisah dua kali | Dua MIGRATION_SUCCEEDED, tujuh baris histori migrasi |
+| CLI status dan tiga request ready | Status terbaca; 200 ready, jumlah migrasi tetap tujuh |
+| Directory dataset dihilangkan → dipulihkan | Ready 503 → 200; health tetap 200 saat dependency hilang |
+| Area anonim tanpa login; payload >100.000 byte | 200 dengan polygon utuh; 413 PAYLOAD_TOO_LARGE tanpa Retry-After |
+| Output CLI, log Next sampai proses ditutup, respons yang diperiksa | Tidak mengandung sentinel secret sintetis/DSN uji |
+
+Regresi akhir checkout: **293/293 tes Node** ditambah **8/8 frontend** dan
+**5/5 hotspots**, **168/168 Python**, seluruhnya tanpa skip; native PostgreSQL
+aktif. `npm run typecheck`, `npm run lint`, `npm run check:contracts`,
+`ruff check pipeline scripts tests`, `npm run build` dan `git diff --check`
+lulus. Lint exit 0 dengan enam warning noNonNullAssertion lama; tidak ada error.
+Ruff seluruh pipeline awalnya menemukan 33 temuan lama; import/reexport,
+lambda, variabel tak terpakai dan `zip(strict=False)` dirapikan dengan tetap
+mempertahankan perilaku dan API modul. Suite penuh dijalankan ulang sesudahnya.
+Review independen tidak menemukan masalah penting; cleanup saat gagal dan
+pemindaian log sampai stream ditutup turut diperketat. Ini bukan review manusia.
+Pemeriksaan akhir PostgreSQL tidak menemukan schema uji tersisa. Server Next,
+direktori temporer dan schema runner sudah dibersihkan; container
+`pyrochronos-sprint3-handoff` dihentikan dengan `--rm` dan terkonfirmasi tidak
+tersisa pada `docker ps -a`.
+
+## Handoff Orkhan — O4 dan review PR
+
+| Respons submission | Tindakan consumer |
+| --- | --- |
+| 503 `CAPACITY_LIMIT`, `Retry-After: 2` | Tunggu sesuai header; jangan ganti/memotong AOI atau menampilkan ETA. Penolakan admission dapat dicoba ulang dengan requestId yang sama |
+| 429 `RATE_LIMITED`, `Retry-After: 60` | Tahan request baru sesuai header; workspaceId anonim baru tidak mereset kuota proses |
+| 413 `PAYLOAD_TOO_LARGE`, retryable false, tanpa Retry-After | Jangan otomatis mengirim ulang payload yang sama; jelaskan batas secara eksplisit dan pertahankan polygon/data pengguna |
+
+Envelope error memakai `schemaVersion: research-2`, `code`, `error`, `retryable`
+dan `requestId` nullable. `DEPENDENCY_UNAVAILABLE` 503 tidak boleh disamakan dengan
+kapasitas dan tidak menjanjikan header retry yang sama. Kegagalan ekspor terminal
+tetap mengikuti flag retryable aktual, bukan retry otomatis dari tabel admission.
+Detail: [kontrak B1](bagas-sprint-3-backpressure.md).
+
+Gunakan `/api/health` untuk liveness dan `/api/ready` untuk readiness; keduanya
+publik, minimal dan no-store. Legacy tetap berotorisasi, web anonim tanpa login.
+Request anonim gagal/abort/ditolak tidak menulis bundle sukses lama. Startup
+browser merekonsiliasi indeks history dari bundle IndexedDB, mempertahankan backup
+state rusak dan laporan; cache memori hanya satu bundle dan dilepas saat panel
+ditutup. Tidak ada TTL atau eviksi persisted otomatis; kegagalan quota storage
+ditampilkan tanpa menghapus histori. [Pemulihan](bagas-sprint-3-recovery.md) dan
+[retensi](bagas-sprint-3-isolation-retention.md) menjelaskan batasnya.
+
+Masih memerlukan tindakan manusia:
+
+- Orkhan mereview PR B1–B4 dan mendemonstrasikan O4 pada Preview/staging yang
+  disetujui, termasuk EN/ID, retry tanpa kehilangan konteks AOI/periode/hasil,
+  cache/pemulihan browser nyata dan unduhan setelah perubahan membership legacy.
+- Review copy frontend `CAPACITY_LIMIT` (saran mengecilkan pilihan) dan
+  `PAYLOAD_TOO_LARGE` (pesan retry generik) agar mengikuti kontrak di atas.
+  Sesi ini tidak mengubah copy/UI atau mengklaim acceptance browser baru.
+- Pemilik lingkungan memasang binding/store/secret aktual melalui kanal privat,
+  mengobservasi log provider, menilai tarif/kapasitas arsip nyata dan mengotorisasi
+  scheduler/backfill/promosi. Simulasi lokal tidak mengaktifkan rollout cloud.
+
+## Handoff Nathan — N1–N4
+
+Jalankan `npm run research:status` sebagai operator dengan credential privat.
+Periksa groups status ingest/job/ekspor (termasuk sukses/gagal bila ada), `dataset`
+fingerprint/sources/mode dan `qualityLimitations.N1`–`N4`. CLI berscope global
+operator; jangan memasangnya sebagai endpoint workspace publik. Untuk satu job,
+gunakan endpoint legacy berotorisasi dan manifest/provenance frozen hasil itu;
+latest dataset CLI tidak menggantikan provenance historis.
+
+N1 memerlukan bukti revisi NRT→standard aktual; skala sensitivitas bukan faktor
+koreksi. N2 tidak memperluas domain tervalidasi lewat deployment (Kalteng/Papua
+tetap unsupported/null). N3 coverage tetap null tanpa denominator, bukan nol.
+N4 memerlukan arsip/model/checksum pinned yang sama untuk reproduksi. Nathan dan
+Orkhan perlu memeriksa metadata dataset aktif di staging; dataset kosong sintetis
+run ini tidak menyelesaikan review ilmiah atau integrasi manusia tersebut.
 
 ## Pemeriksaan konfigurasi dan secret
 
@@ -142,14 +260,14 @@ Native PostgreSQL membuktikan database belum bermigrasi tidak ready, migrate
 deploy dua kali sukses, lalu ready dan pembacaan status tidak mengubah histori
 migrasi. Tidak ada database produksi yang dimigrasikan.
 
-Tahap 8 tetap terbuka: Preview/staging nyata, konfigurasi provider dan secret
+Di luar simulasi lokal Tahap 8 tetap terbuka: Preview/staging nyata, konfigurasi provider dan secret
 aktual melalui kanal aman, uji integrasi Orkhan/Nathan O4, review manusia dan
 checklist akhir B4. Tidak ada klaim deployment atau cron cloud sudah berjalan.
 
-Bukti sesi: **293/293 tes Node** dan **168/168 tes Python** tanpa skip dengan
+Bukti historis sesi Tahap 7: **293/293 tes Node** dan **168/168 tes Python** tanpa skip dengan
 PostgreSQL native sementara; typecheck, lint, check:contracts, ruff file Python
 terkait, build produksi dan git diff --check lulus. Lint exit 0 dengan enam warning
 lama noNonNullAssertion di research-export.ts. Review independen menemukan dua
 kasus tepi (manifest exception dan empty dataset); keduanya diperbaiki melalui
 regresi gagal-lalu-lulus. Migrasi nyata hanya dijalankan pada schema uji acak
-deployment_test_* di database localhost research_worker_test. Tidak ada commit.
+deployment_test_* di database localhost research_worker_test. Tidak ada commit otomatis dalam sesi verifikasi.

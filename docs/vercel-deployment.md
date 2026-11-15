@@ -4,7 +4,9 @@ Stage 7 adds [deployment/readiness and failure procedures](bagas-sprint-3-deploy
 `npm run deploy:check -- ROLE`, explicit opt-in `npm run deploy:migrate` for legacy
 staging only, public Node `/api/health` and `/api/ready`, private Python `/ready`,
 and operator-only `npm run research:status`. Build and HTTP handlers never apply
-migrations. Actual Preview/O4 verification and promotion remain Stage 8.
+migrations. [Stage 8 local handoff evidence and review gates](bagas-sprint-3-deployment-observability.md#tahap-8--simulasi-integrasi-lokal-15-november-2026)
+separate the built Next/PostgreSQL simulation from actual Preview/O4 review and
+provider rollout, which remain pending human verification and authorization.
 
 Prepared 2026-11-14. Service names, public routing, and bindings require the owner's confirmation before deployment. The website remains usable without Google OAuth or a user account.
 

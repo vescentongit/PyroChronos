@@ -32,6 +32,45 @@ Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah,
 
 ## Verifikasi kelanjutan ini
 
+Bagas Sprint 3 Tahap 8: handoff teknis lokal B1–B4 dikonsolidasikan pada
+[runbook dan daftar review](bagas-sprint-3-deployment-observability.md#handoff-orkhan--o4-dan-review-pr).
+Runner `scripts/verify-staging-handoff.mjs` menguji server Next hasil build lewat
+HTTP dan PostgreSQL sementara berschema acak: check-runtime, migrasi terpisah
+berulang, research-status serta health/readiness termasuk dependency gagal.
+Seluruh konfigurasi/data uji sintetis; dataset kosong/provenance null bukan bukti
+ingest arsip aktif atau model tervalidasi. Bukti run aman ada pada
+[JSON handoff](benchmarks/bagas-sprint-3-staging-handoff.json).
+Run aktual: health 200; ready 503 sebelum migrasi, 200 setelah migrasi terpisah
+dua kali; dependency storage hilang menghasilkan 503 dan pulih menjadi 200.
+Tujuh baris histori migrasi tetap setelah request/status; sentinel sintetis tidak
+tercetak pada output yang diperiksa. Regresi akhir: 293/293 Node + 13/13
+frontend/hotspots, 168/168 Python tanpa skip dengan native PostgreSQL; typecheck,
+lint, contracts, Ruff seluruh pipeline/scripts/tests, build dan diff check lulus.
+Enam warning lint lama tetap non-blocking (exit 0); temuan Ruff lama dirapikan
+tanpa mengubah kebijakan ilmiah, hasil/model, polygon atau API publik modul.
+Schema/direktori/server uji dibersihkan; container PostgreSQL sementara telah
+dihentikan dan terkonfirmasi terhapus. Tidak ada commit atau PR otomatis.
+
+Handoff Orkhan O4: kontrak admission `503 CAPACITY_LIMIT` + `Retry-After: 2`,
+`429 RATE_LIMITED` + `Retry-After: 60`, serta `413 PAYLOAD_TOO_LARGE` non-retryable
+tanpa Retry-After; jangan mengubah polygon atau mengarang ETA. Health/ready
+minimal publik tidak menghilangkan otorisasi legacy. Bundle/index/laporan browser
+lama dipertahankan ketika request gagal; rekonsiliasi startup dan cache memori
+satu bundle tidak menghapus persisted history. Review copy error EN/ID,
+demonstrasi browser pada Preview, review manusia B1–B4 dan O4 tetap terbuka.
+
+Handoff Nathan: `npm run research:status` hanya CLI operator global, berisi counts
+ingest/job/ekspor, fingerprint/sources/mode latest dataset dan catatan N1–N4.
+Manifest hasil individual mempertahankan provenance frozen historis. N1 revisi
+NRT-standard belum terukur; N2 domain unsupported tetap null; N3 coverage tanpa
+denominator tetap null; N4 reproduksi memerlukan arsip/model/checksum sama.
+Review metadata/dataset aktif bersama Nathan masih perlu bukti staging nyata.
+
+Status penutupan: implementasi dan bukti lokal tersedia; **Sprint 3 belum berstatus
+selesai/direview penuh**. Instalasi secret/store/binding cloud, aktivasi jadwal,
+backfill, tarif eksternal dan izin rollout/promosi belum dijalankan. Checklist
+gabungan task/review dan syarat integrasi manusia tetap terbuka secara eksplisit.
+
 Bagas Sprint 3 Tahap 7 (B4 bagian 1): [runbook deployment/observabilitas](bagas-sprint-3-deployment-observability.md)
 menambahkan deploy check per role, migrasi opt-in terpisah dari HTTP/build,
 health/readiness minimal Node/Python dan status ingest/job/ekspor lewat CLI

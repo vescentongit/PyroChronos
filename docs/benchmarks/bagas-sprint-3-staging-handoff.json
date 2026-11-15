@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "staging-handoff-1",
+  "measuredAt": "2026-11-15T04:21:14.458Z",
+  "environment": "local built Next.js HTTP + disposable PostgreSQL; synthetic configuration, empty dataset",
+  "deployChecks": [
+    "app",
+    "migration",
+    "worker",
+    "export-worker",
+    "pipeline"
+  ],
+  "migrationOptInRequired": true,
+  "separateMigrationRuns": 2,
+  "migrationRows": 7,
+  "health": 200,
+  "readyBeforeMigration": 503,
+  "readyAfterMigration": 200,
+  "readyWithMissingStorage": 503,
+  "healthWithMissingStorage": 200,
+  "readyAfterRestore": 200,
+  "status": {
+    "ingest": [],
+    "jobs": [],
+    "exports": [],
+    "dataset": null,
+    "qualityNotes": [
+      "N1",
+      "N2",
+      "N3",
+      "N4"
+    ]
+  },
+  "anonymousAreaWithoutLogin": 200,
+  "polygonPreserved": true,
+  "oversizedPayload": 413,
+  "requestMigrationCountUnchanged": true,
+  "syntheticSecretsAbsentFromCapturedLogsAndResponses": true,
+  "limitations": [
+    "No cloud rollout, real ingest/model validation, authenticated browser O4 or human review",
+    "B1 concurrency/quota, B2 recovery and B3 access control are covered by separate full regression suites"
+  ]
+}

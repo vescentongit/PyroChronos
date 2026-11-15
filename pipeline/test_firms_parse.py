@@ -3,7 +3,14 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
-from firms_catalog import FEATURED_REGIONS, WORLD, area_url, inside, redact, resolve_area
+from firms_catalog import (
+    FEATURED_REGIONS,
+    WORLD,
+    area_url,
+    inside,
+    redact,
+    resolve_area,
+)
 from firms_parse import FirmsSchemaError, parse_batch
 
 VIIRS = "latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight"

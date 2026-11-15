@@ -4,7 +4,7 @@
 
 **Fokus:** Penguatan, evaluasi tambahan dan kesiapan rilis.\
 **Reviewer utama:** Orkhan.\
-**Status:** task riset v2 belum dinyatakan selesai; implementasi lama menjadi fondasi, bukan bukti penerimaan scope baru.
+**Status:** Tahap 1–8 memiliki implementasi/bukti teknis lokal; selesai/direview penuh menunggu review manusia Orkhan, integrasi O4/Nathan dan rollout eksternal terotorisasi. Bukti lokal tidak menggantikan penerimaan tersebut.
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
@@ -103,20 +103,37 @@ deployment/arsip aktif tetap terbuka, sehingga checkbox selesai/direview belum d
 - [x] Health/readiness Node/Python dan kegagalan dependency diuji; status ingest/job/ekspor operator serta referensi kualitas Nathan N1–N4 tersedia tanpa membuka data workspace ke publik.
 - [x] Celah exception/argumen CLI Python dan logger Auth.js diperketat; regresi memakai sentinel sintetis tanpa secret asli.
 - [x] Verifikasi Tahap 7: 293/293 Node dan 168/168 Python tanpa skip dengan PostgreSQL native; typecheck, lint, contracts, ruff, build dan diff check lulus.
-- [ ] Tahap 8: handoff O4 dan verifikasi staging nyata bersama Orkhan/Nathan, review manusia, serta checklist akhir B4.
+- [x] Tahap 8: kontrak dan daftar review handoff O4/N1–N4 dikonsolidasikan di current-status dan runbook; bukti lokal dibedakan dari rollout cloud/review manusia.
+- [x] Simulasi Next hasil build lewat HTTP + PostgreSQL sementara: check-runtime lima role, opt-in migrasi terpisah dua kali, research-status, health/ready sebelum/sesudah migrasi dan dependency storage gagal/pulih. Tujuh histori migrasi tetap; sentinel sintetis tidak bocor pada output yang diperiksa. [JSON aktual](../../docs/benchmarks/bagas-sprint-3-staging-handoff.json).
+- [x] Regresi akhir Tahap 8: 293/293 Node + 13/13 frontend/hotspots, 168/168 Python tanpa skip dengan native; typecheck, lint (enam warning lama, exit 0), contracts, Ruff pipeline/scripts/tests, build dan diff check lulus.
+- [x] Server/schema/direktori tes dibersihkan, database tidak menyisakan schema uji; container PostgreSQL sementara terkonfirmasi terhapus setelah stop --rm.
+- [ ] Handoff O4 diterima dan verifikasi Preview/staging nyata bersama Orkhan/Nathan; review manusia B4 dan otorisasi rollout cloud belum dilakukan.
 
 ## Checklist sebelum membuat PR
 
 - [ ] ID task, tujuan, acceptance criteria, dan dependensi integrasi ditautkan pada PR.
-- [ ] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
-- [ ] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
-- [ ] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
-- [ ] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
-- [ ] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
-- [ ] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR.
+- [x] Klaim selesai menyertakan bukti aktual; fixture, replay, raw, experimental dan validated dibedakan.
+- [x] Schema/contoh/kontrak yang berubah diperbarui bersama; jalankan npm run check:contracts dan tes relevan.
+- [x] Untuk TypeScript jalankan npm run typecheck; build bila mengubah aplikasi. Untuk pipeline jalankan pengujian Python terkait.
+- [x] Kegagalan relevan, missing/null, periode parsial, idempotensi, respons usang dan hak akses diuji sesuai perubahan.
+- [x] Tidak ada secret, URL berkredensial, data privat workspace, atau klaim tidak ada api akibat missing data.
+- [x] Perubahan Prisma menyertakan rencana migrasi dan uji database terisolasi; migrasi produksi bukan bagian otomatis PR. Tahap 8 tidak menambah migrasi/schema.
 - [ ] UI yang berubah diperiksa EN/ID, keyboard/fokus, mobile, warna/status, serta konteks AOI/periode yang tidak hilang.
 - [ ] Satu rekan melakukan review; PR mencatat risiko, keterbatasan dan cara memverifikasi.
 - [ ] Status task/trackernya diperbarui setelah bukti dan integrasi selesai; checklist lama tidak menjadi bukti PR baru.
+
+Audit Tahap 8: checklist teknis B1–B3 di atas tetap ditopang suite regresi, bukan
+dianggap review manusia. Tidak ada perubahan UI pada Tahap 8; acceptance browser
+O4 dan copy error EN/ID tetap perlu Orkhan. Draf PR `Bagas-SPRINT-3-P2` → `dev`
+disediakan dalam handoff akhir; PR/link, review, integrasi manusia dan status
+selesai/direview tidak dibuat atau dicentang otomatis.
+
+| Task | Bukti teknis lokal | Sisa penerimaan |
+| --- | --- | --- |
+| B1 | Benchmark/policy/error; hasil lama tetap terbaca saat penolakan | Review Orkhan; tarif/arsip/provider nyata tidak dikarang |
+| B2 | Crash/lease/retry, publikasi atomik, recovery berulang tanpa delete/duplikasi | Review Orkhan; penerapan prosedur di lingkungan terotorisasi |
+| B3 | Scope/cursor/download, revoke instan, retensi non-destruktif | Review Orkhan dan demonstrasi consumer aktual |
+| B4 | Konfigurasi/redaction, migrasi terpisah, health/status dan simulasi HTTP | Review manusia O4/N1–N4, cloud/binding/secret aktual dan izin rollout |
 
 ## Syarat sprint pribadi selesai
 
