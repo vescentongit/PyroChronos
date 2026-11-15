@@ -4,23 +4,28 @@
 
 Acuan keputusan: [product.md](../product.md), 10 November 2026. Rincian per orang, task, dependensi, dan checklist PR: [3 sprint](SPRINT-PLAN.md). Kontrak target: [API v2](../docs/contracts/api-v2.md).
 
+**Sinkronisasi 15 November 2026:** checklist mencatat acceptance/review, bukan sekadar kode. Jalur aktif adalah browser lokal → `/api/local-research` → Python on-demand. Akun, antrean/database server dan ekspor privat merupakan scope legacy, bukan prasyarat rilis lokal. [Bukti dan gerbang rilis terkini](../docs/current-status.md).
+
 ## Status yang sudah tersedia
 
 - [x] Fondasi Next.js/TypeScript/Tailwind/Prisma/Neon, EN/ID dan Plus Jakarta Sans tersedia.
-- [x] Peta satelit, endpoint hotspot NRT berbasis bbox, CSV regional, serta laporan prototype tersedia; ini belum kalender historis terharmonisasi.
-- [x] Katalog/parser, raw batch, ingest, grid global bulanan dan draft calendar-1 tersedia; polygon tepat, detail harian dan baseline bergerak v2 masih perlu integrasi.
+- [x] Peta satelit, endpoint hotspot NRT berbasis bbox, CSV regional dan laporan prototype tersedia; jalurnya terpisah dari analisis historis.
+- [x] Analisis polygon tepat, kalender/detail harian, model retrospektif, baseline bergerak dan ekspor lokal tersedia; estimasi tetap ditahan pada domain ditolak.
+- [x] FIRMS on-demand, fingerprint aktual, loading bulanan, simpan/resume dan refresh tersedia sejak `4b8a2a5`; browser QA sintetis terbaru lulus. [Verifikasi 15 November](../docs/verification-2026-11-15.md); live/hosted tetap terbuka.
 - [x] Kontrak target v2, schema runtime/JSON, contoh sintetis dan pemeriksaan kontrak tersedia. Endpoint v2 belum dianggap diimplementasikan oleh keberadaan dokumen/schema.
 - [x] Checklist v1 yang sebelumnya selesai dipertahankan dalam [arsip](archive/2026-11-10-completed-v1.md), bukan dicentang ulang sebagai pekerjaan v2.
-- [ ] Seluruh fitur target v2 masih harus memenuhi acceptance dan integrasi; shared coordinator token, fixture dan prototype tidak memenuhi akun individual/workspace produksi.
+- [ ] Acceptance versi aktif: build Webpack/tes/browser sintetis lulus; build default Turbopack dibatasi lingkungan, FIRMS live gagal koneksi, hosted routing/kapasitas serta review manusia masih terbuka. Akun/workspace server tidak diwajibkan untuk versi lokal.
 
 ## P0 — Fondasi riset dan perbaikan peta
 
 ### Nathan
 
-- [ ] **R2-P0-N1** — Arsip global yang mempertahankan tanggal dan posisi asli (5 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [ ] **R2-P0-N2** — Kueri polygon bebas dan irisan waktu (8 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [ ] **R2-P0-N3** — Count per sumber dan manifest analisis (4 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [ ] **R2-P0-N4** — Adapter producer ke research-2 (3 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+P0 selesai/direview sesuai catatan PR #7 pada rincian sprint. Backfill global bukan prasyarat aktif.
+
+- [x] **R2-P0-N1** — Arsip global yang mempertahankan tanggal dan posisi asli (5 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N2** — Kueri polygon bebas dan irisan waktu (8 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N3** — Count per sumber dan manifest analisis (4 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N4** — Adapter producer ke research-2 (3 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
 
 ### Bagas
 
@@ -44,6 +49,8 @@ Implementasi frontend P0 tersedia; 31 tes, typecheck, build dan browser acceptan
 Pembaruan 13 November 2026: O1–O4 Orkhan sudah diimplementasikan pada alur lokal tanpa login, dengan kalender/perbandingan/anomali, lokasi, penugasan/pemeriksaan/koreksi dan ekspor. Acceptance sintetis desktop/mobile serta review finish otomatis lulus; review manusia Nathan dan demonstrasi dataset aktif belum dilakukan. Checklist selesai/direview tetap terbuka. Kolaborasi server bukan prasyarat versi lokal. [Bukti Sprint 2](../docs/orkhan-sprint-2-progress.md).
 
 ### Nathan
+
+Implementasi P1 dan integrasi model/baseline worker tersedia; review Bagas serta acceptance menyeluruh tetap terbuka.
 
 - [ ] **R2-P1-N1** — Pairing dan acuan setara MODIS (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
 - [ ] **R2-P1-N2** — Evaluasi count mentah, baseline, dan EQM (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).

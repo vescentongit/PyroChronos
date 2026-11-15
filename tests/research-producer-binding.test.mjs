@@ -32,6 +32,10 @@ test("producer uses the runtime binding, strips local paths, and bounds response
 
     for (const [response, expected] of [
       [Response.json({ code: "CAPACITY_LIMIT" }, { status: 503 }), "CAPACITY_LIMIT"],
+      [Response.json({ code: "NETWORK_ERROR" }, { status: 503 }), "NETWORK_ERROR"],
+      [Response.json({ code: "TIMEOUT" }, { status: 503 }), "TIMEOUT"],
+      [Response.json({ code: "UPSTREAM_DENIED" }, { status: 503 }), "UPSTREAM_DENIED"],
+      [Response.json({ code: "secret-key-bearing-error" }, { status: 503 }), "PRODUCER_FAILED"],
       [Response.json({ detail: "private server details" }, { status: 500 }), "PRODUCER_FAILED"],
       [new Response("not JSON"), "PRODUCER_FAILED"],
       [new Response("x".repeat(maxHostedBundleBytes + 1)), "CAPACITY_LIMIT"],

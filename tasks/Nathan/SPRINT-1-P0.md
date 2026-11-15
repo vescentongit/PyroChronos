@@ -20,7 +20,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [x] **Selesai dan direview** — estimasi 5 poin.
 
-*Implementasi selesai, menunggu review Bagas:* store deteksi asli `pcd1` per sumber/bulan (`detection_store.py`, `firms_archive.py`), manifest dengan checksum dan cakupan per tahun, grid lama diberi label `coarse-aggregate`. Pemrosesan arsip nyata berjalan bertahap; tahun yang belum diproses tercatat `no_data`. Lihat [catatan data](../../docs/data/firms-sources.md).
+*Selesai dan direview sesuai status PR #7 di atas:* store deteksi asli `pcd1` per sumber/bulan (`detection_store.py`, `firms_archive.py`), manifest dengan checksum dan cakupan per tahun, grid lama diberi label `coarse-aggregate`. Pemrosesan arsip nyata berjalan bertahap; tahun yang belum diproses tercatat `no_data`. Lihat [catatan data](../../docs/data/firms-sources.md).
 
 **Pekerjaan:** Audit firms_archive.py dan manifest yang sudah ada. Simpan partisi deteksi asli menurut waktu/sumber untuk kueri polygon dan detail harian; jangan hanya mengandalkan grid bulanan 0,25 derajat.
 
@@ -32,7 +32,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [x] **Selesai dan direview** — estimasi 8 poin.
 
-*Implementasi selesai, menunggu review Bagas:* `area_query.py` (polygon dengan lubang, antimeridian, validasi, batas luas/titik, tanggal inklusif UTC); 11 tes termasuk hasil berbeda dari bbox.
+*Selesai dan direview sesuai status PR #7 di atas:* `area_query.py` (polygon dengan lubang, antimeridian, validasi, batas luas/titik, tanggal inklusif UTC); 11 tes termasuk hasil berbeda dari bbox.
 
 **Pekerjaan:** Bangun prefilter bbox diikuti pengujian geometri terhadap polygon WGS84, termasuk lubang, antimeridian, batas area, dan tanggal inklusif UTC. Jangan memakai pusat grid kasar sebagai pengganti deteksi asli.
 
@@ -44,7 +44,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [x] **Selesai dan direview** — estimasi 4 poin.
 
-*Implementasi selesai, menunggu review Bagas:* `area_counts.py` (count per sumber/hari/bulan, kebijakan `quality-policy-1`, cakupan observed/partial/no_data, manifest reproducible).
+*Selesai dan direview sesuai status PR #7 di atas:* `area_counts.py` (count per sumber/hari/bulan, kebijakan `quality-policy-1`, cakupan observed/partial/no_data, manifest reproducible).
 
 **Pekerjaan:** Definisikan rawCount dan rawCountsBySource, deduplikasi rekaman, kebijakan confidence/type, status missing/partial, serta versi konfigurasi satelit. Count bukan sel-hari atau jumlah kejadian kebakaran.
 
@@ -56,7 +56,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [x] **Selesai dan direview** — estimasi 3 poin.
 
-*Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan result/daily/detections `research-2` tanpa estimasi (harmonizedCount null, validation unsupported); `tests/research-adapter.test.mjs` memvalidasi dengan schema zod.
+*Selesai dan direview sesuai status PR #7 di atas:* `research_adapter.py` menghasilkan result/daily/detections `research-2` tanpa estimasi (harmonizedCount null, validation unsupported); `tests/research-adapter.test.mjs` memvalidasi dengan schema zod.
 
 **Pekerjaan:** Petakan keluaran mentah dan draft calendar-1 ke kontrak v2 dengan status belum terharmonisasi bila model belum diuji. Pertahankan modul lama sebagai sumber, bukan kontrak UI baru.
 

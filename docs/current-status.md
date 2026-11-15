@@ -1,6 +1,6 @@
-# Keputusan dan status aktif — 14 November 2026
+# Keputusan dan status aktif — 15 November 2026
 
-Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual dan kolaborasi workspace server pada dokumen/rencana lama. Keputusan pengguna: seluruh fitur web harus dapat diakses dan digunakan tanpa login.
+Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual, kolaborasi workspace server dan arsip global permanen sebagai prasyarat pada dokumen/rencana lama. Versi aktif memakai analisis historis on-demand dan penyimpanan pengguna lokal tanpa login.
 
 ## Penyimpanan dan akses
 
@@ -24,7 +24,7 @@ Peta density memakai gradasi hijau → kuning → oranye → merah (rendah → t
 
 Jalur anonim kini memuat model harmonisasi dan kebijakan baseline dari `pipeline/models`. Kalender tahun × bulan membuka detail harian; ringkasan perbandingan menampilkan durasi, estimasi, laju per hari dan persentase total bila dua estimasi lengkap dengan pembanding positif. Tabel anomali menampilkan median, delta, persentil dan tahun referensi aktual. Hasil lama di browser tidak dihitung ulang otomatis.
 
-Harmonisasi retrospektif memakai VIIRS S-NPP ke skala MODIS, model ratio_global. Estimasi ditahan di luar domain tervalidasi, termasuk Kalteng/Papua. Minimum referensi default empat tahun valid dalam sepuluh tahun sebelumnya. Tanpa arsip hasil no_data; tanpa model/dukungan estimasi tetap null. Data mentah tidak menjadi titik harmonisasi sintetis.
+Harmonisasi retrospektif memakai VIIRS S-NPP ke skala MODIS, model ratio_global. Estimasi ditahan di luar domain tervalidasi, termasuk Kalteng/Papua. Minimum referensi default empat tahun valid dalam sepuluh tahun sebelumnya. Sumber tanpa cakupan menghasilkan no_data; request gagal menghasilkan error, bukan no_data atau nol. Tanpa model/dukungan estimasi tetap null. Data mentah tidak menjadi titik harmonisasi sintetis.
 
 ## Status sprint dan sisa pekerjaan
 
@@ -36,10 +36,29 @@ Dokumen progres lama mencatat bukti pada saat dibuat. Angka tes/build historis t
 
 Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah, cache satu bundle aktif, dedup linear dan pemeriksaan edge ID/EN. [Laporan Sprint 3](orkhan-sprint-3-progress.md). O2 belum dijalankan karena peneliti belum tersedia menurut pengguna; O4 dan review manusia tetap terbuka. Tidak ada klaim performa mobile fisik, SLA global atau sustained 60 FPS.
 
-## Verifikasi kelanjutan ini
+## Bukti historis — checkout Orkhan, 13 November 2026
+
+Daftar berikut adalah bukti sesi lama, bukan verifikasi commit on-demand `4b8a2a5` atau checkout setelahnya.
 
 - Typecheck dan `npm run build` lengkap (termasuk Prisma generate): lulus.
 - Contract checks: tujuh schema v1 dan 22 schema v2 lulus.
 - Python harmonisasi: 27 kasus, 26 lulus dan satu skip kondisional; mencakup handoff model worker anonim, anomali, dua periode dan kesesuaian jumlah harian.
 - Suite Node terbaru pada checkout Orkhan: 127 kasus, 125 lulus dan dua skip integrasi native yang tidak dikonfigurasi. Tes mencakup monitoring lokal, ekspor, kontras dan cache bundle.
 - Playwright MCP kini berhasil: alur sintetis desktop/mobile, heatmap ke bukti asli, persistensi, koreksi, unduhan dan EN/ID lulus tanpa exception runtime. Pemeriksaan tambahan ekspor seluruh halaman dan kegagalan penyimpanan lulus. Database remote dan arsip aktif tidak diuji oleh pekerjaan ini.
+
+## Bukti commit on-demand — 14 November 2026
+
+Handoff commit `4b8a2a5` mencatat typecheck/kontrak lulus; Node 259 kasus (231 lulus, 28 skip), Python 171 kasus (154 lulus, 17 skip). Ini catatan handoff, bukan pengujian ulang 15 November. Production build Linux belum terverifikasi: Turbopack gagal membuat port lokal, termasuk setelah eskalasi. Build Windows sebelumnya bukan bukti build commit ini. Integrasi baru memakai respons NASA sintetis, bukan layanan live atau routing hosted.
+
+## Verifikasi terbaru dan gerbang versi aktif — 15 November 2026
+
+[Bukti, cara mengulang dan batas pengujian](verification-2026-11-15.md). Perubahan storage, status cancel dan layout riwayat hasil sudah diuji; hasil lengkap sebelumnya dipertahankan ketika penulisan gagal. Ini bukan penutupan acceptance manusia atau hosted.
+
+- [x] Dokumen aktif disinkronkan; rencana worker/database server tetap scope legacy.
+- [x] Build produksi Webpack lengkap lulus; typecheck, kontrak dan frontend checks lulus. Node: 232 lulus/28 skip; Python: 154 lulus/17 skip.
+- [x] Browser QA sintetis pada server produksi: cancel, reload/resume, refresh, storage gagal, ekspor dan viewport ID/EN lulus tanpa exception runtime. Artefak lokal di `.cache/verification-2026-11-15/browser/`.
+- [x] `vercel.json` lulus schema resmi; service, binding dan rewrite publik tetap sama.
+- [ ] Build default Turbopack tetap dibatasi lingkungan saat membuat port lokal; build Webpack tidak membuktikan bundler default berhasil.
+- [ ] FIRMS live: request availability gagal pada koneksi HTTPS dari lingkungan ini. Belum ada respons live yang diproses; key tidak disalahkan tanpa bukti.
+- [ ] Periksa project hosting yang sudah ada, secret, binding/routing privat, kapasitas/kuota dan acceptance Preview. Akses akun/link Vercel belum tersedia pada sesi Linux; jangan membuat resource pengganti secara otomatis.
+- [ ] Review manusia Nathan/Bagas, demonstrasi dataset nyata, uji peneliti serta mobile fisik/screen reader. Domain ditolak tidak dibuka hanya karena data tersedia.

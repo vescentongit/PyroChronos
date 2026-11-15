@@ -4,7 +4,7 @@
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Bagas.\
-**Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; menunggu review Bagas dan integrasi worker sebelum dicentang. Estimasi tervalidasi hanya untuk lima domain; Asia Tenggara maritim (Kalteng/Papua) ditolak oleh evaluasi. Bukti: [catatan harmonisasi](../../docs/data/harmonization.md).
+**Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; model/baseline worker sudah terintegrasi; review Bagas dan acceptance integrasi menyeluruh tetap diperlukan sebelum dicentang (15 November 2026). Estimasi tervalidasi hanya untuk lima domain; Asia Tenggara maritim (Kalteng/Papua) ditolak oleh evaluasi. Bukti: [catatan harmonisasi](../../docs/data/harmonization.md).
 
 [Indeks sprint](../SPRINT-PLAN.md) · [Tracker](../TASKS.md) · [Produk](../../product.md) · [API v2](../../docs/contracts/api-v2.md)
 
@@ -56,7 +56,7 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 - [ ] **Selesai dan direview** — estimasi 3 poin.
 
-*Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan research-2 bulanan (semua bulan termasuk `no_data`), detail harian aditif, raw per sumber, ringkasan dua periode dengan laju per hari dan persen perubahan `null` bila pembanding nol, ekspor CSV (`research_export.py`), serta dua contoh nyata lolos kontrak di `docs/data/examples/`. Integrasi ke `research_worker.py` Bagas belum dipasang (lihat handoff di dokumen).
+*Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan research-2 bulanan (semua bulan termasuk `no_data`), detail harian aditif, raw per sumber, ringkasan dua periode dengan laju per hari dan persen perubahan `null` bila pembanding nol, ekspor CSV (`research_export.py`), serta dua contoh nyata lolos kontrak di `docs/data/examples/`. `research_worker.py` sudah memasok model/baseline dan estimasi harian; acceptance integrasi menyeluruh tetap perlu bukti.
 
 **Pekerjaan:** Hasilkan research-2 bulanan, detail harian, raw per sumber, ringkasan dua periode serta data ekspor untuk polygon yang sama. Tetapkan aturan agregasi sehingga count antarlevel tetap dapat dijelaskan.
 

@@ -124,7 +124,10 @@ export async function saveLocation(value: LocalLocation, operation?: { requestId
           store.put(saved);
         } catch (error) { failure = error instanceof Error ? error.message : failure; tx.abort(); }
       };
-      tx.oncomplete = () => resolve(saved);
+      tx.oncomplete = () => {
+        if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-monitoring-updated"));
+        resolve(saved);
+      };
       tx.onerror = tx.onabort = () => reject(new Error(failure));
     });
   } finally { db.close(); }

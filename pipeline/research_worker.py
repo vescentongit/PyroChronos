@@ -95,6 +95,6 @@ if __name__ == "__main__":
         json.dump(result, sys.stdout, allow_nan=False)
     except Exception as error:
         # Public codes only; never forward upstream error messages or keyed URLs.
-        code = str(error) if str(error) in ("RATE_LIMITED", "CAPACITY_LIMIT") else "DEPENDENCY_UNAVAILABLE"
+        code = str(error) if str(error) in ("RATE_LIMITED", "CAPACITY_LIMIT", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
         json.dump({"code": code}, sys.stdout)
         sys.exit(1)

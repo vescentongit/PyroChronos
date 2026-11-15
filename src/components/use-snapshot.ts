@@ -16,6 +16,7 @@ export function useSnapshot(
   region: StudyRegion,
   mode: DataMode,
   refresh: number,
+  enabled = true,
 ) {
   const key = `pyro-snapshot-v1:${region.id}:${region.boundaryVersion}`;
   const [state, setState] = useState<State>({
@@ -26,7 +27,7 @@ export function useSnapshot(
   });
   const memory = useRef(new Map<string, Snapshot>());
   useEffect(() => {
-    if (mode === "demo") return;
+    if (!enabled || mode === "demo") return;
     const controller = new AbortController();
     let cancelled = false;
     let cached: Snapshot | null = memory.current.get(key) || null;
@@ -72,7 +73,7 @@ export function useSnapshot(
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [region, mode, key, refresh]);
+  }, [region, mode, key, refresh, enabled]);
 
   const demo = useMemo(() => demoSnapshot(region.id), [region.id]);
   if (mode === "demo") return { snapshot: demo, loading: false, failed: false };

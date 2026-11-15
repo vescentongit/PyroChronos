@@ -7,6 +7,17 @@ type Period = ResearchAnalysisRequest["period"];
 export type ResearchStage = { role: "primary" | "comparison"; period: Period };
 export type StageProgress = { stage: ResearchStage; status: "pending" | "loading" | "saved" | "failed"; metric?: LocalBundle["result"]["primary"]["metric"] };
 
+export function availableSourceRanges(manifest: LocalBundle["manifest"]): Record<string, [string, string]> {
+  const snapshot = z.object({ snapshot: z.object({ availability: z.record(z.string(), z.tuple([z.iso.date(), z.iso.date()])) }) });
+  const stages = z.array(z.object({ manifest: z.record(z.string(), z.unknown()) })).safeParse(manifest.stages);
+  const manifests = stages.success ? stages.data.map(stage => stage.manifest).reverse() : [manifest];
+  for (const value of manifests) {
+    const parsed = snapshot.safeParse(value);
+    if (parsed.success) return parsed.data.snapshot.availability;
+  }
+  return {};
+}
+
 export function researchStages(body: Pick<ResearchAnalysisRequest, "period" | "comparisonPeriod">): ResearchStage[] {
   const stages: ResearchStage[] = [];
   for (const role of ["primary", "comparison"] as const) {

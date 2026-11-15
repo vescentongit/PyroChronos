@@ -17,7 +17,7 @@ function database() {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     request.onblocked = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
-  });
+  }).catch(() => { throw new ResearchApiError("STORAGE_UNAVAILABLE"); });
 }
 export function getBundle(id: string): Promise<Bundle> {
   // Results are immutable; retain only the active bundle to bound memory use.
@@ -37,6 +37,8 @@ async function readBundle(id: string): Promise<Bundle> {
       request.onsuccess = () => { const parsed = bundleSchema.safeParse(request.result); parsed.success ? resolve(parsed.data) : reject(new ResearchApiError("INVALID_RESPONSE")); };
       request.onerror = () => reject(new ResearchApiError("STORAGE_UNAVAILABLE"));
     });
+  } catch (error) {
+    throw error instanceof ResearchApiError ? error : new ResearchApiError("STORAGE_UNAVAILABLE");
   } finally { db.close(); }
 }
 async function saveBundle(bundle: Bundle, recordHistory = true) {
@@ -54,6 +56,9 @@ async function saveBundle(bundle: Bundle, recordHistory = true) {
     const summary = { id: bundle.result.id, name: bundle.result.area.name, start: bundle.result.primary.period.start, end: bundle.result.primary.period.end };
     localStorage.setItem(historyKey, JSON.stringify([summary, ...history.filter(item => item.id !== summary.id)]));
     localStorage.setItem("pyro-last-research-v1", bundle.result.id);
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-updated"));
+  } catch (error) {
+    throw error instanceof ResearchApiError ? error : new ResearchApiError("STORAGE_UNAVAILABLE");
   } finally { db.close(); }
 }
 async function request(body: unknown, signal: AbortSignal) {
@@ -165,5 +170,7 @@ export function researchHistory() {
 export async function openResearchResult(id: string) {
   const result = (await getBundle(id)).result;
   localStorage.setItem("pyro-last-research-v1", id);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-updated"));
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("pyro-research-selected"));
   return result;
 }

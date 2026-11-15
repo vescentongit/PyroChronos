@@ -77,7 +77,7 @@ def app(environ, start_response):
         value = analyze(root, request["run"]) if request["action"] == "analyze" else fingerprint(root) if request["action"] == "fingerprint" else produce(root, request["run"])
         return respond("200 OK", value)
     except Exception as error:
-        code = str(error) if str(error) in ("CAPACITY_LIMIT", "RATE_LIMITED") else "DEPENDENCY_UNAVAILABLE"
+        code = str(error) if str(error) in ("CAPACITY_LIMIT", "RATE_LIMITED", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
         return respond("429 Too Many Requests" if code == "RATE_LIMITED" else "503 Service Unavailable", {"code": code})
     finally:
         _running.release()

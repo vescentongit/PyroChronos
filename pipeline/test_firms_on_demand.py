@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from area_counts import count_source
 from area_query import Polygon
-from firms_on_demand import prepare
+from firms_on_demand import prepare, download
 from reference_baseline import window_covered
 from research_worker import analyze, produce
 
@@ -25,6 +25,18 @@ def data(geometry=GEOMETRY, start="2019-01-01", end="2019-01-02"):
 
 
 class OnDemandTests(unittest.TestCase):
+    def test_transport_failures_return_safe_actionable_codes(self):
+        import urllib.error
+        errors = [(urllib.error.URLError(OSError("private-url-with-key")), "NETWORK_ERROR"),
+                  (TimeoutError("private-url-with-key"), "TIMEOUT"),
+                  (urllib.error.URLError(TimeoutError("private-url-with-key")), "TIMEOUT"),
+                  (urllib.error.HTTPError("private-url-with-key", 403, "denied", {}, None), "UPSTREAM_DENIED"),
+                  (urllib.error.HTTPError("private-url-with-key", 429, "limited", {}, None), "RATE_LIMITED")]
+        for error, code in errors:
+            with self.subTest(code=code), patch("urllib.request.OpenerDirector.open", side_effect=error):
+                with self.assertRaisesRegex(ValueError, f"^{code}$"):
+                    download("https://example.test/private-key", 1)
+
     def fetch(self, url, timeout):
         if "data_availability" in url:
             return AVAILABLE

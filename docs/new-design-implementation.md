@@ -29,7 +29,7 @@ Plus Jakarta Sans remains local; OFL license is included in `public/fonts`. The 
 
 Final reviewer disposition: **ship**. Design system: [DESIGN.md](../DESIGN.md). Surface strategy: [home-surface-brief.md](home-surface-brief.md).
 
-Local verification captures: [Home desktop](../.cache/new-design-final/home-desktop.png), [Home mobile](../.cache/new-design-final/home-mobile.png), [Simulation desktop fallback](../.cache/new-design-final/simulation-fallback-desktop.png), [Simulation mobile fallback](../.cache/new-design-final/simulation-fallback-mobile.png). These are development artifacts under ignored `.cache`.
+Historical captures (`home-desktop.png`, `home-mobile.png`, `simulation-fallback-desktop.png`, `simulation-fallback-mobile.png`) were saved under ignored `.cache/new-design-final/`. They are absent from a fresh checkout and are not portable verification evidence. See [frontend acceptance](frontend-acceptance.md) for the existing local test entry point and its scope.
 
 ## Remaining product dependencies
 

@@ -29,9 +29,10 @@ import {
   lastResearchResult,
   researchHistory,
   openResearchResult,
+  getBundle,
 } from "@/lib/local-research-client";
 import { ResearchApiError } from "@/lib/research-client";
-import type { StageProgress } from "@/lib/research-stages";
+import { availableSourceRanges, type StageProgress } from "@/lib/research-stages";
 import demo from "@/lib/fixtures/research-demo.json";
 import { ResearchSummary } from "@/components/research-summary";
 import { ResearchMonitoring } from "@/components/research-monitoring";
@@ -63,9 +64,12 @@ const labels: Record<string, [string, string]> = {
     "Method unsupported for this area/period",
   ],
   DEPENDENCY_UNAVAILABLE: [
-    "Layanan riset v2 belum tersedia. Eksplorasi FIRMS terbaru tetap dapat digunakan.",
-    "Research v2 service is unavailable. Recent FIRMS exploration remains available.",
+    "Analisis historis gagal diproses. Bagian tersimpan tetap tersedia; coba lagi.",
+    "Historical analysis could not be processed. Saved parts remain available; retry.",
   ],
+  NOT_CONFIGURED: ["Sumber data historis belum dikonfigurasi pada server.", "Historical data is not configured on the server."],
+  TIMEOUT: ["Pengambilan data historis melewati batas waktu. Coba lagi atau perkecil area/periode.", "Historical data retrieval timed out. Retry or reduce the area/period."],
+  UPSTREAM_DENIED: ["NASA menolak akses data historis. Konfigurasi akses server perlu diperiksa.", "NASA denied access to historical data. The server access configuration needs checking."],
   UNAUTHENTICATED: [
     "Layanan mengembalikan persyaratan akun lama. Muat ulang halaman untuk memakai analisis lokal tanpa login.",
     "The service returned a legacy account requirement. Reload to use local analysis without signing in.",
@@ -99,8 +103,8 @@ const labels: Record<string, [string, string]> = {
     "Check the polygon, dates and quality policy before retrying.",
   ],
   NETWORK_ERROR: [
-    "Koneksi riset gagal atau melewati batas waktu. Coba lagi dengan pilihan yang sama.",
-    "Research connection failed or timed out. Retry with the same selection.",
+    "Koneksi ke layanan historis atau NASA gagal. Coba lagi dengan pilihan yang sama; bagian tersimpan tetap tersedia.",
+    "Connection to the historical service or NASA failed. Retry with the same selection; saved parts remain available.",
   ],
   STORAGE_UNAVAILABLE: ["Penyimpanan browser tidak tersedia atau penuh. Hasil belum tersimpan.", "Browser storage is unavailable or full. The result was not saved."],
   cancelled: [
@@ -149,6 +153,7 @@ function ResearchPanel({
   resultsHost,
   setupHost,
   toolsHost,
+  reuse,
 }: {
   language: Language;
   vertices: Vertex[];
@@ -160,6 +165,7 @@ function ResearchPanel({
   resultsHost: HTMLDivElement | null;
   setupHost: HTMLDivElement | null;
   toolsHost: HTMLDivElement | null;
+  reuse?: { location: LocalLocation } | null;
 }) {
   const t = (id: string, en: string) => (language === "id" ? id : en);
   const label = (key: string) =>
@@ -196,6 +202,7 @@ function ResearchPanel({
   const [error, setError] = useState("");
   const [job, setJob] = useState<ResearchJob | null>(null);
   const [result, setResult] = useState<ResearchAnalysisResult | null>(null);
+  const [sourceRanges, setSourceRanges] = useState<Record<string, [string, string]>>({});
   const [days, setDays] = useState<ReturnType<
     typeof researchDailyPageSchema.parse
   > | null>(null);
@@ -262,11 +269,14 @@ function ResearchPanel({
   useEffect(() => {
     let active = true;
     try { setHistory(researchHistory()); } catch { setError("STORAGE_UNAVAILABLE"); }
-    lastResearchResult().then(saved => {
-      if (active && saved) { publishResult(saved, "saved-local-result"); setStatus("succeeded"); }
+    const restore = () => lastResearchResult().then(saved => {
+      if (active && saved) { publishResult(saved, "saved-local-result"); setHistory(researchHistory()); setStatus("succeeded"); }
     }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
-    return () => { active = false; };
+    void restore();
+    window.addEventListener("pyro-research-selected", restore);
+    return () => { active = false; window.removeEventListener("pyro-research-selected", restore); };
   }, []);
+  useEffect(() => { if (reuse) reuseLocation(reuse.location); }, [reuse]);
   useEffect(() => {
     const controller = new AbortController();
     setWorkspaceLoaded(false);
@@ -564,6 +574,16 @@ function ResearchPanel({
       if (!controller.signal.aborted) setLoadingPoints(false);
     }
   }
+  useEffect(() => {
+    if (!result) return;
+    let active = true;
+    void loadPoints();
+    setSourceRanges({});
+    if (result.mode === "research") void getBundle(result.id).then(bundle => {
+      if (active) setSourceRanges(availableSourceRanges(bundle.manifest));
+    }).catch(() => { if (active) setError("STORAGE_UNAVAILABLE"); });
+    return () => { active = false; };
+  }, [result?.id]);
   function reuseLocation(location: LocalLocation) {
     const area = location.initialAnalysis.area;
     setVertices(area.geometry.coordinates[0].slice(0, -1) as Vertex[]);
@@ -816,7 +836,7 @@ function ResearchPanel({
           </div>
         )}
         <p className="global-note">{t("Area dan hasil disimpan di browser ini. Pemrosesan analisis menggunakan data pada server.", "Areas and results are stored in this browser. Analysis uses data on the server.")}</p>
-        {history.length > 0 && <label>{t("Buka hasil tersimpan", "Open saved result")}
+        {history.length > 0 && <div className="research-fields"><label>{t("Buka hasil tersimpan", "Open saved result")}
           <select value="" onChange={event => {
             const id = event.target.value;
             if (!id) return;
@@ -827,7 +847,7 @@ function ResearchPanel({
             <option value="">{t("Pilih hasil", "Select a result")}</option>
             {history.map(item => <option key={item.id} value={item.id}>{item.name} · {item.start} → {item.end}</option>)}
           </select>
-        </label>}
+        </label></div>}
         {!policy && (
           <p className="global-note">
             {t(
@@ -839,7 +859,7 @@ function ResearchPanel({
         <h2>{t("3. Jalankan analisis", "3. Run the analysis")}</h2>
         <p id="research-submit-hint">{drawing || dirty || !polygon
           ? t("Gunakan area ini terlebih dahulu agar analisis memakai batas terbaru.", "Use this area first so the analysis uses the latest boundary.")
-          : t("Analisis memakai arsip historis di server. Area tanpa cakupan data akan ditandai, bukan dianggap nol kebakaran.", "Analysis uses the server's historical archive. Areas without data coverage are flagged, not treated as zero fires.")}</p>
+          : t("Analisis mengambil data historis sesuai area dan tanggal pilihan. Area tanpa cakupan data akan ditandai, bukan dianggap nol kebakaran.", "Analysis fetches historical data for the chosen area and dates. Areas without data coverage are flagged, not treated as zero fires.")}</p>
         <div className="global-toolbar">
           <button
             className="primary"
@@ -862,6 +882,7 @@ function ResearchPanel({
               onClick={() => {
                 abort.current?.abort();
                 generation.current++;
+                setStageProgress(current => current.map(item => item.status === "loading" ? { ...item, status: "failed" } : item));
                 setStatus("cancelled");
               }}
             >
@@ -944,7 +965,10 @@ function ResearchPanel({
                 "White outline: previous result area. Dashed blue outline: selected area. Only the current sketch is shown while editing.",
               )}
             </p>
-            <ResearchSummary result={result} english={language === "en"} onMonth={month => void loadDays(month)} />
+            <p>{t("Deteksi asli", "Original detections")}: {result.primary.metric.rawCount ?? "—"} · {Object.entries(result.primary.metric.rawCountsBySource).map(([source, count]) => `${source}: ${count ?? "—"}`).join(" · ")}</p>
+            {result.primary.metric.harmonizedCount === null && result.primary.metric.rawCount !== null && <p role="status">{t("Deteksi asli tersedia. Model belum mendukung estimasi untuk area/periode ini; gunakan jumlah asli atau detail harian.", "Original detections are available. The model does not support an estimate for this area/period; use original counts or daily detail.")}</p>}
+            {result.primary.metric.status === "no_data" && <p role="status">{t("Dataset historis tidak memiliki cakupan untuk tanggal pilihan. Ini bukan hasil nol deteksi. Coba periode lain atau periksa sumber dataset.", "The historical dataset has no coverage for the selected dates. This is not a zero-detection result. Try another period or check the dataset source.")}</p>}
+            <ResearchSummary key={`summary-${result.id}`} result={result} english={language === "en"} onMonth={month => void loadDays(month)} />
             <ResearchExports key={result.id} result={result} english={language === "en"} demoPoints={resultKey.current === "synthetic-fixture" ? researchDetectionsPageSchema.parse(demo["detections-page"]).observations : undefined} />
             <div className="table-scroll">
               <table>
@@ -993,6 +1017,7 @@ function ResearchPanel({
               {result.method.version} · {result.method.validation} ·{" "}
               {result.dataVersion}
             </p>
+            <details open={result.primary.metric.status === "no_data"}><summary>{t("Cakupan sumber", "Source coverage")}</summary>{result.sources.map(source => <p key={source.id}>{source.id} · {source.status} · {t("Observasi snapshot", "Snapshot observations")}: {source.observedFrom ?? "—"} → {source.observedTo ?? "—"}{sourceRanges[source.id] && <> · {t("Rentang tersedia NASA saat diambil", "NASA range available when fetched")}: {sourceRanges[source.id].join(" → ")}</>}</p>)}</details>
             <button
               className="outline"
               disabled={

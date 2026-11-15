@@ -14,13 +14,29 @@ registerHooks({ resolve(specifier, context, next) {
 } });
 const { POST } = await import("../src/app/api/local-research/route.ts");
 const { submitResearch, getBundle } = await import("../src/lib/local-research-client.ts");
-const { researchStages, combineResearchStages } = await import("../src/lib/research-stages.ts");
+const { researchStages, combineResearchStages, availableSourceRanges } = await import("../src/lib/research-stages.ts");
+
+test("source date guidance uses actual snapshot availability, never observation dates", () => {
+  const range = { MODIS_SP: ["2000-11-01", "2025-12-31"] };
+  assert.deepEqual(availableSourceRanges({ stages: [{ manifest: { snapshot: { availability: range } } }] }), range);
+  assert.deepEqual(availableSourceRanges({ snapshot: { availability: range } }), range);
+  assert.deepEqual(availableSourceRanges({ snapshot: { availability: { MODIS_SP: ["invalid", "2025-12-31"] } } }), {});
+  assert.deepEqual(availableSourceRanges({}), {});
+});
 
 test("monthly boundaries preserve partial periods and leap days", () => {
   const stages = researchStages({ period: { start: "2020-01-30", end: "2020-03-01" }, comparisonPeriod: null });
   assert.deepEqual(stages.map(item => item.period), [
     { start: "2020-01-30", end: "2020-01-31" }, { start: "2020-02-01", end: "2020-02-29" }, { start: "2020-03-01", end: "2020-03-01" },
   ]);
+});
+
+test("blocked IndexedDB reports storage failure instead of invalid input", async () => {
+  const previous = globalThis.indexedDB;
+  globalThis.indexedDB = { open() { throw new DOMException("Blocked", "SecurityError"); } };
+  try {
+    await assert.rejects(getBundle("blocked-storage-regression"), error => error.code === "STORAGE_UNAVAILABLE");
+  } finally { globalThis.indexedDB = previous; }
 });
 
 test("browser resumes saved months through real Next → Python HTTP analysis and retains provenance", async () => {
@@ -38,13 +54,20 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
   const exited = once(server, "exit");
   const lines = createInterface({ input: server.stdout });
   const stored = new Map(), metadata = new Map(), calls = [];
+  let storageFailure;
   const notify = callback => queueMicrotask(callback);
-  globalThis.localStorage = { getItem: key => metadata.get(key) ?? null, setItem: (key, value) => metadata.set(key, String(value)) };
+  globalThis.localStorage = { getItem: key => metadata.get(key) ?? null, setItem: (key, value) => {
+    if (storageFailure === "history" && key === "pyro-research-history-v1") throw new DOMException("Full", "QuotaExceededError");
+    metadata.set(key, String(value));
+  } };
   globalThis.indexedDB = { open() {
     const request = { result: { close() {}, transaction() {
       const tx = { objectStore() { return {
         get(id) { const op = { result: structuredClone(stored.get(id)) }; notify(() => op.onsuccess()); return op; },
-        put(value) { stored.set(value.result.id, structuredClone(value)); notify(() => tx.oncomplete()); },
+        put(value) {
+          if (storageFailure === "put") throw new DOMException("Full", "QuotaExceededError");
+          stored.set(value.result.id, structuredClone(value)); notify(() => tx.oncomplete());
+        },
       }; } };
       return tx;
     } } };
@@ -99,6 +122,12 @@ test("browser resumes saved months through real Next → Python HTTP analysis an
     // Explicit refresh re-fetches all four monthly snapshots.
     await submitResearch("staged-test", { ...body, areaId: replacement.id }, new AbortController().signal, { refresh: true });
     assert.equal(calls.length, 9);
+    const lastComplete = metadata.get("pyro-last-research-v1");
+    for (const fault of ["put", "history"]) {
+      storageFailure = fault;
+      await assert.rejects(submitResearch("staged-test", { ...body, areaId: replacement.id }, new AbortController().signal, { refresh: true }), error => error.code === "STORAGE_UNAVAILABLE");
+      assert.equal(metadata.get("pyro-last-research-v1"), lastComplete, "failed storage must preserve the previous complete result");
+    }
   } finally {
     globalThis.fetch = previous.fetch;
     globalThis.indexedDB = previous.db;

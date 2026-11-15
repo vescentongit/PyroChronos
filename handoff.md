@@ -1,4 +1,6 @@
-﻿# PyroChronos handoff — 13 November 2026
+# PyroChronos handoff — 13 November 2026
+
+> **Arsip historis.** Kondisi checkout, angka tes/build dan catatan belum dikomit di bawah berlaku pada sesi 13 November. Pekerjaan on-demand kemudian dikomit sebagai `4b8a2a5` di `dev`. Mulai kelanjutan dari [status aktif](docs/current-status.md); jangan mengulang implementasi dari handoff lama ini.
 
 Mulai dari AGENTS.md, docs/current-status.md, README.md dan product.md. Semua dokumen proyek memiliki pemberitahuan keputusan aktif; isi rencana lama tetap dipertahankan sebagai konteks historis.
 

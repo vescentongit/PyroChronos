@@ -39,10 +39,12 @@ import {
 } from "@/lib/snapshot";
 import { useSnapshot } from "./use-snapshot";
 import { InspectionReports } from "./inspection-reports";
+import { ConnectedWorkspace } from "./connected-workspace";
+import type { LocalLocation } from "@/lib/local-monitoring";
 
 const GlobalHeatmap = dynamic(() => import("./global-heatmap"), { ssr: false });
 const emptyCandidates: SnapshotCandidate[] = [];
-type View = "overview" | "map" | "analysis" | "reports" | "global";
+type View = "overview" | "map" | "analysis" | "reports" | "global" | "research";
 type Tab = "latest" | "older" | "history";
 const statusNames = {
   live: { id: "Terbaru", en: "Live" },
@@ -55,7 +57,7 @@ const statusNames = {
 export default function DashboardWorkspace() {
   const [language, setLanguage] = useState<Language>("en");
   const [regionId, setRegionId] = useState<RegionId>("kalteng");
-  const [mode, setMode] = useState<DataMode>("demo");
+  const [mode, setMode] = useState<DataMode>("operational");
   const [view, setView] = useState<View>("global");
   const [selected, setSelected] = useState("");
   const [tab, setTab] = useState<Tab>("latest");
@@ -63,6 +65,7 @@ export default function DashboardWorkspace() {
   const [refresh, setRefresh] = useState(0);
   const [reportRequest, setReportRequest] = useState(0);
   const [now, setNow] = useState(Date.now());
+  const [reuse, setReuse] = useState<{ location: LocalLocation } | null>(null);
   const t = (id: string, en: string) => (language === "id" ? id : en);
   const locale = language === "id" ? "id-ID" : "en-GB";
   const date = (value: string | null | undefined) =>
@@ -70,7 +73,7 @@ export default function DashboardWorkspace() {
       ? `${new Date(value).toLocaleString(locale, { timeZone: "UTC" })} UTC`
       : t("Tidak tersedia", "Unavailable");
   const region = studyRegions.find((item) => item.id === regionId)!;
-  const { snapshot, loading, failed } = useSnapshot(region, mode, refresh);
+  const { snapshot, loading, failed } = useSnapshot(region, mode, refresh, mode === "demo");
   const status = snapshot
     ? snapshotStatus(snapshot, now, failed || loading)
     : "unavailable";
@@ -98,6 +101,7 @@ export default function DashboardWorkspace() {
         : t("Belum dinilai", "Not assessed");
   const navigation = [
     { id: "overview" as const, name: "Dashboard", icon: LayoutDashboard },
+    { id: "research" as const, name: t("Riset historis", "Historical research"), icon: Clock3 },
     {
       id: "analysis" as const,
       name: t("Perbandingan sensor", "Sensor comparison"),
@@ -122,7 +126,7 @@ export default function DashboardWorkspace() {
       setRegionId(requestedRegion as RegionId);
       setView("overview");
     }
-    if (query.get("mode") === "operational") setMode("operational");
+    if (query.get("mode") === "demo") setMode("demo");
     try {
       const saved = localStorage.getItem("pyro-language");
       if (saved === "id" || saved === "en") setLanguage(saved);
@@ -217,6 +221,13 @@ export default function DashboardWorkspace() {
             </button>
           ))}
         </nav>
+        <label className="mode-select">
+          <span>{t("Data ruang kerja", "Workspace data")}</span>
+          <select value={mode} onChange={event => setMode(event.target.value as DataMode)}>
+            <option value="operational">{t("Analisis tersimpan", "Saved analyses")}</option>
+            <option value="demo">{t("Demo ilustratif", "Illustrative demo")}</option>
+          </select>
+        </label>
         <div className="sidebar-bottom">
           <div className="mission">
             <Satellite size={20} />
@@ -242,7 +253,7 @@ export default function DashboardWorkspace() {
             <div>
               {t("Koordinator observasi", "Observation coordinator")}
               <small>
-                {view === "global"
+                {view === "global" || view === "research"
                   ? "NASA FIRMS"
                   : mode === "demo"
                     ? t("Ruang kerja demo", "Demo workspace")
@@ -281,19 +292,23 @@ export default function DashboardWorkspace() {
               </select>
             </label>
             <span className="demo-label">
-              {view === "global"
+              {view === "global" || view === "research"
                 ? t("PETA GLOBAL", "GLOBAL MAP")
                 : mode === "demo"
                   ? "DEMO"
-                  : t("OPERASIONAL", "OPERATIONAL")}
+                  : t("ANALISIS TERSIMPAN", "SAVED ANALYSES")}
             </span>
           </div>
         </header>
         <div className="content" id="workspace-content" tabIndex={-1}>
-          <div hidden={view !== "global"}>
-            <GlobalHeatmap language={language} />
+          <div hidden={view !== "global" && view !== "research"}>
+            <GlobalHeatmap language={language} active={view === "global" || view === "research"} requestedMode={view === "research" ? "research" : view === "global" ? "nrt" : undefined} onModeChange={next => setView(next === "research" ? "research" : "global")} reuse={reuse} />
           </div>
-          {view !== "global" && (
+          {view !== "global" && view !== "research" && mode === "operational" && <>
+            <ConnectedWorkspace language={language} view={view === "map" ? "overview" : view} onAnalyze={() => setView("research")} onReuse={location => { setReuse({ location }); setView("research"); }} />
+            {view === "reports" && <details><summary>{t("Laporan wilayah sebelumnya", "Previous regional reports")}</summary><InspectionReports language={language} mode="operational" region={region} candidates={[]} showHistory request={0} onRequest={() => {}} /></details>}
+          </>}
+          {view !== "global" && view !== "research" && mode === "demo" && (
             <>
               <div className="heading">
                 <div>

@@ -44,9 +44,13 @@ def download(url, timeout):
                 raise ValueError("CAPACITY_LIMIT")
             return body
     except urllib.error.HTTPError as error:
-        raise ValueError("RATE_LIMITED" if error.code == 429 else "DEPENDENCY_UNAVAILABLE") from None
+        raise ValueError("RATE_LIMITED" if error.code == 429 else "UPSTREAM_DENIED" if error.code in (401, 403) else "DEPENDENCY_UNAVAILABLE") from None
+    except urllib.error.URLError as error:
+        raise ValueError("TIMEOUT" if isinstance(error.reason, TimeoutError) else "NETWORK_ERROR") from None
+    except TimeoutError:
+        raise ValueError("TIMEOUT") from None
     except OSError:
-        raise ValueError("DEPENDENCY_UNAVAILABLE") from None
+        raise ValueError("NETWORK_ERROR") from None
 
 
 def availability(body):

@@ -31,7 +31,13 @@ export function ResearchMonitoring({ result, observations, activeDetection, engl
   const outcome = (value: string) => ({ fire_or_smoke_found: t("Api/asap ditemukan", "Fire/smoke found"), no_sign_at_inspection: t("Tidak ditemukan tanda api saat pemeriksaan", "No sign at inspection"), inconclusive: t("Belum dapat dipastikan", "Inconclusive") }[value] ?? value);
   const status = (value: string) => ({ assigned: t("Ditugaskan", "Assigned"), in_progress: t("Sedang diperiksa", "In progress"), completed: t("Selesai diperiksa", "Completed"), cancelled: t("Dibatalkan", "Cancelled") }[value] ?? value);
   async function reload() { setLocations(await listLocations()); }
-  useEffect(() => { void reload().catch(() => setError("STORAGE_UNAVAILABLE")); const update = () => void reload().catch(() => setError("STORAGE_UNAVAILABLE")); window.addEventListener("focus", update); return () => window.removeEventListener("focus", update); }, []);
+  useEffect(() => {
+    const update = () => void reload().catch(() => setError("STORAGE_UNAVAILABLE"));
+    update();
+    window.addEventListener("focus", update);
+    window.addEventListener("pyro-monitoring-updated", update);
+    return () => { window.removeEventListener("focus", update); window.removeEventListener("pyro-monitoring-updated", update); };
+  }, []);
   useEffect(() => { setSelected(null); setPage(0); }, [result?.id]);
   useEffect(() => {
     if (!activeDetection) return;
@@ -46,7 +52,9 @@ export function ResearchMonitoring({ result, observations, activeDetection, engl
     if (retry.current.payload !== payload) retry.current = { payload, id: crypto.randomUUID() };
     setBusy(true); setError(""); setNotice("");
     try {
-      await saveLocation(location, { requestId: retry.current.id, action });
+      const operationId = retry.current.id;
+      await saveLocation(location, { requestId: operationId, action });
+      if (action.kind === "assign") { setAssignmentId(operationId); setCorrectionId(""); }
       await reload(); setNotice(t("Tersimpan di browser ini.", "Saved in this browser."));
       retry.current = { payload: "", id: "" };
       return true;
@@ -132,7 +140,7 @@ export function ResearchMonitoring({ result, observations, activeDetection, engl
           <label>{t("Pencatat", "Recorder")}<input name="recorder" required maxLength={200} /></label>
           <label>{t("Waktu pemeriksaan (waktu lokal)", "Inspection time (local time)")}<input name="observedAt" type="datetime-local" required defaultValue={correcting ? localTime(correcting.observedAt) : ""} /></label>
           <label>{t("Hasil pemeriksaan", "Inspection outcome")}<select name="outcome" defaultValue={correcting?.outcome ?? "inconclusive"}>{["inconclusive", "fire_or_smoke_found", "no_sign_at_inspection"].map(value => <option key={value} value={value}>{outcome(value)}</option>)}</select></label>
-          <label>{t("Catatan", "Notes")}<textarea name="notes" maxLength={2000} defaultValue={correcting?.notes ?? ""} /></label>
+          <label>{t("Catatan", "Notes")}<textarea name="notes" aria-label={t("Catatan", "Notes")} maxLength={2000} defaultValue={correcting?.notes ?? ""} /></label>
           {correctionId && <label>{t("Alasan koreksi", "Correction reason")}<input name="reason" required maxLength={200} /></label>}
           <button className="primary" disabled={busy}>{t("Simpan pemeriksaan", "Save inspection")}</button>
           {correctionId && <button type="button" className="outline" onClick={() => setCorrectionId("")}>{t("Batal koreksi", "Cancel correction")}</button>}

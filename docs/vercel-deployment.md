@@ -1,6 +1,6 @@
 # Vercel deployment
 
-Updated 2026-11-14 for on-demand historical analysis. This is implementation/configuration, not evidence of a hosted deployment. The public app remains usable without login or Google OAuth.
+Updated 2026-11-15 for on-demand historical analysis and local verification. This is implementation/configuration, not evidence of a hosted deployment. The public app remains usable without login or Google OAuth. [Current verification and remaining gates](verification-2026-11-15.md).
 
 ## Services and routing
 
@@ -44,7 +44,9 @@ Local detection stores and the legacy private Blob adapter remain supported. `.g
 
 ## Verification and release
 
-Run `npm test`, `npm run typecheck`, `npm run check:contracts`, `npm run build`, and Python unit tests with `pipeline/requirements-dev.txt` installed. The new `pipeline/test_firms_on_demand.py` exercises coverage, exact polygon filtering, deduplication, antimeridian planning, reference selection and fingerprints. `tests/research-on-demand.test.mjs` runs browser persistence/resume/refresh through the actual Next route and Python HTTP service with explicitly synthetic NASA responses; it does not prove live NASA availability or hosted routing.
+Run `npm test`, `npm run typecheck`, `npm run check:contracts`, `npm run build`, and Python unit tests with `pipeline/requirements-dev.txt` installed. `pipeline/test_firms_on_demand.py` exercises coverage, exact polygon filtering, deduplication, antimeridian planning, reference selection and fingerprints. `tests/research-on-demand.test.mjs` tests the browser client using storage doubles and the actual Next handler/Python HTTP service with synthetic NASA responses. The separate `scripts/research-on-demand-browser-check.mjs` exercises the rendered production app and real Chromium storage, including reload/resume, refresh, cancellation, storage failures, exports and mobile overflow. Neither establishes live NASA availability or hosted routing. Setup, evidence and limits are in the [15 November verification](verification-2026-11-15.md).
+
+On this Linux environment the default Turbopack build remains blocked when its CSS worker binds a local port, including after permission changes. `npm run build -- --webpack`, supported by the installed Next.js CLI, completed and served the browser acceptance. This does not change the default build script or claim Turbopack passed. The existing Vercel configuration passed the current official JSON schema and matches the documented service/binding fields; remote configuration still requires account access. No linked Linux project or Vercel authentication was found, so the historical Windows project/store were not recreated.
 
 For local Vercel routing, use `vercel dev --local`; plain `next dev` instead uses the Python subprocess. An earlier Windows session hit symlink EPERM in Vercel's local builder; that is not an established Linux limitation. Keep unrelated dev processes running. `.vercelignore` excludes local datasets, credentials and cache artifacts.
 

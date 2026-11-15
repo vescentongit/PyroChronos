@@ -2,6 +2,8 @@
 
 # PyroChronos — Rencana 3 Sprint Riset v2
 
+> **Scope aktif — 15 November 2026:** alur lokal tanpa login dan FIRMS on-demand menggantikan arsip permanen, akun/workspace server serta antrean persisten sebagai prasyarat. Pembagian tim di bawah mencatat scope awal; task server merupakan legacy/opsional. Gerbang rilis aktif mengikuti [status aktif](../docs/current-status.md).
+
 Acuan: [product.md](../product.md), diperbarui 10 November 2026. Kontrak integrasi baru: [API v2](../docs/contracts/api-v2.md). Kontrak v1 tetap untuk kompatibilitas prototype.
 
 | Anggota | Sprint 1 — P0 | Sprint 2 — P1 | Sprint 3 — P2 |

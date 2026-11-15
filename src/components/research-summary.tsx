@@ -9,8 +9,8 @@ export function ResearchSummary({ result, english, onMonth }: {
 }) {
   const t = (id: string, en: string) => english ? en : id;
   const locale = english ? "en" : "id";
-  const [layer, setLayer] = useState<"count" | "anomaly">("count");
-  const maximum = Math.max(0, ...result.months.map(month => month.metric.harmonizedCount ?? 0)) || 1;
+  const [layer, setLayer] = useState<"raw" | "count" | "anomaly">(result.months.some(month => month.metric.harmonizedCount !== null) ? "count" : "raw");
+  const maximum = Math.max(0, ...result.months.map(month => (layer === "raw" ? month.metric.rawCount : month.metric.harmonizedCount) ?? 0)) || 1;
   const number = (value: number | null) => value === null ? "—" : value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const status = (value: string) => ({
     assessed: t("Dapat dinilai", "Assessed"),
@@ -31,21 +31,22 @@ export function ResearchSummary({ result, english, onMonth }: {
   return <>
     <p>{t("Estimasi jumlah deteksi setara MODIS; bukan jumlah kejadian kebakaran. Tanda — berarti nilai tidak tersedia.", "Estimated MODIS-equivalent detection counts, not fire events. A dash means unavailable.")}</p>
     <div className="research-actions" aria-label={t("Tampilan kalender", "Calendar display")}>
+      <button className="outline" type="button" aria-pressed={layer === "raw"} onClick={() => setLayer("raw")}>{t("Deteksi asli", "Original detections")}</button>
       <button className="outline" type="button" aria-pressed={layer === "count"} onClick={() => setLayer("count")}>{t("Jumlah deteksi", "Detection count")}</button>
       <button className="outline" type="button" aria-pressed={layer === "anomaly"} onClick={() => setLayer("anomaly")}>{t("Anomali", "Anomaly")}</button>
     </div>
-    <p>{layer === "count" ? t("Skala jumlah: biru muda → biru tua mengikuti 0 → estimasi maksimum hasil ini. Angka dan status tetap ditampilkan.", "Count scale: light → dark blue follows 0 → the maximum estimate in this result. Numbers and status remain visible.") : t("Skala anomali: biru → putih → merah untuk persentil 0 → 50 → 100. Referensi belum cukup dan nilai hilang ditampilkan sebagai —.", "Anomaly scale: blue → white → red for percentiles 0 → 50 → 100. Insufficient history and missing values show a dash.")}</p>
+    <p>{layer === "raw" ? t("Deteksi asli dari kedua sumber; belum disetarakan antar sensor. Biru muda → tua mengikuti jumlah. Rincian per sumber tersedia pada ringkasan dan ekspor.", "Original detections from both sources; sensor counts are not harmonized. Light → dark blue follows counts. Source breakdowns are available in the summary and exports.") : layer === "count" ? t("Skala jumlah: biru muda → biru tua mengikuti 0 → estimasi maksimum hasil ini. Angka dan status tetap ditampilkan.", "Count scale: light → dark blue follows 0 → the maximum estimate in this result. Numbers and status remain visible.") : t("Skala anomali: biru → putih → merah untuk persentil 0 → 50 → 100. Referensi belum cukup dan nilai hilang ditampilkan sebagai —.", "Anomaly scale: blue → white → red for percentiles 0 → 50 → 100. Insufficient history and missing values show a dash.")}</p>
     <div className="table-scroll">
       <table>
-        <caption>{layer === "count" ? t("Kalender tahun × bulan · estimasi setara MODIS. Pilih bulan untuk detail harian.", "Year × month calendar · MODIS-equivalent estimates. Select a month for daily detail.") : t("Kalender anomali · persentil historis. Pilih bulan untuk detail harian.", "Anomaly calendar · historical percentile. Select a month for daily detail.")}</caption>
+        <caption>{layer === "raw" ? t("Kalender deteksi asli · pilih bulan untuk detail harian.", "Original detection calendar · select a month for daily detail.") : layer === "count" ? t("Kalender tahun × bulan · estimasi setara MODIS. Pilih bulan untuk detail harian.", "Year × month calendar · MODIS-equivalent estimates. Select a month for daily detail.") : t("Kalender anomali · persentil historis. Pilih bulan untuk detail harian.", "Anomaly calendar · historical percentile. Select a month for daily detail.")}</caption>
         <thead><tr><th>{t("Tahun", "Year")}</th>{Array.from({ length: 12 }, (_, i) => <th key={i}>{new Date(Date.UTC(2000, i)).toLocaleString(locale, { month: "short", timeZone: "UTC" })}</th>)}</tr></thead>
         <tbody>{years.map(year => <tr key={year}><th scope="row">{year}</th>{Array.from({ length: 12 }, (_, i) => {
           const key = `${year}-${String(i + 1).padStart(2, "0")}`;
           const month = result.months.find(item => item.month === key);
-          const value = month ? layer === "count" ? month.metric.harmonizedCount : month.anomaly.scoreKind === "percentile" ? month.anomaly.score : null : null;
-          const state = month ? layer === "anomaly" && month.anomaly.status === "assessed" && month.anomaly.scoreKind !== "percentile" ? t("Persentil tidak tersedia", "Percentile unavailable") : status(layer === "count" ? month.metric.status : month.anomaly.status) : "";
-          const fraction = value === null ? null : layer === "count" ? value / maximum : value / 100;
-          return <td key={key}>{month ? <button type="button" className="outline calendar-cell" style={calendarColors(layer, fraction)} onClick={() => onMonth(key)} aria-label={`${key}: ${number(value)}, ${state}`}>
+          const value = month ? layer === "raw" ? month.metric.rawCount : layer === "count" ? month.metric.harmonizedCount : month.anomaly.scoreKind === "percentile" ? month.anomaly.score : null : null;
+          const state = month ? layer === "anomaly" && month.anomaly.status === "assessed" && month.anomaly.scoreKind !== "percentile" ? t("Persentil tidak tersedia", "Percentile unavailable") : status(layer === "anomaly" ? month.anomaly.status : month.metric.status) : "";
+          const fraction = value === null ? null : layer === "anomaly" ? value / 100 : value / maximum;
+          return <td key={key}>{month ? <button type="button" className="outline calendar-cell" style={calendarColors(layer === "anomaly" ? "anomaly" : "count", fraction)} onClick={() => onMonth(key)} aria-label={`${key}: ${number(value)}, ${state}`}>
             {number(value)}
             <small>{state}{month.isPartialPeriod ? ` · ${t("parsial", "partial")}` : ""}</small>
           </button> : <span aria-label={t("Di luar periode", "Outside period")}>—</span>}</td>;

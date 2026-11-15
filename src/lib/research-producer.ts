@@ -1,8 +1,9 @@
 import { spawn } from "node:child_process";
 
 type ProducerInput = { action: "fingerprint"; root?: string } | { action?: "analyze"; root?: string; run: unknown };
+export const producerFailureCodes = ["CAPACITY_LIMIT", "RATE_LIMITED", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED"];
 function failure(value: unknown) {
-  return value && typeof value === "object" && "code" in value && ["CAPACITY_LIMIT", "RATE_LIMITED"].includes(String(value.code)) ? String(value.code) : "PRODUCER_FAILED";
+  return value && typeof value === "object" && "code" in value && producerFailureCodes.includes(String(value.code)) ? String(value.code) : "PRODUCER_FAILED";
 }
 const maxLocalBytes = 100_000_000;
 // Keep hosted JSON bundles below Vercel's non-streaming response limit.

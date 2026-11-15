@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { researchProducer as producer, maxHostedBundleBytes } from "@/lib/research-producer";
+import { researchProducer as producer, maxHostedBundleBytes, producerFailureCodes } from "@/lib/research-producer";
 import { z } from "zod";
 import { createResearchAnalysisSchema, createResearchAreaSchema, researchAreaSchema } from "@/lib/research-contracts";
 import { validateResearchGeometry } from "@/lib/research-server-geometry";
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     if (geometry.geometryHash !== submittedArea.geometryHash || submittedArea.id !== request.areaId || submittedArea.workspaceId !== workspaceId || submittedArea.revision !== request.areaRevision || request.monitoringLocationId !== null || request.baseline.windowYears > 30 || request.qualityPolicyVersion !== "quality-policy-1" || [request.period, request.comparisonPeriod].filter(Boolean).some(period => period!.end > new Date().toISOString().slice(0, 10))) return error("INVALID_REQUEST", 400);
   } catch { return error("INVALID_REQUEST", 400); }
   const root = process.env.RESEARCH_DATA_DIR;
-  if (!root && !process.env.PIPELINE_URL && !process.env.FIRMS_MAP_KEY) { console.warn("[local-research] producer not configured"); return error("DEPENDENCY_UNAVAILABLE", 503); }
+  if (!root && !process.env.PIPELINE_URL && !process.env.FIRMS_MAP_KEY) { console.warn("[local-research] producer not configured"); return error("NOT_CONFIGURED", 503); }
   if (running) return error("CAPACITY_LIMIT", 503);
   running = true;
   let stage = "producer";
@@ -64,9 +64,9 @@ export async function POST(req: Request) {
     if (process.env.PIPELINE_URL && Buffer.byteLength(JSON.stringify(bundle)) > maxHostedBundleBytes) return error("CAPACITY_LIMIT", 503);
     return Response.json(bundle, { headers: { "Cache-Control": "private, no-store" } });
   } catch (reason) {
-    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", "CAPACITY_LIMIT", "RATE_LIMITED"].includes(reason.message) ? reason.message : "UNAVAILABLE";
+    const known = reason instanceof Error && ["INVALID_PRODUCER", "INVALID_DAYS", "INCOMPLETE_DAYS", "INVALID_DETECTIONS", "INCOMPLETE_DETECTIONS", "INVALID_PERIOD_ROLE", ...producerFailureCodes].includes(reason.message) ? reason.message : "UNAVAILABLE";
     console.warn(`[local-research] ${stage} ${known}`);
-    return error(["CAPACITY_LIMIT", "RATE_LIMITED"].includes(known) ? known : "DEPENDENCY_UNAVAILABLE", known === "RATE_LIMITED" ? 429 : 503);
+    return error(producerFailureCodes.includes(known) ? known : "DEPENDENCY_UNAVAILABLE", known === "RATE_LIMITED" ? 429 : 503);
   }
   finally { running = false; }
 }

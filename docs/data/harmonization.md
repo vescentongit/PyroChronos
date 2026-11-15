@@ -2,7 +2,7 @@
 
 # Harmonisasi VIIRS ke skala setara MODIS (Nathan, Sprint 2)
 
-**Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; menunggu review Bagas dan integrasi worker. Evaluasi bersifat **retrospektif** pada arsip FIRMS 2013–2025 dan **bukan** validasi operasional untuk bulan mendatang. Hasil yang terbit berlabel `research` hanya untuk polygon yang seluruhnya berada di domain tervalidasi; selain itu estimasi `null`.
+**Status:** implementasi R2-P1-N1 sampai N4 selesai dengan tes dan data arsip nyata; model/baseline sudah terintegrasi pada worker anonim dan producer P1 beku; review Bagas serta acceptance integrasi menyeluruh tetap terbuka (pembaruan 15 November 2026). Evaluasi bersifat **retrospektif** pada arsip FIRMS 2013–2025 dan **bukan** validasi operasional untuk bulan mendatang. Hasil yang terbit berlabel `research` hanya untuk polygon yang seluruhnya berada di domain tervalidasi; selain itu estimasi `null`.
 
 Konfigurasi dibekukan sebelum hasil evaluasi dilihat: [harmonize_config.py](../../pipeline/harmonize_config.py), hash `a34f51d0a650…` (versi `harmonization-config-1`). Mengubah nilai apa pun mengubah hash dan membatalkan tabel pasangan, evaluasi, serta hasil terbit.
 
@@ -96,18 +96,11 @@ Kebijakan `reference-policy-1`, dibekukan:
 - **Ekspor** ([research_export.py](../../pipeline/research_export.py), `research_adapter.py --export`): `raw-hotspots.csv` (titik asli dalam polygon), `harmonized-aggregates.csv` (baris periode dan bulan dengan raw per sumber, estimasi, baseline, metode, versi); sel teks berawalan `= + - @` dinetralkan.
 - **Contoh nyata** yang lolos kontrak: [Rondônia/Amazon 2024](examples/amazon-rondonia-2024/result.json) (tervalidasi; estimasi 1.283,3 melawan MODIS asli 1.253 pada kotak 1° × 1°) dan [Kalimantan Tengah 2023](examples/kalteng-2023/result.json) (estimasi ditahan). Dites oleh `tests/research-real-examples.test.mjs`.
 
-## Handoff ke worker Bagas
+## Integrasi worker
 
-`research_worker.produce` belum memakai model (diubah hanya oleh pemiliknya, setelah review). Perubahannya kecil:
+`research_worker.produce` sudah memuat model/baseline lewat `load_default_harmonization` untuk input anonim `research-harmonized-1`, meneruskannya ke `build_result`, dan menyertakan estimasi harian primer/pembanding. Producer P1 legacy memakai `frozen_harmonization`; input `research-raw-1` tetap tidak diharmonisasi.
 
-```python
-from research_adapter import load_default_harmonization
-model, baseline = load_default_harmonization(data["baseline"]["windowYears"])
-built = build_result(..., model=model, baseline=baseline)
-days.append(daily_page(counts, run["id"], month, role, harmonized=(built["harmonized"] if role == "primary" else built["comparisonHarmonized"]).get(month)))
-```
-
-Tanpa perubahan itu worker tetap menerbitkan hitungan mentah dengan estimasi `null`, sama seperti sebelum Sprint 2.
+Sejak commit `4b8a2a5`, `research_worker.analyze` menyiapkan snapshot area/periode, menghitung fingerprint respons aktual, lalu memproses snapshot yang sama. Referensi diminta untuk bulan primer pada domain didukung. Pemasangan model pada worker sudah tersedia; review ilmiah/manusia dan acceptance hosted tetap terpisah. Lihat [status aktif](../current-status.md) dan [alur on-demand](../vercel-deployment.md).
 
 ## Benchmark transfer model beku (Sprint 3, R2-P2-N2)
 

@@ -2,7 +2,7 @@
 
 # PyroChronos
 
-Next.js + Tailwind + Prisma + Neon. Home dengan globe geografis interaktif dan halaman Simulation untuk dashboard, peta MapLibre, grafik historis, dua wilayah, kandidat verifikasi, ekspor CSV/JSON, serta laporan. Mendukung Indonesia/English dan Plus Jakarta Sans.
+Next.js + Tailwind dan producer Python. Home dengan globe geografis interaktif dan halaman Simulation untuk peta MapLibre, polygon bebas, kalender historis, perbandingan, bukti asli, ekspor dan laporan lokal. Kalteng/Papua merupakan area contoh, bukan batas kueri. Mendukung Indonesia/English dan Plus Jakarta Sans. Prisma/Neon dipertahankan untuk API server legacy.
 
 ## Menjalankan
 
@@ -12,6 +12,8 @@ npm run dev
 ```
 
 Buka http://localhost:3000. `npm run build` memeriksa build produksi.
+
+Untuk analisis historis, sediakan Python dan `FIRMS_MAP_KEY` server-only melalui `.env` atau environment proses. `RESEARCH_DATA_DIR` memilih store lokal sebagai alternatif; `RESEARCH_PYTHON` memilih interpreter lokal. Tanpa konfigurasi producer, halaman tetap terbuka dan analisis menampilkan dependency unavailable. Database dan Google OAuth tidak diperlukan. Lihat [konfigurasi dan batas layanan](docs/vercel-deployment.md).
 
 ## Home dan Simulation
 
@@ -25,11 +27,13 @@ Geometri Natural Earth disimpan lokal di `public/geo`; sumber/lisensi ada pada R
 
 Pemeriksaan: `npm run check:frontend` (Node.js 22.18+/24), `npm run typecheck`, `npm run build`, dan `TEST_URL=http://localhost:3000 npm run smoke` dengan server aktif. Typecheck menonaktifkan cache incremental agar tipe route baru tidak tertahan cache TypeScript lama.
 
+[Verifikasi 15 November](docs/verification-2026-11-15.md) mencatat build produksi Webpack, tes terbaru dan cara menjalankan QA browser historis. Build default Turbopack masih terkena pembatasan port lingkungan Linux ini; hasil Webpack tidak dinyatakan sebagai kelulusan Turbopack. FIRMS live dan routing hosted belum terverifikasi.
+
 ## Status data dan batas implementasi
 
 Acceptance frontend tanpa backend nyata: `npm run check:browser`, dengan server dan Chrome debugging lokal aktif. Script memakai context incognito dan respons API sintetis; cara menjalankan serta bukti hasil ada di [docs/frontend-acceptance.md](docs/frontend-acceptance.md).
 
-Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Mode Operasional mengharapkan snapshot lewat `/api/snapshots`; endpoint belum tersedia, dan UI menampilkan unavailable tanpa memakai fixture sebagai pengganti. Kontrak: `docs/contracts/snapshot-v1.md`. Tidak ada autentikasi produksi, job FIRMS, atau model harmonisasi yang diklaim aktif. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
+Mode Demo memakai kandidat, grafik, persentil, dan prioritas ilustratif. Dashboard Operasional legacy mengharapkan snapshot lewat `/api/snapshots`; endpoint belum tersedia, dan UI menampilkan unavailable tanpa fixture pengganti. Ini terpisah dari Analisis historis aktif melalui `/api/local-research`, yang memakai producer Python dan model terbitan pada domain yang didukung. Kontrak snapshot lama: `docs/contracts/snapshot-v1.md`. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
 
 ## Penyimpanan browser dan analisis
 
@@ -60,6 +64,6 @@ Dengan `FIRMS_MAP_KEY`, `/api/firms?region=kalteng` atau `region=papua` menyedia
 
 Service ingest privat, konfigurasi sumber/wilayah bersama, adapter raw batch, dan pengujian keamanan tersedia pada [panduan ingest B2](docs/ingest.md). Route FIRMS tetap hanya untuk unduhan: GET publik tidak menulis batch database. Job Python memerlukan environment server, database non-produksi yang sudah dimigrasikan, serta penyimpanan raw privat dan persisten; ingest terjadwal belum diaktifkan.
 
-`pipeline/harmonize.py` adalah kandidat EQM eksperimental dengan zero-preservation dan penanda outside-support. Uji: `python -m unittest discover -s pipeline`. Pipeline ini belum dilatih memakai arsip nyata dan tidak digunakan untuk skor demo. Integrasi otomatis FIRMS, baseline musiman, kalibrasi per wilayah, ranking tervalidasi, revisi laporan, dan autentikasi individual masih merupakan pekerjaan lanjutan.
+`pipeline/harmonize.py` menyimpan eksperimen EQM lama. Jalur riset aktif memakai model `ratio_global` hasil evaluasi retrospektif arsip nyata dan baseline bergerak; lihat [metode dan domain ditolak](docs/data/harmonization.md). Ini tidak mengubah skor demo atau menjamin validitas global/operasional. Revisi laporan lokal sudah tersedia; autentikasi individual bukan syarat versi aktif. Uji dengan dependensi `pipeline/requirements-dev.txt`: `python -m unittest discover -s pipeline -p 'test_*.py'`.
 
 Migrasi deployment: `npx prisma migrate deploy`. Jangan menjalankan migrasi saat request. Tidak ada koneksi atau migrasi Neon yang dilakukan otomatis oleh scaffold ini.
