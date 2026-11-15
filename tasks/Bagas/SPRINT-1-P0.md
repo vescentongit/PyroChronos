@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 1 (P0) — Bagas
+# Sprint 1 (P0) - Bagas
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Orkhan.\
@@ -16,9 +16,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P0-B1 — Skema workspace, akun individual, AOI dan revisi
+### R2-P0-B1 - Skema workspace, akun individual, AOI dan revisi
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Rancang Prisma untuk User/Membership, area polygon dan revisi, serta metadata job/result. Definisikan isolasi workspace dan rencana migrasi dari laporan/candidate legacy tanpa menghapus riwayat.
 
@@ -26,9 +26,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-### R2-P0-B2 — Pengajuan analisis dan antrean persisten
+### R2-P0-B2 - Pengajuan analisis dan antrean persisten
 
-- [ ] **Selesai dan direview** — estimasi 7 poin.
+- [ ] **Selesai dan direview** - estimasi 7 poin.
 
 **Pekerjaan:** Implementasikan area-create, analysis-create dan job-read v2. Simpan requestId, analysisKey, input/versi, status antre/diproses/selesai/gagal; claim worker dan retry harus tahan restart.
 
@@ -36,9 +36,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-B1, R2-P0-N4
 
-### R2-P0-B3 — Pembacaan hasil dan data spasial reusable
+### R2-P0-B3 - Pembacaan hasil dan data spasial reusable
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Sediakan hasil, halaman deteksi, serta cache/tile yang identitasnya memakai dataset dan resolusi penyajian. Pisahkan pergeseran kamera dari pemanggilan upstream FIRMS dan perhitungan historis.
 
@@ -46,9 +46,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-B2, R2-P0-N2, R2-P0-N3
 
-### R2-P0-B4 — Hak akses dan error lintas resource
+### R2-P0-B4 - Hak akses dan error lintas resource
 
-- [ ] **Selesai dan direview** — estimasi 3 poin.
+- [ ] **Selesai dan direview** - estimasi 3 poin.
 
 **Pekerjaan:** Tegakkan akses job, area, hasil, serta API workspace dengan identitas individual. Tambahkan error v2 aman dan dokumentasikan policy membership untuk endpoint penandaan yang akan diintegrasikan.
 

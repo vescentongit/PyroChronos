@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 2 (P1) — Bagas
+# Sprint 2 (P1) - Bagas
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Orkhan.\
@@ -16,9 +16,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P1-B1 — Worker nyata dan publikasi atomik
+### R2-P1-B1 - Worker nyata dan publikasi atomik
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Integrasikan producer Nathan dengan antrean; validasi hasil, simpan manifest/dataVersion dan publikasikan resultId hanya setelah transaksi berhasil. Pisahkan status job sukses dari status validasi metode.
 
@@ -26,9 +26,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-B2, R2-P0-B3, R2-P1-N4
 
-### R2-P1-B2 — Lokasi pemantauan persisten
+### R2-P1-B2 - Lokasi pemantauan persisten
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [ ] **Selesai dan direview** - estimasi 4 poin.
 
 **Pekerjaan:** Buat create/list/read lokasi dari analysisId dan anchorDetectionId yang dapat diverifikasi. Simpan posisi asli, bukti awal, referensi AOI/revisi, pembuat dan workspace; dukung analisis berikutnya tanpa menimpa anchor.
 
@@ -36,9 +36,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-B4, R2-P1-B1
 
-### R2-P1-B3 — Penugasan, pemeriksaan, revision dan audit
+### R2-P1-B3 - Penugasan, pemeriksaan, revision dan audit
 
-- [ ] **Selesai dan direview** — estimasi 7 poin.
+- [ ] **Selesai dan direview** - estimasi 7 poin.
 
 **Pekerjaan:** Implementasikan assignment-create/status, create-report dan correction v2. Verifikasi assignee/inspector anggota workspace; pencatat berasal dari sesi. Satu lokasi dapat mempunyai beberapa pemeriksaan.
 
@@ -46,9 +46,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-B2
 
-### R2-P1-B4 — Ekspor CSV dan manifest yang terlindungi
+### R2-P1-B4 - Ekspor CSV dan manifest yang terlindungi
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [ ] **Selesai dan direview** - estimasi 4 poin.
 
 **Pekerjaan:** Sediakan export-create/status/download untuk deteksi asli dan agregat terharmonisasi secara terpisah. Terapkan pagination/streaming atau job, metadata periode/AOI/model, CSV escaping dan izin download server-side.
 

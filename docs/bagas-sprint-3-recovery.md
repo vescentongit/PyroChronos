@@ -1,4 +1,4 @@
-# Tahap 5 — rekonsiliasi dan pemulihan berulang B2
+# Tahap 5 - rekonsiliasi dan pemulihan berulang B2
 
 Policy: mempertahankan histori dan objek privat. `scripts/research-reconcile.mjs`
 memakai metadata P1AnalysisArtifact dan ResearchExportArtifact sebagai referensi,

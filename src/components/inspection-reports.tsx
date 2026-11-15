@@ -311,7 +311,7 @@ export function InspectionReports({
                       </summary>
                       {report.corrections.map((item, index) => (
                         <p key={index}>
-                          {date(item.correctedAt)} —{" "}
+                          {date(item.correctedAt)} -{" "}
                           {t("Nilai sebelumnya", "Previous values")}:{" "}
                           {date(item.observedAt)} ·{" "}
                           {language === "id"

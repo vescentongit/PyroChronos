@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 1 (P0) — Nathan
+# Sprint 1 (P0) - Nathan
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Bagas.\
@@ -16,9 +16,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P0-N1 — Arsip global yang mempertahankan tanggal dan posisi asli
+### R2-P0-N1 - Arsip global yang mempertahankan tanggal dan posisi asli
 
-- [x] **Selesai dan direview** — estimasi 5 poin.
+- [x] **Selesai dan direview** - estimasi 5 poin.
 
 *Selesai dan direview sesuai status PR #7 di atas:* store deteksi asli `pcd1` per sumber/bulan (`detection_store.py`, `firms_archive.py`), manifest dengan checksum dan cakupan per tahun, grid lama diberi label `coarse-aggregate`. Pemrosesan arsip nyata berjalan bertahap; tahun yang belum diproses tercatat `no_data`. Lihat [catatan data](../../docs/data/firms-sources.md).
 
@@ -28,9 +28,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-### R2-P0-N2 — Kueri polygon bebas dan irisan waktu
+### R2-P0-N2 - Kueri polygon bebas dan irisan waktu
 
-- [x] **Selesai dan direview** — estimasi 8 poin.
+- [x] **Selesai dan direview** - estimasi 8 poin.
 
 *Selesai dan direview sesuai status PR #7 di atas:* `area_query.py` (polygon dengan lubang, antimeridian, validasi, batas luas/titik, tanggal inklusif UTC); 11 tes termasuk hasil berbeda dari bbox.
 
@@ -40,9 +40,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-N1
 
-### R2-P0-N3 — Count per sumber dan manifest analisis
+### R2-P0-N3 - Count per sumber dan manifest analisis
 
-- [x] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** - estimasi 4 poin.
 
 *Selesai dan direview sesuai status PR #7 di atas:* `area_counts.py` (count per sumber/hari/bulan, kebijakan `quality-policy-1`, cakupan observed/partial/no_data, manifest reproducible).
 
@@ -52,9 +52,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-N1
 
-### R2-P0-N4 — Adapter producer ke research-2
+### R2-P0-N4 - Adapter producer ke research-2
 
-- [x] **Selesai dan direview** — estimasi 3 poin.
+- [x] **Selesai dan direview** - estimasi 3 poin.
 
 *Selesai dan direview sesuai status PR #7 di atas:* `research_adapter.py` menghasilkan result/daily/detections `research-2` tanpa estimasi (harmonizedCount null, validation unsupported); `tests/research-adapter.test.mjs` memvalidasi dengan schema zod.
 

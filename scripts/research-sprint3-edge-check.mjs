@@ -52,7 +52,7 @@ async (parent) => {
       for (const language of ["id", "en"]) {
         await page.getByRole("combobox", { name: /Bahasa|Language/, exact: true }).selectOption(language);
         const label = await page.locator(".calendar-cell").innerText();
-        check(scenario === "fractional" ? /0[,.]25/.test(label) : scenario === "partial" ? label.includes("0") : label.includes("—"), `${scenario} must distinguish zero/missing/fractional`);
+        check(scenario === "fractional" ? /0[,.]25/.test(label) : scenario === "partial" ? label.includes("0") : label.includes("-"), `${scenario} must distinguish zero/missing/fractional`);
         if (scenario === "fractional") check(await page.locator(".calendar-cell").evaluate(node => getComputedStyle(node).backgroundColor) === "rgb(25, 51, 87)", "A fractional maximum must reach the darkest count endpoint");
         await page.locator(".calendar-cell").focus();
         await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab");
@@ -61,7 +61,7 @@ async (parent) => {
         await page.keyboard.press("Enter");
         await page.locator(".research-results details[open]").last().waitFor();
         await page.getByRole("button", { name: language === "id" ? "Anomali" : "Anomaly", exact: true }).click();
-        check((await page.locator(".calendar-cell").innerText()).includes("—"), "Insufficient/unsupported anomaly must remain unknown");
+        check((await page.locator(".calendar-cell").innerText()).includes("-"), "Insufficient/unsupported anomaly must remain unknown");
         check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Long names must not overflow");
         const rawPending = page.waitForEvent("download");
         await page.getByRole("button", { name: language === "id" ? "CSV deteksi asli" : "Original detections CSV", exact: true }).click();

@@ -2,6 +2,7 @@
 
 import copy
 import json
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -25,6 +26,19 @@ def data(geometry=GEOMETRY, start="2019-01-01", end="2019-01-02"):
 
 
 class OnDemandTests(unittest.TestCase):
+    def test_missing_key_fails_before_any_upstream_request(self):
+        with patch("firms_on_demand.download") as fetch:
+            with self.assertRaisesRegex(ValueError, "^NOT_CONFIGURED$"):
+                prepare(data(), None)
+            fetch.assert_not_called()
+
+    def test_empty_archive_is_configuration_error_even_when_firms_key_is_present(self):
+        with tempfile.TemporaryDirectory() as root, patch.dict("os.environ", {"FIRMS_MAP_KEY": "synthetic-key"}):
+            with patch("firms_on_demand.prepare") as fetch:
+                with self.assertRaisesRegex(ValueError, "^NOT_CONFIGURED$"):
+                    analyze(root, {"input": data()})
+                fetch.assert_not_called()
+
     def test_expired_fetch_budget_is_timeout_without_starting_a_request(self):
         with patch("firms_on_demand.download") as fetch:
             with self.assertRaisesRegex(ValueError, "^TIMEOUT$"):

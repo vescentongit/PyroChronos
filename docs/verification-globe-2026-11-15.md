@@ -1,4 +1,4 @@
-# Verifikasi globe FIRMS — 15 November 2026
+# Verifikasi globe FIRMS - 15 November 2026
 
 ## Status terbaru: snapshot statis sesuai permintaan pengguna
 
@@ -24,7 +24,7 @@ Verifikasi perubahan snapshot:
 
 Pemeriksaan tambahan pada server lama port 3000 menemukan HTML sudah berisi jumlah/tanggal snapshot, tetapi globe tetap pada “Preparing the globe…” dalam konteks browser baru. Tidak ada exception runtime atau respons HTTP gagal yang tertangkap pada pemeriksaan singkat tersebut; penyebab server lama belum disimpulkan. Server itu tidak dihentikan. Build produksi baru pada port 3150 lolos browser QA dan dapat dipakai sebagai preview lokal; port 3000 perlu restart/diagnosis proses tersendiri bila masih tertahan.
 
-## Catatan implementasi live sebelumnya — digantikan
+## Catatan implementasi live sebelumnya - digantikan
 
 Home mengganti fixture wilayah dengan `/api/hotspots` untuk seluruh dunia (`-180,-90,180,90`), sumber `VIIRS_NOAA20_NRT`, 24 jam. Semua bin respons digambar, bukan hanya preview 30 observasi. Jumlah deteksi dipertahankan; posisi bin merupakan agregasi area. Key tetap dibaca server. Proxy, batas unduh, cache sepuluh menit dan klasifikasi kegagalan upstream yang sudah ada tetap digunakan.
 

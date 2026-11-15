@@ -1,4 +1,4 @@
-# Orkhan Sprint 2 P1 — implementasi lokal tanpa login
+# Orkhan Sprint 2 P1 - implementasi lokal tanpa login
 
 Tanggal: 13 November 2026. Acuan: [produk](../product.md), [desain](../DESIGN.md), dan [keputusan aktif](current-status.md). O1–O4 memiliki implementasi dan acceptance sintetis; review manusia Nathan belum dilakukan.
 

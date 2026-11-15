@@ -2,7 +2,7 @@
 
 # PyroChronos API & payload contract v1.0
 
-> **Legacy — kompatibilitas prototype.** Pekerjaan produk baru mengikuti [API riset v2](api-v2.md) dan [rencana migrasi](migration-v1-v2.md). Aturan wilayah tetap, sel-hari dan koordinator di dokumen ini hanya berlaku bagi consumer v1; bukan scope produk terbaru. Payload/endpoint v1 tidak diubah diam-diam.
+> **Legacy - kompatibilitas prototype.** Pekerjaan produk baru mengikuti [API riset v2](api-v2.md) dan [rencana migrasi](migration-v1-v2.md). Aturan wilayah tetap, sel-hari dan koordinator di dokumen ini hanya berlaku bagi consumer v1; bukan scope produk terbaru. Payload/endpoint v1 tidak diubah diam-diam.
 
 **Status: acuan implementasi.** Orkhan menetapkan kontrak atas mandat Nathan dan Bagas sebagaimana disampaikan dalam sesi kerja. Ini menggantikan status draft kontrak snapshot. Mandat penetapan payload tidak sama dengan hasil review kode Nathan, persetujuan polygon final, atau validasi ilmiah.
 

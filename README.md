@@ -1,69 +1,77 @@
-> **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](docs/current-status.md).
+> **Active decision, 13 November 2026:** every web feature works without login; Google OAuth is not required. User data is stored locally in the browser. Account, server collaboration and implementation notes below that mention otherwise are earlier plans or history; for the latest decisions and status see [current status](docs/current-status.md).
 
 # PyroChronos
 
-Next.js + Tailwind dan producer Python. Home dengan globe geografis interaktif dan halaman Simulation untuk peta MapLibre, polygon bebas, kalender historis, perbandingan, bukti asli, ekspor dan laporan lokal. Kalteng/Papua merupakan area contoh, bukan batas kueri. Mendukung Indonesia/English dan Plus Jakarta Sans. Prisma/Neon dipertahankan untuk API server legacy.
+PyroChronos is a fire activity observatory built for the NASA Space Apps Challenge 2026 challenge "Harmonization of MODIS and VIIRS Hot Spots". It turns NASA FIRMS hotspots from two satellite generations into one consistent fire calendar.
 
-## Menjalankan
+MODIS (Terra/Aqua, 1 km, since 2000) and VIIRS (Suomi NPP and NOAA-20, 375 m) see fires differently: VIIRS reports roughly four times more detections for the same activity, so their raw counts cannot be compared directly. PyroChronos converts VIIRS counts to a MODIS-equivalent scale (`ratio_global` model, MODIS-equivalent = VIIRS x 0.2458), tested on held-out years 2021 to 2025: mean absolute error per cell-month fell from 130.6 to 12.5 (90% lower) on 473,017 test cell-months. The model is validated per region; where validation fails (for example Southeast Asia) the estimate stays null instead of being guessed. See [method and rejected domains](docs/data/harmonization.md).
+
+Team NasaCOM: M Orkhan, Shaquille N K, Bagas A P. Detailed internal documents under `docs/` are written in Indonesian.
+
+## Stack
+
+Next.js + Tailwind with a Python producer. A Home page with an interactive geographic globe, and a Simulation page with a MapLibre map, free-form polygons, historical calendar, comparison, original evidence, export and local reports. Central Kalimantan (Kalteng) and South Papua are example areas, not query limits. Supports Indonesian/English and Plus Jakarta Sans. Prisma/Neon is kept for the legacy server API.
+
+## Running
 
 ```sh
 npm install
 npm run dev
 ```
 
-Buka http://localhost:3000. `npm run build` memeriksa build produksi.
+Open http://localhost:3000. `npm run build` checks the production build.
 
-Untuk analisis historis, sediakan Python dan `FIRMS_MAP_KEY` server-only melalui `.env` atau environment proses. `RESEARCH_DATA_DIR` memilih store lokal sebagai alternatif; `RESEARCH_PYTHON` memilih interpreter lokal. Tanpa konfigurasi producer, halaman tetap terbuka dan analisis menampilkan dependency unavailable. Database dan Google OAuth tidak diperlukan. Lihat [konfigurasi dan batas layanan](docs/vercel-deployment.md).
+For historical analysis, provide Python and a server-only `FIRMS_MAP_KEY` through `.env` or the process environment. `RESEARCH_DATA_DIR` selects a local store as an alternative; `RESEARCH_PYTHON` selects a local interpreter. Without producer configuration, pages still open and analysis reports the dependency as unavailable. A database and Google OAuth are not required. See [configuration and service limits](docs/vercel-deployment.md).
 
-## Home dan Simulation
+## Home and Simulation
 
-- `/`: globe wireframe/dotted. Hover atau tombol Hotspot demo menampilkan titik ilustratif. Drag/tombol panah untuk rotasi, scroll/tombol untuk zoom; rotasi dapat dijeda dan mengikuti reduced motion.
-- `/simulation`: dashboard. CTA dan navigasi Simulation dari Home menuju halaman ini.
-- `/simulation?region=papua` atau `region=kalteng`: membuka subset studi yang dipilih.
+- `/`: wireframe/dotted globe. Hovering or the Hotspot demo button shows illustrative points. Drag or arrow buttons rotate, scroll or buttons zoom; rotation can be paused and respects reduced motion.
+- `/simulation`: dashboard. The Simulation CTA and navigation on Home lead here.
+- `/simulation?region=papua` or `region=kalteng`: opens the selected study subset.
 
-Komponen globe ada di `src/components/ui/wireframe-dotted-globe.tsx` (alias `@/components/ui`), mengikuti struktur komponen UI pada proyek dengan direktori `src`. Komponen memakai D3 geografis (`d3-geo`) dan Canvas native tanpa primitive/provider shadcn tambahan. Tailwind 4 dan TypeScript sudah tersedia.
+The globe component lives in `src/components/ui/wireframe-dotted-globe.tsx` (alias `@/components/ui`), following the project's UI component structure under `src`. It uses geographic D3 (`d3-geo`) and native Canvas without extra shadcn primitives or providers. Tailwind 4 and TypeScript are already set up.
 
-Geometri Natural Earth disimpan lokal di `public/geo`; sumber/lisensi ada pada README folder tersebut. Regenerasi titik: `node scripts/build-globe-land.mjs`. Halaman tidak mengambil geometri dari GitHub saat digunakan. CSS Simulation terlingkup agar navigasi tidak memengaruhi Home.
+Natural Earth geometry is stored locally in `public/geo`; source and license are in that folder's README. Regenerate the points with `node scripts/build-globe-land.mjs`. Pages do not fetch geometry from GitHub at runtime. Simulation CSS is scoped so navigation does not affect Home.
 
-Pemeriksaan: `npm run check:frontend` (Node.js 22.18+/24), `npm run typecheck`, `npm run build`, dan `TEST_URL=http://localhost:3000 npm run smoke` dengan server aktif. Typecheck menonaktifkan cache incremental agar tipe route baru tidak tertahan cache TypeScript lama.
+Checks: `npm run check:frontend` (Node.js 22.18+/24), `npm run typecheck`, `npm run build`, and `TEST_URL=http://localhost:3000 npm run smoke` with the server running. Typecheck disables the incremental cache so new route types are not held back by an old TypeScript cache.
 
-[Verifikasi 15 November](docs/verification-2026-11-15.md) mencatat build produksi, tes regresi storage/pembatalan/pergantian hasil/transport dan 18 checkpoint QA browser historis. Kendala port pada build Linux sebelumnya tetap dicatat sebagai bukti historis. FIRMS live dan routing hosted belum terverifikasi.
+[15 November verification](docs/verification-2026-11-15.md) records the production build, regression tests for storage, cancellation, result switching and transport, and 18 historical browser QA checkpoints. Port issues in an earlier Linux build are kept as historical evidence. Live FIRMS and hosted routing are not yet verified.
 
-## Status data dan batas implementasi
+## Data status and implementation limits
 
-Acceptance frontend tanpa backend nyata: `npm run check:browser`, dengan server dan Chrome debugging lokal aktif. Script memakai context incognito dan respons API sintetis; cara menjalankan serta bukti hasil ada di [docs/frontend-acceptance.md](docs/frontend-acceptance.md).
+Frontend acceptance without a real backend: `npm run check:browser`, with the server and local Chrome debugging running. The script uses an incognito context and synthetic API responses; how to run it and the resulting evidence are in [docs/frontend-acceptance.md](docs/frontend-acceptance.md).
 
-Data ruang kerja default memakai analisis tersimpan dari browser: dashboard, perbandingan sensor dan laporan lapangan membaca hasil historis yang sama. Jalur aktif `/api/local-research` memakai producer Python dan model terbitan pada domain yang didukung. Mode Demo dapat dipilih secara eksplisit dan memakai kandidat, grafik, persentil serta prioritas ilustratif. API `/api/snapshots` lama belum tersedia dan tidak dipanggil oleh jalur analisis tersimpan. Kontrak snapshot lama: `docs/contracts/snapshot-v1.md`. Peta Simulation memakai tile Esri World Imagery; fallback koordinat dan daftar tetap tersedia ketika basemap gagal.
+Workspace data defaults to analyses saved in the browser: the dashboard, sensor comparison and field reports read the same historical result. The active `/api/local-research` path uses the Python producer and the published model on supported domains. Demo mode can be selected explicitly and uses illustrative candidates, charts, percentiles and priorities. The old `/api/snapshots` API is not available and is not called by the saved-analysis path. Old snapshot contract: `docs/contracts/snapshot-v1.md`. The Simulation map uses Esri World Imagery tiles; coordinate and list fallbacks remain available when the basemap fails.
 
-## Penyimpanan browser dan analisis
+## Browser storage and analysis
 
-Konfigurasi dua servis Vercel (`app` publik, `pipeline` internal melalui binding) tersedia pada `vercel.json`. Analisis historis mengambil FIRMS sesuai polygon/periode tanpa arsip global permanen. Browser memuat dan menyimpan per bulan, melanjutkan bagian yang belum selesai, lalu membentuk kalender lengkap dengan provenance setiap snapshot. Jadwal arsip global dinonaktifkan. [Panduan deployment Vercel](docs/vercel-deployment.md) menjelaskan key server-only dan batas layanan; deployment belum dilakukan.
+Configuration for two Vercel services (public `app`, internal `pipeline` via binding) is in `vercel.json`. Historical analysis fetches FIRMS data for the chosen polygon and period without a permanent global archive. The browser loads and stores data month by month, resumes unfinished parts, then builds the full calendar with provenance for every snapshot. The global archive schedule is disabled. The [Vercel deployment guide](docs/vercel-deployment.md) explains the server-only key and service limits; deployment has not been done yet.
 
-Keputusan aktif: seluruh fitur web dapat digunakan tanpa login dan tanpa konfigurasi Google OAuth. Kalender tahun × bulan, ringkasan dua periode dan tabel anomali membaca hasil analisis yang sama. Jalur analisis lokal memuat model terbitan `pipeline/models`; estimasi tetap null pada domain yang tidak lolos evaluasi. Lihat [status dan sisa sprint](docs/current-status.md).
+Active decision: every web feature can be used without login and without Google OAuth configuration. The year by month calendar, two-period summary and anomaly table read the same analysis result. The local analysis path loads the published model from `pipeline/models`; estimates stay null on domains that fail evaluation. See [status and remaining sprint work](docs/current-status.md).
 
-Hasil riset kini menyediakan lokasi pemantauan dari titik asli, penugasan/pemeriksaan lokal, koreksi berhistori, CSV observasi/agregat, JSON/manifest dan PNG kalender. Klik peta kepadatan memperbesar kamera sebelum memilih titik; tabel bukti juga tersedia. CSV observasi memakai kolom `recordType`; hasil kosong memuat baris `metadata` dengan provenance dan kolom observasi kosong. Nama lokal bukan identitas akun terverifikasi. [Bukti dan batas Sprint 2](docs/orkhan-sprint-2-progress.md).
+Research results now provide monitoring locations from original points, local assignment and review, corrections with history, observation and aggregate CSV, JSON/manifest and a calendar PNG. Clicking the density map zooms the camera before selecting a point; an evidence table is also available. Observation CSV uses a `recordType` column; empty results contain a `metadata` row with provenance and empty observation columns. Local names are not verified account identities. [Sprint 2 evidence and limits](docs/orkhan-sprint-2-progress.md).
 
-Penggunaan UI tidak memerlukan login. Workspace lokal, area, pilihan analisis, hasil dan laporan disimpan pada browser perangkat tersebut; data tidak disinkronkan ke perangkat atau pengguna lain. Menghapus data situs/browser dapat menghapusnya. Hasil lama dari akun atau database server tidak otomatis disalin ke browser dan tidak dihapus dari server.
+Using the UI does not require login. The local workspace, areas, analysis choices, results and reports are stored in that device's browser; data is not synced to other devices or users. Clearing site or browser data can delete it. Old results from accounts or the server database are not copied to the browser automatically and are not deleted from the server.
 
-Analisis historis diproses di Python menggunakan `FIRMS_MAP_KEY`, atau `RESEARCH_DATA_DIR` bila dataset lokal dipilih (`RESEARCH_PYTHON` opsional untuk interpreter lokal). Data mentah API hanya berada dalam memori selama request; hasil/bukti asli serta manifest disimpan di IndexedDB. Sumber standard dan NRT tetap terpisah. Bagian gagal/belum dimuat tidak menjadi nol; respons CSV sukses tanpa observasi menghasilkan nol observasi, bukan bukti tidak ada kebakaran. Pilihan ambil ulang memeriksa revisi data, sedangkan cache biasa mempertahankan snapshot lama. Ukuran, waktu dan konkurensi dibatasi; kalender multidekade dapat memerlukan banyak request. Sinkronisasi lintas perangkat belum tersedia.
+Historical analysis is processed in Python using `FIRMS_MAP_KEY`, or `RESEARCH_DATA_DIR` when a local dataset is chosen (`RESEARCH_PYTHON` is optional for a local interpreter). Raw API data stays in memory only for the duration of a request; results, original evidence and manifests are stored in IndexedDB. Standard and NRT sources stay separate. Failed or unloaded parts never become zero; a successful CSV response with no observations yields zero observations, which is not evidence that there was no fire. The refetch option checks data revisions, while the normal cache keeps old snapshots. Size, time and concurrency are limited; multi-decade calendars may need many requests. Cross-device sync is not available yet.
 
-## API dan integrasi lama
+## Legacy API and integrations
 
-Acuan implementasi lintas Nathan/Bagas/Orkhan: [kontrak payload API v1](docs/contracts/api-v1.md), dengan schema runtime, JSON Schema, contoh kedua wilayah, dan `npm run check:contracts`. Endpoint yang dijelaskan sebagai target di kontrak belum otomatis tersedia pada scaffold saat ini.
+Implementation reference across Nathan, Bagas and Orkhan: [API payload contract v1](docs/contracts/api-v1.md), with runtime schema, JSON Schema, examples for both regions, and `npm run check:contracts`. Endpoints described as targets in the contract are not automatically available in the current scaffold.
 
-Endpoint lama untuk akun, workspace server, dan laporan koordinator tetap berada di repository untuk kompatibilitas; UI lokal tidak menggunakannya. Untuk menjalankan endpoint lama, salin `.env.example` ke `.env`, isi `DATABASE_URL` dan `COORDINATOR_TOKEN` acak minimal 32 karakter. Jangan memakai prefix NEXT_PUBLIC untuk secret.
+Legacy endpoints for accounts, server workspaces and coordinator reports remain in the repository for compatibility; the local UI does not use them. To run them, copy `.env.example` to `.env` and fill in `DATABASE_URL` and a random `COORDINATOR_TOKEN` of at least 32 characters. Do not use the NEXT_PUBLIC prefix for secrets.
 
 ```sh
 npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-Endpoint lama `GET /api/reports` dan `POST /api/reports` menerima cookie koordinator atau `Authorization: Bearer <COORDINATOR_TOKEN>`. Laporan baru di UI disimpan secara lokal, terpisah antara mode demo dan operasional.
+The legacy `GET /api/reports` and `POST /api/reports` endpoints accept the coordinator cookie or `Authorization: Bearer <COORDINATOR_TOKEN>`. New reports in the UI are stored locally, separately for demo and operational modes.
 
-Dengan `FIRMS_MAP_KEY`, `/api/firms?region=kalteng` atau `region=papua` menyediakan CSV NOAA-20 NRT untuk bounding box studi selama dua hari. Endpoint ini tidak mengaktifkan skor atau data dashboard otomatis dan tidak mengklaim cakupan provinsi penuh. Tidak ada key yang dikirim ke browser.
+With `FIRMS_MAP_KEY`, `/api/firms?region=kalteng` or `region=papua` serves two days of NOAA-20 NRT CSV for the study bounding box. This endpoint does not enable scores or dashboard data automatically and does not claim full province coverage. No key is sent to the browser.
 
-Service ingest privat, konfigurasi sumber/wilayah bersama, adapter raw batch, dan pengujian keamanan tersedia pada [panduan ingest B2](docs/ingest.md). Route FIRMS tetap hanya untuk unduhan: GET publik tidak menulis batch database. Job Python memerlukan environment server, database non-produksi yang sudah dimigrasikan, serta penyimpanan raw privat dan persisten; ingest terjadwal belum diaktifkan.
+The private ingest service, shared source and region configuration, raw batch adapter and security tests are described in the [B2 ingest guide](docs/ingest.md). The FIRMS route is download-only: public GET requests do not write database batches. The Python job needs a server environment, a migrated non-production database, and private persistent raw storage; scheduled ingest is not enabled.
 
-`pipeline/harmonize.py` menyimpan eksperimen EQM lama. Jalur riset aktif memakai model `ratio_global` hasil evaluasi retrospektif arsip nyata dan baseline bergerak; lihat [metode dan domain ditolak](docs/data/harmonization.md). Ini tidak mengubah skor demo atau menjamin validitas global/operasional. Revisi laporan lokal sudah tersedia; autentikasi individual bukan syarat versi aktif. Uji dengan dependensi `pipeline/requirements-dev.txt`: `python -m unittest discover -s pipeline -p 'test_*.py'`.
+`pipeline/harmonize.py` keeps the old EQM experiment. The active research path uses the `ratio_global` model from a retrospective evaluation on the real archive with a moving baseline; see [method and rejected domains](docs/data/harmonization.md). This does not change demo scores or guarantee global or operational validity. Local report revisions are available; individual authentication is not required in the active version. Test with the dependencies in `pipeline/requirements-dev.txt`: `python -m unittest discover -s pipeline -p 'test_*.py'`.
 
-Migrasi deployment: `npx prisma migrate deploy`. Jangan menjalankan migrasi saat request. Tidak ada koneksi atau migrasi Neon yang dilakukan otomatis oleh scaffold ini.
+Deployment migration: `npx prisma migrate deploy`. Do not run migrations during a request. This scaffold does not connect to or migrate Neon automatically.

@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 2 (P1) — Orkhan
+# Sprint 2 (P1) - Orkhan
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Nathan.\
@@ -24,9 +24,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P1-O1 — Burning calendar tahun x bulan
+### R2-P1-O1 - Burning calendar tahun x bulan
 
-- [ ] **Selesai dan direview** — estimasi 6 poin.
+- [ ] **Selesai dan direview** - estimasi 6 poin.
 
 **Pekerjaan:** Hubungkan kalender Januari-Desember per tahun ke hasil v2; klik bulan membuka halaman detail harian dan deteksi yang sesuai. Batasi rendering pada data yang diperlukan.
 
@@ -34,9 +34,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-O4, R2-P1-N4
 
-### R2-P1-O2 — Perbandingan, anomali dan metodologi
+### R2-P1-O2 - Perbandingan, anomali dan metodologi
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Tampilkan dua periode, durasi, perubahan aktivitas, referensi bergerak yang dapat diubah, serta model/validasi/provenance. Pisahkan skala warna count dan anomali.
 
@@ -44,9 +44,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-O1, R2-P1-N3
 
-### R2-P1-O3 — Detail hotspot dan daftar lokasi tim
+### R2-P1-O3 - Detail hotspot dan daftar lokasi tim
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [ ] **Selesai dan direview** - estimasi 4 poin.
 
 **Pekerjaan:** Buka bukti dari titik asli, sediakan Tandai lokasi, daftar lokasi workspace dan buka ulang untuk analisis periode lain. Klik kelompok heatmap mengarah ke detail/zoom sebelum memilih anchor.
 
@@ -54,9 +54,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-O4, R2-P1-B2
 
-### R2-P1-O4 — UI pemeriksaan dan ekspor penelitian
+### R2-P1-O4 - UI pemeriksaan dan ekspor penelitian
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Integrasikan assignee, status pekerjaan, beberapa laporan, koreksi beralasan dan revision conflict. Sediakan unduhan CSV serta PNG kalender/grafik dari hasil yang sama dengan metadata visual.
 

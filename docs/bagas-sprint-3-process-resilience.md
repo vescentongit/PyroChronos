@@ -1,6 +1,6 @@
-# Bagas Sprint 3 — Tahap 4: ketahanan proses (B2 bagian 1)
+# Bagas Sprint 3 - Tahap 4: ketahanan proses (B2 bagian 1)
 
-Kelanjutan: [Tahap 5 — pemulihan berulang](bagas-sprint-3-recovery.md).
+Kelanjutan: [Tahap 5 - pemulihan berulang](bagas-sprint-3-recovery.md).
 Pernyataan pekerjaan Tahap 5 yang terbuka di bawah adalah snapshot akhir Tahap 4.
 
 Cakupan: `R2-P2-B2`, berdasarkan [task Sprint 3](../tasks/Bagas/SPRINT-3-P2.md),

@@ -1,6 +1,104 @@
-# Verifikasi kelanjutan — 15 November 2026
+# Verifikasi kelanjutan - 15 November 2026
 
-## Resolusi konflik PR #15 — bukti gabungan terbaru
+## Penyederhanaan hasil riset historis - tampilan terbaru
+
+Hasil setelah Analyze kini memiliki satu alur baca: heading hasil mendapat fokus,
+ringkasan menjelaskan deteksi asli dan estimasi secara terpisah, lalu kalender
+menunjukkan aktivitas bulanan dengan legenda warna dan arti `0` versus `-`.
+Pilih bulan untuk membuka tabel harian per sumber tepat di bawah kalender;
+Tampilkan semua bulan memulihkan overlay penuh dan fokus keyboard. Perbandingan,
+perhitungan, ekspor, cakupan sumber, pengambilan ulang dan pemantauan tetap
+tersedia melalui disclosure. Cakupan sumber terbuka otomatis untuk `no_data`,
+dan pemilihan titik peta membuka bukti pemantauan. Tampilan tersimpan pada
+Dashboard memakai kalender yang sama dan mempertahankan detail hariannya.
+
+Build produksi default Turbopack, pemeriksaan TypeScript, kontrak dan 11 frontend
+checks lulus. Browser produksi lulus 24 checkpoint dengan 22 request sintetis dan
+nol exception runtime. Regresi baru memeriksa fokus hasil, navigasi bulan via
+keyboard, pemulihan fokus, posisi rincian harian, alat sekunder yang tertutup,
+respons NASA sukses tanpa deteksi, anomali tanpa nilai, serta label/angka mobile
+yang tidak terpotong. Bukti ini mencakup desktop 1440 x 1000 dan mobile ID
+390 x 844. Respons NASA sintetis dan basemap diblokir; ini bukan acceptance live.
+
+Artefak lokal pada `.cache/verification-2026-11-15/browser/`:
+`results-desktop.png`, `results-daily-desktop.png`, `results-mobile-id.png`,
+`results-zero.png`, `results-no-coverage.png`, serta `result.json` yang mencatat
+build ID dan waktu run. Screenshot elemen dapat memasukkan kontrol fixed dari
+viewport; `results-mobile-viewport.png` dan `results-mobile-layout.json` memisahkan
+pemeriksaan viewport dari capture elemen panjang. Tidak ada perubahan model,
+sumber data, commit, push atau deployment pada pekerjaan UI ini.
+
+## Analisis kosong / gagal di Vercel - pemeriksaan terbaru
+
+Checkout awal: `dev`, `fb1e00a` (PR #18 telah digabung). Pengguna melaporkan
+polygon Kalimantan, periode 2025-10-01 sampai 2026-11-15, dengan pembanding
+2025-08-01 sampai 2025-08-31. Pesan terakhir yang dikonfirmasi adalah kegagalan
+analisis, bukan respons sukses `no_data`.
+
+Pemeriksaan publik pada `https://pyrochronos.vercel.app` memberikan:
+
+- `GET /api/ready`: HTTP 503, `{"status":"not_ready"}`.
+- Pembuatan polygon melalui `/api/local-research`: HTTP 200.
+- Analisis diagnostik dibatasi satu hari (2025-10-01), tanpa baseline, pada
+  polygon persegi Kalimantan: HTTP 503 `DEPENDENCY_UNAVAILABLE`, sekitar 1,36 detik.
+  Polygon diagnostik mendekati wilayah pada gambar, bukan salinan koordinatnya.
+- Log akses yang diberikan pengguna mengonfirmasi `POST /produce` HTTP 503 pada
+  pipeline. Baris tersebut tidak memuat alasan penolakan. Konfigurasi Production
+  dan error internal belum terverifikasi; tidak ada perubahan hosting dilakukan.
+- Probe hotspot terbaru pada service app, `VIIRS_NOAA20_NRT`, bbox kecil
+  `113,-2.5,113.1,-2.4`, 24 jam: HTTP 200, status `available`, nol deteksi pada bbox
+  tersebut, `fetchedAt` `2026-11-15T13:03:32.734Z`. Ini bukti terpisah untuk jalur
+  NRT hosted; tidak memverifikasi konfigurasi atau rentang SP pada pipeline.
+
+Kelanjutan: pengguna melaporkan `FIRMS_MAP_KEY` sudah tersedia di Vercel, sementara
+`RESEARCH_DATA_DIR` berisi `D:\NASA-Directory\RESEARCH_DATA`. Path Windows tersebut
+tidak tersedia pada service Python hosted. Karena konfigurasi arsip mendapat
+prioritas, path ini menjelaskan kegagalan konfigurasi walaupun key tersedia.
+Untuk mode on-demand, hapus variabel itu dari environment Vercel yang dipakai
+deployment, pertahankan key untuk kedua service, lalu redeploy proyek yang sama.
+Perubahan remote dan keberhasilan setelah redeploy belum diverifikasi.
+
+Secara terpisah, konfigurasi lokal memilih `RESEARCH_DATA_DIR` yang memang ada,
+tetapi tidak mempunyai manifest `MODIS_SP` maupun `VIIRS_SNPP_SP`. Sebelumnya,
+folder kosong lolos readiness dan menghasilkan analisis sukses `no_data`, meski
+kunci FIRMS tersedia. Temuan lokal ini tidak membuktikan konfigurasi Vercel sama.
+Pemeriksaan availability NASA dari lingkungan lokal gagal koneksi, termasuk
+setelah eskalasi; belum ada respons live NASA yang berhasil.
+
+Perbaikan membedakan sumber server yang belum dikonfigurasi, direktori arsip
+hilang/kosong, tidak adanya cakupan tanggal, deteksi nol, dan kegagalan jaringan.
+Tiga kondisi konfigurasi pertama memakai `NOT_CONFIGURED`; readiness menolak
+arsip tanpa manifest format `pcd1`. Arsip yang valid tetap dapat memberikan
+`no_data` untuk tanggal yang tidak dicakupnya. Tidak ada fallback diam-diam dari
+arsip ke live FIRMS. UI menjelaskan keterlambatan standard processing dan cara
+mengambil ulang hasil tersimpan setelah sumber diperbaiki. Semua 288 karakter
+em dash pada 53 berkas teks proyek terlacak diganti dengan tanda `-`.
+
+Bukti lokal pada perubahan ini:
+
+- Build produksi default Turbopack, typecheck, kontrak dan 11 frontend checks lulus.
+- Suite Node lengkap: 310 kasus, 271 lulus, 39 skip, nol gagal.
+- Suite Python lengkap pada kode terakhir: 185 kasus, 168 lulus, 17 skip, nol
+  gagal. Setelah penajaman penanganan konfigurasi terakhir, 12 tes Node
+  API/producer dijalankan ulang dan semuanya lulus.
+- Browser produksi: 21 checkpoint, 21 request analisis sintetis, nol exception
+  runtime; desktop dan mobile ID. Build ID `U8RCNZ_lzfUJ3F3cSi3WW`, laporan selesai
+  `2026-11-15T12:59:00.839Z`. Mencakup raw detections Kalimantan saat estimasi
+  unsupported, rentang sumber, nol vs null, konfigurasi kosong, koneksi NASA,
+  retensi hasil, ekspor, reload/resume dan pergantian hasil.
+- Artefak lokal: `.cache/analysis-fix-node-tests.log`,
+  `.cache/analysis-fix-python-tests.log`,
+  `.cache/verification-2026-11-15/browser/result.json`, dan hasil probe
+  `.cache/hosted-ready.json` / `.cache/hosted-analysis.json`.
+
+Pengujian browser memakai respons NASA sintetis dan basemap diblokir. Pemeriksaan
+hosted membuktikan kegagalan yang dilaporkan, belum membuktikan penyebab internal
+atau pemulihannya. Perlu memeriksa konfigurasi sumber pada service pipeline yang
+sudah ada, lalu melakukan redeploy dan bounded live verification. Tidak ada
+commit, push, deployment, perubahan secret ataupun perubahan resource cloud
+dalam pekerjaan ini. Berkas gambar pengguna dan video yang dijeda dipertahankan.
+
+## Resolusi konflik PR #15 - bukti gabungan terbaru
 
 Penggabungan `dev` pada `d94a567` ke branch `Bagas-SPRINT-3-P2` pada `503985a` disiapkan di worktree terpisah. Empat konflik diselesaikan pada `research-panel.tsx`, `local-research-client.ts`, `research-producer.ts` dan `local-research-cache.test.mjs`. Pemulihan indeks/checkpoint, retensi tanpa delete otomatis, kapasitas/413/Retry-After serta tes PR dipertahankan bersama bug fixes storage, pembatalan, pergantian hasil dan sanitasi transport dari dev.
 
@@ -14,7 +112,7 @@ QA browser mereproduksi masalah pemulihan hasil setelah reload: pemulihan draft 
 
 Checkout dev utama dipertahankan; resolusi ditujukan ke branch PR. Tidak ada deployment, migrasi database eksternal, perubahan secret atau resource cloud. FIRMS live, routing hosted dan review manusia tetap menjadi gate terpisah.
 
-## Bug sweep lanjutan — hasil terbaru
+## Bug sweep lanjutan - hasil terbaru
 
 Basis tetap `26365c7`, dengan perubahan working tree dari kelanjutan Windows dan bug fixes berikut. Tidak ada commit, push, deployment atau operasi resource cloud. Kegagalan berikut direproduksi melalui tes regresi sebelum perbaikannya:
 
@@ -39,7 +137,7 @@ Skenario browser baru memverifikasi pemilihan hasil dashboard saat request terta
 
 `browser/result.json` adalah status run terbaru, dengan build ID dan timestamp. Bukti run lengkap pada build default Turbopack disalin ke `browser-turbopack.json` sebelum mengulang QA pada build Webpack. `failure.json/html/png` sekarang menyimpan reproduksi race analisis tersembunyi sebelum perbaikan; artefak tersebut bersifat historis. Log suite terbaru tetap `node-current.log` dan `python-current.log`. Bukti sesi awal berikut dipertahankan dengan angka dan cakupan aslinya.
 
-## Kelanjutan Windows awal — sebelum bug sweep
+## Kelanjutan Windows awal - sebelum bug sweep
 
 Basis saat mulai: `D:\NASA`, branch `dev`, HEAD `26365c7` (`interrupted`), working tree bersih. Bug fixes sesi sebelumnya sudah berada di commit tersebut. Sesi ini mengubah skrip QA dan dokumentasi; tidak ada perubahan kode aplikasi, commit, push, deployment, request NASA live atau operasi cloud. Catatan Linux di bawah tetap disimpan sebagai bukti historis.
 
@@ -81,7 +179,7 @@ node scripts/research-on-demand-browser-check.mjs
 
 FIRMS live, basemap eksternal, routing/secret hosting, performa mobile fisik, screen reader dan review peneliti tetap belum diverifikasi oleh QA sintetis ini. Tidak ada perluasan domain model; estimasi Kalteng/Papua tetap nullable. Catatan transport NASA dan akses cloud berikut berasal dari sesi Linux sebelumnya, bukan pemeriksaan ulang koneksi atau akun Windows.
 
-## Catatan sesi Linux sebelumnya — historis
+## Catatan sesi Linux sebelumnya - historis
 
 Basis: branch `dev`, commit `4b8a2a5`, ditambah perubahan working tree untuk sinkronisasi dokumentasi dan perbaikan storage/cancel/layout. Tidak ada commit, push, deployment, migrasi database atau perubahan resource cloud pada pekerjaan ini.
 

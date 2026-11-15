@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 3 (P2) — Orkhan
+# Sprint 3 (P2) - Orkhan
 
 **Fokus:** Penguatan, evaluasi tambahan dan kesiapan rilis.\
 **Reviewer utama:** Nathan.\
@@ -22,9 +22,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P2-O1 — Benchmark interaksi peta dan kalender
+### R2-P2-O1 - Benchmark interaksi peta dan kalender
 
-- [ ] **Selesai dan direview** — estimasi 6 poin.
+- [ ] **Selesai dan direview** - estimasi 6 poin.
 
 **Pekerjaan:** Ukur pan/zoom, toggle, polygon besar, perubahan periode, data padat dan mobile pada perangkat/jaringan yang dicatat.
 
@@ -32,9 +32,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-O1, R2-P1-O2
 
-### R2-P2-O2 — Uji tugas bersama peneliti
+### R2-P2-O2 - Uji tugas bersama peneliti
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Uji pilih AOI, analisis historis, baca anomali, tandai lokasi, penugasan dan ekspor dengan pengguna sasaran bila tersedia.
 
@@ -42,9 +42,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-O4
 
-### R2-P2-O3 — Audit aksesibilitas dan edge case
+### R2-P2-O3 - Audit aksesibilitas dan edge case
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 **Pekerjaan:** Tinjau ramp warna count/anomali, keyboard, fokus, zoom teks, EN/ID, nama wilayah panjang, no-data serta hasil parsial pada desktop/mobile.
 
@@ -52,9 +52,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-O1, R2-P1-O2, R2-P1-O4
 
-### R2-P2-O4 — Acceptance riset dan demo terukur
+### R2-P2-O4 - Acceptance riset dan demo terukur
 
-- [ ] **Selesai dan direview** — estimasi 4 poin.
+- [ ] **Selesai dan direview** - estimasi 4 poin.
 
 **Pekerjaan:** Rekam satu alur lintas anggota dari polygon ke kalender, perbandingan, lokasi tim, beberapa pemeriksaan dan ekspor; siapkan materi bersama tim.
 

@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 1 (P0) — Orkhan
+# Sprint 1 (P0) - Orkhan
 
 **Fokus:** Fondasi riset dan pengalaman peta.\
 **Reviewer utama:** Nathan.\
@@ -16,9 +16,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P0-O1 — Satu peta dan navigasi tanpa reload analisis
+### R2-P0-O1 - Satu peta dan navigasi tanpa reload analisis
 
-- [x] **Selesai dan direview** — estimasi 7 poin.
+- [x] **Selesai dan direview** - estimasi 7 poin.
 - [x] Satu workspace, toggle heatmap/titik, kamera terpisah, cache dan hasil tetap saat navigasi; diuji di browser dengan NRT sintetis.
 - [x] Layer satelit dan label wilayah terpasang; kegagalan tile tidak menghapus overlay.
 - [x] Verifikasi ketajaman citra/label live pada jaringan normal dan review Nathan.
@@ -29,9 +29,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-### R2-P0-O2 — Editor polygon penelitian
+### R2-P0-O2 - Editor polygon penelitian
 
-- [x] **Selesai dan direview** — estimasi 5 poin.
+- [x] **Selesai dan direview** - estimasi 5 poin.
 - [x] Draw, edit koordinat, undo, batal, validasi polygon, revisi draft dan outline area hasil.
 - [x] Polygon non-persegi, antimeridian, penolakan geometri invalid serta interaksi keyboard/pointer diuji. Preset nama dan navigasi koordinat tersedia.
 - [x] Review Nathan; persistensi/revisi server diverifikasi saat endpoint area v2 tersedia.
@@ -42,9 +42,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** Tidak ada task rekan yang menghalangi pekerjaan mandiri; gunakan kontrak v2.
 
-### R2-P0-O3 — Rentang tanggal dan Analisis area
+### R2-P0-O3 - Rentang tanggal dan Analisis area
 
-- [x] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** - estimasi 4 poin.
 - [x] Tanggal bebas, pembanding, default referensi 10 tahun dan pengajuan eksplisit melalui Analisis area.
 - [x] Retry mempertahankan requestId; queued/running, cancellation dan respons usang diuji dengan backend sintetis.
 - [ ] Integrasi B2 memakai sesi/workspace nyata, kebijakan kualitas yang disepakati, serta review Nathan.
@@ -55,9 +55,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-O2, R2-P0-B2
 
-### R2-P0-O4 — Consumer v2 dan UI state yang jujur
+### R2-P0-O4 - Consumer v2 dan UI state yang jujur
 
-- [x] **Selesai dan direview** — estimasi 4 poin.
+- [x] **Selesai dan direview** - estimasi 4 poin.
 - [x] Consumer research-2 memvalidasi schema/konteks; contoh sintetis, ringkasan kalender/detail, pemisahan v1 dan label raw/estimasi tersedia.
 - [x] EN/ID, status job/data, missing data, desktop/mobile, fokus keyboard, font dan Dashboard diperiksa; 31 tes serta browser acceptance lulus.
 - [ ] Integrasi B3/N4 dengan hasil nyata dan review Nathan.

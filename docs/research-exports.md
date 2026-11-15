@@ -1,6 +1,6 @@
 # R2-P1-B4: private CSV and protected manifest exports
 
-> **Scope legacy server — 15 November 2026.** Migrasi, akun, database dan worker di bawah berlaku untuk API privat `/api/v2`, bukan prasyarat ekspor UI aktif tanpa login. UI mengekspor hasil lokal ke CSV/JSON/PNG; lihat [status aktif](current-status.md). Pengaktifan layanan server merupakan operasi terpisah.
+> **Scope legacy server - 15 November 2026.** Migrasi, akun, database dan worker di bawah berlaku untuk API privat `/api/v2`, bukan prasyarat ekspor UI aktif tanpa login. UI mengekspor hasil lokal ke CSV/JSON/PNG; lihat [status aktif](current-status.md). Pengaktifan layanan server merupakan operasi terpisah.
 
 Exports consume published P1 AnalysisResult/AnalysisManifest and verified observations
 artifacts. They do not query the current detection store, refit a model, rewrite an

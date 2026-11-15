@@ -116,7 +116,7 @@ class Snapshot:
 def prepare(data, key, fetch=None, deadline_seconds=95):
     """Fetch at most one primary/comparison calendar month plus its actual reference windows."""
     if not key:
-        raise ValueError("DEPENDENCY_UNAVAILABLE")
+        raise ValueError("NOT_CONFIGURED")
     fetch = fetch or download
     deadline = time.monotonic() + deadline_seconds
     polygon = Polygon(data["area"]["geometry"], max_vertices=501)

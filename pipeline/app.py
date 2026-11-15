@@ -5,6 +5,8 @@ from pathlib import Path
 from threading import BoundedSemaphore
 
 from research_worker import analyze, fingerprint, produce
+from area_counts import DEFAULT_SOURCES
+from detection_store import source_coverage
 
 MAX_REQUEST_BYTES = 100_000
 MAX_RESPONSE_BYTES = 4_000_000
@@ -35,7 +37,7 @@ def app(environ, start_response):
                 root = Path(configured)
                 if not root.is_absolute():
                     root = Path(__file__).resolve().parent / root
-                if not root.is_dir():
+                if not root.is_dir() or not any(source_coverage(root, source) for source in DEFAULT_SOURCES):
                     raise ValueError("UNAVAILABLE")
             elif os.environ.get("FIRMS_MAP_KEY", "").strip():
                 # Configuration readiness only: do not spend NASA quota on probes.
@@ -76,9 +78,9 @@ def app(environ, start_response):
         return respond("400 Bad Request", {"code": "INVALID_REQUEST"})
     configured = os.environ.get("RESEARCH_DATA_DIR")
     remote = os.environ.get("FIRMS_BLOB_BASE_URL")
-    on_demand = request["action"] == "analyze" and not configured and os.environ.get("FIRMS_MAP_KEY")
+    on_demand = request["action"] == "analyze" and not configured and os.environ.get("FIRMS_MAP_KEY", "").strip()
     if not configured and not remote and not on_demand:
-        return respond("503 Service Unavailable", {"code": "DEPENDENCY_UNAVAILABLE"})
+        return respond("503 Service Unavailable", {"code": "NOT_CONFIGURED"})
     if not _running.acquire(blocking=False):
         return respond("503 Service Unavailable", {"code": "CAPACITY_LIMIT"})
     try:
@@ -94,11 +96,11 @@ def app(environ, start_response):
             if not root.is_absolute():
                 root = Path(__file__).resolve().parent / root
             if not root.is_dir():
-                raise ValueError("MISSING_DATASET")
+                raise ValueError("NOT_CONFIGURED")
         value = analyze(root, request["run"]) if request["action"] == "analyze" else fingerprint(root) if request["action"] == "fingerprint" else produce(root, request["run"])
         return respond("200 OK", value)
     except Exception as error:
-        code = str(error) if str(error) in ("CAPACITY_LIMIT", "RATE_LIMITED", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
+        code = str(error) if str(error) in ("NOT_CONFIGURED", "CAPACITY_LIMIT", "RATE_LIMITED", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
         return respond("429 Too Many Requests" if code == "RATE_LIMITED" else "503 Service Unavailable", {"code": code})
     finally:
         _running.release()

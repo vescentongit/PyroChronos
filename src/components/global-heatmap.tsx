@@ -496,7 +496,7 @@ function HeatSurface({
       )}
       <div className="global-map-tag">
         {sketch.editing
-          ? t("Sketsa area — perubahan belum digunakan", "Area sketch — changes not applied")
+          ? t("Sketsa area - perubahan belum digunakan", "Area sketch - changes not applied")
           : research
           ? research.label
           : `NASA FIRMS · ${data?.source || query.source} · ${data?.hours ?? query.hours}h`}
@@ -553,7 +553,7 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
   const [researchOverlay, setResearchOverlay] = useState<ResearchOverlay>({
     geometry: null,
     features: [],
-    label: "Research · —",
+    label: "Research · -",
   });
   const addVertex = useCallback(
     (vertex: Vertex) =>
@@ -573,7 +573,7 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
   const date = (value?: string) =>
     value
       ? `${new Date(value).toLocaleString(language === "id" ? "id-ID" : "en-GB", { timeZone: "UTC" })} UTC`
-      : "—";
+      : "-";
   const data = state.data,
     loading = state.loading;
   const stale =
@@ -875,19 +875,19 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
               ? t("Memperbarui hotspot otomatis…", "Updating hotspots automatically…")
               : !data
                 ? state.failed
-                  ? t("Data belum tersedia — coba muat ulang", "Data unavailable — retry loading")
+                  ? t("Data belum tersedia - coba muat ulang", "Data unavailable - retry loading")
                   : t("Menunggu data FIRMS", "Waiting for FIRMS data")
                 : stale
                   ? t(
-                      "Data lama — periksa waktu",
-                      "Stale data — check timestamps",
+                      "Data lama - periksa waktu",
+                      "Stale data - check timestamps",
                     )
                   : t("Data FIRMS tersedia", "FIRMS data available")}
           </strong>
           <span>
             {data && !loading
               ? `${data.total.toLocaleString(language === "id" ? "id-ID" : "en-GB")} ${t("deteksi dalam area yang dimuat", "detections in loaded area")}`
-              : "—"}
+              : "-"}
           </span>
           <span>
             {t("Diunduh", "Fetched")}: {date(data?.fetchedAt)}
@@ -1027,7 +1027,7 @@ export default function GlobalHeatmap({ language, requestedMode, onModeChange, r
                   </td>
                   <td>{date(point.observedAt)}</td>
                   <td>{point.satellite}</td>
-                  <td>{point.frp ?? "—"}</td>
+                  <td>{point.frp ?? "-"}</td>
                   <td>{point.confidence}</td>
                 </tr>
               ))}

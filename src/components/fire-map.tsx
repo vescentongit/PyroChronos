@@ -204,8 +204,8 @@ export default function FireMap({
 
               <text x="35" y="335" fontSize="10" fill="#bdbdbd">
                 {language === "id"
-                  ? "Koordinat relatif — tanpa informasi medan"
-                  : "Relative coordinates — no terrain information"}
+                  ? "Koordinat relatif - tanpa informasi medan"
+                  : "Relative coordinates - no terrain information"}
               </text>
             </svg>
           </div>

@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../docs/current-status.md).
 
-# PyroChronos — Task Tracker Riset v2
+# PyroChronos - Task Tracker Riset v2
 
 Acuan keputusan: [product.md](../product.md), 10 November 2026. Rincian per orang, task, dependensi, dan checklist PR: [3 sprint](SPRINT-PLAN.md). Kontrak target: [API v2](../docs/contracts/api-v2.md).
 
@@ -16,35 +16,35 @@ Acuan keputusan: [product.md](../product.md), 10 November 2026. Rincian per oran
 - [x] Checklist v1 yang sebelumnya selesai dipertahankan dalam [arsip](archive/2026-11-10-completed-v1.md), bukan dicentang ulang sebagai pekerjaan v2.
 - [ ] Acceptance versi aktif: build Webpack/tes/browser sintetis lulus; build default Turbopack dibatasi lingkungan, FIRMS live gagal koneksi, hosted routing/kapasitas serta review manusia masih terbuka. Akun/workspace server tidak diwajibkan untuk versi lokal.
 
-## P0 — Fondasi riset dan perbaikan peta
+## P0 - Fondasi riset dan perbaikan peta
 
 ### Nathan
 
 P0 selesai/direview sesuai catatan PR #7 pada rincian sprint. Backfill global bukan prasyarat aktif.
 
-- [x] **R2-P0-N1** — Arsip global yang mempertahankan tanggal dan posisi asli (5 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [x] **R2-P0-N2** — Kueri polygon bebas dan irisan waktu (8 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [x] **R2-P0-N3** — Count per sumber dan manifest analisis (4 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
-- [x] **R2-P0-N4** — Adapter producer ke research-2 (3 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N1** - Arsip global yang mempertahankan tanggal dan posisi asli (5 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N2** - Kueri polygon bebas dan irisan waktu (8 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N3** - Count per sumber dan manifest analisis (4 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
+- [x] **R2-P0-N4** - Adapter producer ke research-2 (3 poin). [Spesifikasi](Nathan/SPRINT-1-P0.md).
 
 ### Bagas
 
-- [ ] **R2-P0-B1** — Skema workspace, akun individual, AOI dan revisi (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
-- [ ] **R2-P0-B2** — Pengajuan analisis dan antrean persisten (7 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
-- [ ] **R2-P0-B3** — Pembacaan hasil dan data spasial reusable (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
-- [ ] **R2-P0-B4** — Hak akses dan error lintas resource (3 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B1** - Skema workspace, akun individual, AOI dan revisi (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B2** - Pengajuan analisis dan antrean persisten (7 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B3** - Pembacaan hasil dan data spasial reusable (5 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
+- [ ] **R2-P0-B4** - Hak akses dan error lintas resource (3 poin). [Spesifikasi](Bagas/SPRINT-1-P0.md).
 
 ### Orkhan
 
 Implementasi frontend P0 tersedia; 31 tes, typecheck, build dan browser acceptance mandiri lulus. Checklist akhir tetap terbuka untuk integrasi data/backend nyata, imagery live dan review. [Bukti dan batas pengujian](../docs/orkhan-sprint-1-v2-progress.md).
 
-- [ ] **R2-P0-O1** — Satu peta dan navigasi tanpa reload analisis (7 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
-- [ ] **R2-P0-O2** — Editor polygon penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
-- [ ] **R2-P0-O3** — Rentang tanggal dan Analisis area (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
-- [ ] **R2-P0-O4** — Consumer v2 dan UI state yang jujur (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O1** - Satu peta dan navigasi tanpa reload analisis (7 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O2** - Editor polygon penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O3** - Rentang tanggal dan Analisis area (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
+- [ ] **R2-P0-O4** - Consumer v2 dan UI state yang jujur (4 poin). [Spesifikasi](Orkhan/SPRINT-1-P0.md).
 
 
-## P1 — Fitur inti versi pertama
+## P1 - Fitur inti versi pertama
 
 Pembaruan 13 November 2026: O1–O4 Orkhan sudah diimplementasikan pada alur lokal tanpa login, dengan kalender/perbandingan/anomali, lokasi, penugasan/pemeriksaan/koreksi dan ekspor. Acceptance sintetis desktop/mobile serta review finish otomatis lulus; review manusia Nathan dan demonstrasi dataset aktif belum dilakukan. Checklist selesai/direview tetap terbuka. Kolaborasi server bukan prasyarat versi lokal. [Bukti Sprint 2](../docs/orkhan-sprint-2-progress.md).
 
@@ -52,50 +52,50 @@ Pembaruan 13 November 2026: O1–O4 Orkhan sudah diimplementasikan pada alur lok
 
 Implementasi P1 dan integrasi model/baseline worker tersedia; review Bagas serta acceptance menyeluruh tetap terbuka.
 
-- [ ] **R2-P1-N1** — Pairing dan acuan setara MODIS (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
-- [ ] **R2-P1-N2** — Evaluasi count mentah, baseline, dan EQM (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
-- [ ] **R2-P1-N3** — Referensi bergerak 10 tahun dan periode parsial (5 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
-- [ ] **R2-P1-N4** — Kalender, detail dan perbandingan konsisten (3 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N1** - Pairing dan acuan setara MODIS (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N2** - Evaluasi count mentah, baseline, dan EQM (6 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N3** - Referensi bergerak 10 tahun dan periode parsial (5 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
+- [ ] **R2-P1-N4** - Kalender, detail dan perbandingan konsisten (3 poin). [Spesifikasi](Nathan/SPRINT-2-P1.md).
 
 ### Bagas
 
-- [ ] **R2-P1-B1** — Worker nyata dan publikasi atomik (5 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
-- [ ] **R2-P1-B2** — Lokasi pemantauan persisten (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
-- [ ] **R2-P1-B3** — Penugasan, pemeriksaan, revision dan audit (7 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
-- [ ] **R2-P1-B4** — Ekspor CSV dan manifest yang terlindungi (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B1** - Worker nyata dan publikasi atomik (5 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B2** - Lokasi pemantauan persisten (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B3** - Penugasan, pemeriksaan, revision dan audit (7 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
+- [ ] **R2-P1-B4** - Ekspor CSV dan manifest yang terlindungi (4 poin). [Spesifikasi](Bagas/SPRINT-2-P1.md).
 
 ### Orkhan
 
-- [ ] **R2-P1-O1** — Burning calendar tahun x bulan (6 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
-- [ ] **R2-P1-O2** — Perbandingan, anomali dan metodologi (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
-- [ ] **R2-P1-O3** — Detail hotspot dan daftar lokasi tim (4 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
-- [ ] **R2-P1-O4** — UI pemeriksaan dan ekspor penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O1** - Burning calendar tahun x bulan (6 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O2** - Perbandingan, anomali dan metodologi (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O3** - Detail hotspot dan daftar lokasi tim (4 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
+- [ ] **R2-P1-O4** - UI pemeriksaan dan ekspor penelitian (5 poin). [Spesifikasi](Orkhan/SPRINT-2-P1.md).
 
 
-## P2 — Penguatan dan evaluasi tambahan
+## P2 - Penguatan dan evaluasi tambahan
 
 Orkhan O1/O3: benchmark dan audit otomatis tersedia dengan batas pengujian eksplisit; [hasil Sprint 3](../docs/orkhan-sprint-3-progress.md). O2 menunggu peneliti (belum tersedia menurut pengguna), O4 serta review Nathan tetap terbuka. Checklist selesai/direview di bawah tidak ditutup oleh tes sintetis.
 
 ### Nathan
 
-- [ ] **R2-P2-N1** — Sensitivitas NRT versus standard (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
-- [ ] **R2-P2-N2** — Benchmark transfer lintas domain (6 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
-- [ ] **R2-P2-N3** — Eksperimen QA coverage terpisah (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
-- [ ] **R2-P2-N4** — Paket reproduksibilitas ilmiah (4 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N1** - Sensitivitas NRT versus standard (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N2** - Benchmark transfer lintas domain (6 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N3** - Eksperimen QA coverage terpisah (5 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
+- [ ] **R2-P2-N4** - Paket reproduksibilitas ilmiah (4 poin). [Spesifikasi](Nathan/SPRINT-3-P2.md).
 
 ### Bagas
 
-- [ ] **R2-P2-B1** — Benchmark kapasitas dan biaya job (6 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
-- [ ] **R2-P2-B2** — Ketahanan antrean dan pemulihan (4 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
-- [ ] **R2-P2-B3** — Review isolasi dan retensi workspace (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
-- [ ] **R2-P2-B4** — Deployment dan observabilitas (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B1** - Benchmark kapasitas dan biaya job (6 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B2** - Ketahanan antrean dan pemulihan (4 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B3** - Review isolasi dan retensi workspace (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
+- [ ] **R2-P2-B4** - Deployment dan observabilitas (5 poin). [Spesifikasi](Bagas/SPRINT-3-P2.md).
 
 ### Orkhan
 
-- [ ] **R2-P2-O1** — Benchmark interaksi peta dan kalender (6 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
-- [ ] **R2-P2-O2** — Uji tugas bersama peneliti (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
-- [ ] **R2-P2-O3** — Audit aksesibilitas dan edge case (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
-- [ ] **R2-P2-O4** — Acceptance riset dan demo terukur (4 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O1** - Benchmark interaksi peta dan kalender (6 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O2** - Uji tugas bersama peneliti (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O3** - Audit aksesibilitas dan edge case (5 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
+- [ ] **R2-P2-O4** - Acceptance riset dan demo terukur (4 poin). [Spesifikasi](Orkhan/SPRINT-3-P2.md).
 
 ## Acceptance lintas tim
 

@@ -54,6 +54,17 @@ class ServiceTests(unittest.TestCase):
             finally:
                 service._running.release()
 
+    def test_analyze_with_empty_archive_returns_configuration_error(self):
+        with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {"RESEARCH_DATA_DIR": root, "FIRMS_MAP_KEY": "synthetic-key"}):
+            status, value = self.call({"action": "analyze", "run": {"input": {"dataset": {"sources": ["MODIS_SP", "VIIRS_SNPP_SP"]}}}})
+            self.assertEqual((status, value), (503, {"code": "NOT_CONFIGURED"}))
+
+    def test_missing_historical_configuration_is_not_a_data_or_network_result(self):
+        request = {"action": "analyze", "run": {"input": {"dataset": {"sources": ["MODIS_SP", "VIIRS_SNPP_SP"]}}}}
+        for root in ("", "/missing/private-sentinel"):
+            with self.subTest(root=root), patch.dict(os.environ, {"RESEARCH_DATA_DIR": root, "FIRMS_BLOB_BASE_URL": "", "FIRMS_MAP_KEY": " "}):
+                self.assertEqual(self.call(request), (503, {"code": "NOT_CONFIGURED"}))
+
 
 if __name__ == "__main__":
     unittest.main()

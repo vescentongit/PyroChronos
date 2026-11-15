@@ -1,6 +1,6 @@
-# Bagas Sprint 3 — Tahap 1 dan R2-P2-B1
+# Bagas Sprint 3 - Tahap 1 dan R2-P2-B1
 
-Kelanjutan implementasi: [Tahap 3 — policy kapasitas dan backpressure](bagas-sprint-3-backpressure.md).
+Kelanjutan implementasi: [Tahap 3 - policy kapasitas dan backpressure](bagas-sprint-3-backpressure.md).
 Angka dan deskripsi guard di laporan ini adalah snapshot saat benchmark Tahap 2;
 perubahan sesudahnya dicatat pada laporan Tahap 3 tersebut.
 

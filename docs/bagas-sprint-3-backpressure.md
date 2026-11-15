@@ -1,4 +1,4 @@
-# Bagas Sprint 3 — Tahap 3: batas kapasitas dan backpressure
+# Bagas Sprint 3 - Tahap 3: batas kapasitas dan backpressure
 
 Implementasi `R2-P2-B1`, 14 November 2026. Dasar keputusan adalah
 [benchmark Tahap 1/2](bagas-sprint-3-capacity.md) dan JSON sampel anonim/native
