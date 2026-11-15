@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Sprint 2 (P1) — Nathan
+# Sprint 2 (P1) - Nathan
 
 **Fokus:** Kalender harmonisasi dan tindak lanjut tim.\
 **Reviewer utama:** Bagas.\
@@ -16,9 +16,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 ## Spesifikasi task
 
-### R2-P1-N1 — Pairing dan acuan setara MODIS
+### R2-P1-N1 - Pairing dan acuan setara MODIS
 
-- [ ] **Selesai dan direview** — estimasi 6 poin.
+- [ ] **Selesai dan direview** - estimasi 6 poin.
 
 *Implementasi selesai, menunggu review Bagas:* konfigurasi beku `harmonization-config-1` (satelit, sel 1°, bulan UTC, split latih 2013–2018 / validasi 2019–2020 / uji 2021–2025), 156 bulan berpasangan, manifest pasangan dengan checksum arsip, aturan overlap dan pengaruh lintasan, tes kebocoran split. Titik asli tidak diubah. Lihat [harmonization.md](../../docs/data/harmonization.md).
 
@@ -28,9 +28,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P0-N3, R2-P0-N4
 
-### R2-P1-N2 — Evaluasi count mentah, baseline, dan EQM
+### R2-P1-N2 - Evaluasi count mentah, baseline, dan EQM
 
-- [ ] **Selesai dan direview** — estimasi 6 poin.
+- [ ] **Selesai dan direview** - estimasi 6 poin.
 
 *Implementasi selesai, menunggu review Bagas:* raw_alignment, regresi (rasio global/domain, affine) dan EQM dievaluasi pada sampel yang sama dengan MAE, bias, dukungan, musim, kelompok hitungan dan domain. Terpilih rasio global (MAE uji 12,53 melawan 130,64 untuk VIIRS apa adanya). Estimasi hanya terbit di lima domain tervalidasi; **Asia Tenggara maritim (Kalteng/Papua), Asia Selatan/daratan, Eropa dan Amerika Utara ditolak dan estimasinya `null`**. Keputusan tercatat di `pipeline/models/evaluation-*.json`.
 
@@ -40,9 +40,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N1
 
-### R2-P1-N3 — Referensi bergerak 10 tahun dan periode parsial
+### R2-P1-N3 - Referensi bergerak 10 tahun dan periode parsial
 
-- [ ] **Selesai dan direview** — estimasi 5 poin.
+- [ ] **Selesai dan direview** - estimasi 5 poin.
 
 *Implementasi selesai, menunggu review Bagas:* referensi median Y−10..Y−1 pada rentang bulan-hari yang sama, minimum tahun valid 4 (dipilih lewat backtest MODIS 2000–2025 dengan aturan beku), tahun target/mendatang tidak masuk, tahun tanpa data hilang (bukan nol), 29 Februari diskalakan, baseline nol/datar tanpa skor, `insufficient_history` eksplisit. Teruji di `test_harmonization.py`.
 
@@ -52,9 +52,9 @@ Dependensi di bawah merupakan syarat integrasi akhir, bukan larangan mulai codin
 
 **Dependensi integrasi:** R2-P1-N2
 
-### R2-P1-N4 — Kalender, detail dan perbandingan konsisten
+### R2-P1-N4 - Kalender, detail dan perbandingan konsisten
 
-- [ ] **Selesai dan direview** — estimasi 3 poin.
+- [ ] **Selesai dan direview** - estimasi 3 poin.
 
 *Implementasi selesai, menunggu review Bagas:* `research_adapter.py` menghasilkan research-2 bulanan (semua bulan termasuk `no_data`), detail harian aditif, raw per sumber, ringkasan dua periode dengan laju per hari dan persen perubahan `null` bila pembanding nol, ekspor CSV (`research_export.py`), serta dua contoh nyata lolos kontrak di `docs/data/examples/`. `research_worker.py` sudah memasok model/baseline dan estimasi harian; acceptance integrasi menyeluruh tetap perlu bukti.
 

@@ -66,7 +66,8 @@ them for manual inspection rather than inventing or deleting history.
 Deploy checks/readiness accept local on-demand configuration using a server-only
 `FIRMS_MAP_KEY`. This mode checks configuration only: probes never call NASA,
 validate the key against NASA, or promise source availability. Local stores still
-require an existing directory; private Blob fallback probes its catalog; hosted
+require an existing directory and at least one `pcd1` source manifest for
+`MODIS_SP` or `VIIRS_SNPP_SP`; private Blob fallback probes its catalog; hosted
 app readiness still probes the private binding. Legacy database checks and
 separate opt-in migrations remain required only when enabled.
 
@@ -77,6 +78,29 @@ remain hidden. The existing retryable policy is unchanged: capacity, rate limit
 and dependency unavailable advertise retry; the detailed on-demand diagnostics
 do not advertise automatic retry. B1 429/503 retry headers and non-retryable 413
 remain as specified below.
+
+An empty `RESEARCH_DATA_DIR` folder previously passed readiness and produced a
+successful `no_data` analysis. It now fails readiness and returns `NOT_CONFIGURED`
+for analysis. For direct FIRMS requests, unset `RESEARCH_DATA_DIR` on the existing
+`pipeline` service and configure its server-only `FIRMS_MAP_KEY`. A configured local
+archive deliberately takes precedence over live requests; there is no silent
+fallback that could mix archive and live provenance. These settings are separate
+from `RESEARCH_ARTIFACT_ROOT`, which stores legacy export artifacts, not detections.
+Do not copy a workstation path such as `D:\NASA-Directory\RESEARCH_DATA` into
+Vercel's `RESEARCH_DATA_DIR`: the hosted Python service cannot access that Windows
+folder. For the on-demand product path, remove this variable from the relevant
+Vercel environment and redeploy the existing project; retain the NASA key for
+both services. Do not replace the path with an empty hosted folder.
+After correcting the source and deploying the fix, enable **Fetch saved parts
+again from NASA** before retrying a previously saved empty analysis.
+
+The globe's recent snapshot is independent of historical standard-processing
+availability. NASA documents a multi-month lag for SP products; exact date ranges
+must come from the availability response, not a fixed delay assumption. See
+[NASA's FIRMS API guide](https://firms.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html).
+Missing source coverage, successful zero detections, network failures and
+unsupported harmonized estimates remain distinct. In particular, an unsupported
+Kalimantan estimate does not suppress the original source detections.
 
 Windows merge verification, 2026-11-15: 300/300 Node tests plus 13/13
 frontend/hotspots and 178/178 Python tests passed without skips using temporary

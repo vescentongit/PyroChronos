@@ -127,12 +127,12 @@ def render(result):
     rows = {}
     for m in result["months"]:
         value = m["detections"]
-        text = "—" if value is None else f"{value}{'*' if m['status'] == 'partial' else ''}"
+        text = "-" if value is None else f"{value}{'*' if m['status'] == 'partial' else ''}"
         rows.setdefault(m["month"][:4], []).append(text)
     width = max(6, *(len(t) for r in rows.values() for t in r))
     lines = ["year " + "".join(f"{cal.month_abbr[n]:>{width + 1}}" for n in range(1, 13))]
     lines += [f"{year} " + "".join(f"{t:>{width + 1}}" for t in texts) for year, texts in rows.items()]
-    lines.append("med  " + "".join(f"{('—' if c['median'] is None else c['median']):>{width + 1}}" for c in result["climatology"].values()))
+    lines.append("med  " + "".join(f"{('-' if c['median'] is None else c['median']):>{width + 1}}" for c in result["climatology"].values()))
     return "\n".join(lines)
 
 
@@ -153,7 +153,7 @@ def main(argv=None):
     path = args.out / f"{args.source}_{result['area']['id']}.json"
     path.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
     print(render(result))
-    print(f"\n{result['unit']} per month, {args.source}, not harmonized; * partial month, — no archive coverage -> {path}")
+    print(f"\n{result['unit']} per month, {args.source}, not harmonized; * partial month, - no archive coverage -> {path}")
     return 0
 
 

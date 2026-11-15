@@ -1,4 +1,4 @@
-# Tahap 6 — isolasi, pencabutan akses dan retensi B3
+# Tahap 6 - isolasi, pencabutan akses dan retensi B3
 
 Audit 15 November 2026, branch Bagas-SPRINT-3-P2. Berlaku bagi API v2 server
 legacy dan penyimpanan browser anonim yang **terpisah**. Tidak menambahkan login

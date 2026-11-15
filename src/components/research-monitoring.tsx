@@ -107,7 +107,7 @@ export function ResearchMonitoring({ result, observations, activeDetection, engl
       {selected && <form className="research-local-form" onSubmit={mark}>
         <h3>{t("Tandai lokasi", "Mark location")}</h3>
         <p>{selected.id} · {selected.observedAt} UTC · {selected.sourceId} · {selected.coordinates.join(", ")}</p>
-        <p>Confidence: {selected.confidence} · FRP: {selected.frpMw ?? "—"} MW</p>
+        <p>Confidence: {selected.confidence} · FRP: {selected.frpMw ?? "-"} MW</p>
         <label>{t("Nama lokasi", "Location name")}<input name="name" required maxLength={200} /></label>
         <label>{t("Ditandai oleh (nama lokal)", "Marked by (local name)")}<input name="creator" required maxLength={200} /></label>
         <button className="primary" disabled={busy}>{t("Simpan lokasi", "Save location")}</button>

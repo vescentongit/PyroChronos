@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { operationalStatus } from "../src/lib/research-operational-status.ts";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 test("separate migrate action is repeatable on dedicated native schema; status reads never migrate", {
@@ -18,6 +18,8 @@ test("separate migrate action is repeatable on dedicated native schema; status r
 	const client = new PrismaClient({ datasourceUrl: url.href });
 	const old = { ...process.env };
 	const root = await mkdtemp(join(tmpdir(), "ready-native-"));
+	await mkdir(join(root, "MODIS_SP"));
+	await writeFile(join(root, "MODIS_SP", "manifest.jsonl"), '{"detections_format":"pcd1","year":2019}\n');
 	try {
 		await client.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
 		Object.assign(process.env, {

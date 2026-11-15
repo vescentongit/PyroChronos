@@ -69,7 +69,7 @@ const labels: Record<string, [string, string]> = {
     "Analisis historis gagal diproses. Bagian tersimpan tetap tersedia; coba lagi.",
     "Historical analysis could not be processed. Saved parts remain available; retry.",
   ],
-  NOT_CONFIGURED: ["Sumber data historis belum dikonfigurasi pada server.", "Historical data is not configured on the server."],
+  NOT_CONFIGURED: ["Sumber historis server belum siap atau arsipnya kosong. Hubungi pengelola situs untuk memeriksa sumber data. Ini bukan hasil nol deteksi.", "The server's historical source is not ready or its archive is empty. Contact the site administrator to check the data source. This is not a zero-detection result."],
   TIMEOUT: ["Pengambilan data historis melewati batas waktu. Coba lagi atau perkecil area/periode.", "Historical data retrieval timed out. Retry or reduce the area/period."],
   UPSTREAM_DENIED: ["NASA menolak akses data historis. Konfigurasi akses server perlu diperiksa.", "NASA denied access to historical data. The server access configuration needs checking."],
   UNAUTHENTICATED: [
@@ -204,6 +204,10 @@ function ResearchPanel({
   const [error, setError] = useState("");
   const [job, setJob] = useState<ResearchJob | null>(null);
   const [result, setResult] = useState<ResearchAnalysisResult | null>(null);
+  const resultHeading = useRef<HTMLHeadingElement>(null);
+  const dailyHeading = useRef<HTMLHeadingElement>(null);
+  const focusNextResult = useRef(false);
+  const [monitoringOpen, setMonitoringOpen] = useState(false);
   const [sourceRanges, setSourceRanges] = useState<Record<string, [string, string]>>({});
   const [days, setDays] = useState<ReturnType<
     typeof researchDailyPageSchema.parse
@@ -215,7 +219,7 @@ function ResearchPanel({
   const [points, setPoints] = useState<ResearchOverlay["features"]>([]);
   const [observations, setObservations] = useState<Detection[]>([]);
   const [activeDetection, setActiveDetection] = useState<{ id: string } | null>(null);
-  const selectDetection = (id: string) => setActiveDetection({ id });
+  const selectDetection = (id: string) => { setMonitoringOpen(true); setActiveDetection({ id }); };
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [history, setHistory] = useState<ReturnType<typeof researchHistory>>([]);
   const request = useRef<ReturnType<typeof requestIdentity> | null>(null);
@@ -465,6 +469,7 @@ function ResearchPanel({
         },
       );
       if (current()) {
+        focusNextResult.current = true;
         publishResult(next, key);
         setHistory(researchHistory());
         setStatus("succeeded");
@@ -487,6 +492,7 @@ function ResearchPanel({
     abort.current?.abort();
     generation.current++;
     const next = researchAnalysisResultSchema.parse(demo.result);
+    focusNextResult.current = true;
     publishResult(next, "synthetic-fixture");
     setStatus("idle");
     setJob(null);
@@ -595,6 +601,17 @@ function ResearchPanel({
       if (!controller.signal.aborted) setLoadingPoints(false);
     }
   }
+  useEffect(() => {
+    if (!focusNextResult.current || !resultHeading.current) return;
+    focusNextResult.current = false;
+    resultHeading.current.focus({ preventScroll: true });
+    resultHeading.current.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }, [result?.id, resultsHost]);
+  useEffect(() => {
+    if (!days || !dailyHeading.current) return;
+    dailyHeading.current.focus({ preventScroll: true });
+    dailyHeading.current.scrollIntoView({ block: "nearest", behavior: "instant" });
+  }, [days]);
   useEffect(() => {
     if (!result) return;
     let active = true;
@@ -769,6 +786,7 @@ function ResearchPanel({
             />
           </label>
         </div>
+        <p className="global-note">{t("Analisis historis memakai MODIS_SP dan VIIRS_SNPP_SP. Data standard processing dapat tertinggal beberapa bulan dari hotspot terbaru. Rentang tanggal yang tersedia ditampilkan pada Cakupan sumber setelah analisis.", "Historical analysis uses MODIS_SP and VIIRS_SNPP_SP. Standard-processing data can lag recent hotspots by several months. Available date ranges appear under Source coverage after analysis.")}</p>
         <label className="research-checkbox">
           <input
             type="checkbox"
@@ -916,8 +934,10 @@ function ResearchPanel({
           </button>
         </div>
       </form>
-      <label><input type="checkbox" checked={refreshSaved} disabled={busy} onChange={event => setRefreshSaved(event.target.checked)} /> {t("Ambil ulang bagian tersimpan dari NASA", "Fetch saved parts again from NASA")}</label>
-      <p>{t("Kalender dimuat per bulan. Bagian tersimpan dipakai kembali saat melanjutkan, termasuk setelah halaman dimuat ulang; revisi NASA tidak diperiksa otomatis. Riwayat standard dan NRT tetap terpisah.", "The calendar loads by month. Saved parts are reused when resuming, including after a page reload; NASA revisions are not checked automatically. Standard and NRT histories stay separate.")}</p>
+      <details className="research-disclosure research-refresh"><summary>{t("Data tersimpan dan pengambilan ulang", "Saved data and refresh")}</summary>
+        <label><input type="checkbox" checked={refreshSaved} disabled={busy} onChange={event => setRefreshSaved(event.target.checked)} /> {t("Ambil ulang bagian tersimpan dari NASA", "Fetch saved parts again from NASA")}</label>
+        <p>{t("Bagian selesai dipakai kembali saat melanjutkan analisis. Aktifkan pengambilan ulang untuk memeriksa revisi NASA; hasil lama tetap tersimpan.", "Completed parts are reused when resuming. Enable a fresh fetch to check NASA revisions; previous results stay saved.")}</p>
+      </details>
       <p role="status" aria-live="polite">
         {label(status)}
         {job?.progressPercent != null ? ` · ${job.progressPercent}%` : ""}
@@ -930,7 +950,7 @@ function ResearchPanel({
           <th scope="row">{item.stage.role === "primary" ? t("Utama", "Primary") : t("Pembanding", "Comparison")}</th>
           <td>{item.stage.period.start.slice(0, 7)}</td>
           <td>{item.status === "pending" ? t("Belum dimuat", "Not loaded") : item.status === "loading" ? t("Memuat…", "Loading…") : item.status === "failed" ? t("Gagal / dihentikan", "Failed / stopped") : `${t("Tersimpan", "Saved")} · ${label(item.metric!.status)}`}</td>
-          <td>{item.metric?.rawCount ?? "—"}</td><td>{item.metric?.harmonizedCount?.toLocaleString(language === "en" ? "en" : "id", { maximumFractionDigits: 2 }) ?? "—"}</td>
+          <td>{item.metric?.rawCount ?? "-"}</td><td>{item.metric?.harmonizedCount?.toLocaleString(language === "en" ? "en" : "id", { maximumFractionDigits: 2 }) ?? "-"}</td>
         </tr>)}</tbody>
       </table></div>}
       {error && (
@@ -955,43 +975,33 @@ function ResearchPanel({
             className="research-results"
             aria-label={t("Hasil analisis", "Analysis result")}
           >
-            <h2>
-              {t("Kalender aktivitas", "Activity calendar")} ·{" "}
-              {result.mode.toUpperCase()}
-            </h2>
-            {result.mode !== "research" && (
-              <p className="global-error">
-                {t(
-                  "Contoh sintetis / replay — bukan hasil analisis nyata untuk pilihan saat ini.",
-                  "Synthetic example / replay — not a real analysis of the current selection.",
-                )}
-              </p>
-            )}
-            <p>
-              {result.area.name} · {result.primary.period.start} →{" "}
-              {result.primary.period.end} UTC ·{" "}
-              {t("Revisi area", "Area revision")} {result.area.revision}
-            </p>
-            {resultKey.current !== selectionKey &&
-              result.mode === "research" && (
-                <p role="status">
-                  {t(
-                    "Hasil pilihan sebelumnya tetap ditampilkan. Analisis area untuk menerapkan pilihan baru.",
-                    "Previous selection results remain visible. Analyze the area to apply the new selection.",
-                  )}
-                </p>
-              )}
-            <p>
-              {t(
-                "Garis putih: area hasil sebelumnya. Garis biru putus-putus: area yang dipilih. Selama edit, hanya sketsa terbaru ditampilkan.",
-                "White outline: previous result area. Dashed blue outline: selected area. Only the current sketch is shown while editing.",
-              )}
-            </p>
-            <p>{t("Deteksi asli", "Original detections")}: {result.primary.metric.rawCount ?? "—"} · {Object.entries(result.primary.metric.rawCountsBySource).map(([source, count]) => `${source}: ${count ?? "—"}`).join(" · ")}</p>
-            {result.primary.metric.harmonizedCount === null && result.primary.metric.rawCount !== null && <p role="status">{t("Deteksi asli tersedia. Model belum mendukung estimasi untuk area/periode ini; gunakan jumlah asli atau detail harian.", "Original detections are available. The model does not support an estimate for this area/period; use original counts or daily detail.")}</p>}
-            {result.primary.metric.status === "no_data" && <p role="status">{t("Dataset historis tidak memiliki cakupan untuk tanggal pilihan. Ini bukan hasil nol deteksi. Coba periode lain atau periksa sumber dataset.", "The historical dataset has no coverage for the selected dates. This is not a zero-detection result. Try another period or check the dataset source.")}</p>}
-            <ResearchSummary key={`summary-${result.id}`} result={result} english={language === "en"} onMonth={month => void loadDays(month)} />
-            <ResearchExports key={result.id} result={result} english={language === "en"} demoPoints={resultKey.current === "synthetic-fixture" ? researchDetectionsPageSchema.parse(demo["detections-page"]).observations : undefined} />
+            <header className="research-result-header">
+              <h2 ref={resultHeading} tabIndex={-1}>{t("Hasil analisis", "Analysis result")}</h2>
+              <p>{result.area.name} · {result.primary.period.start} → {result.primary.period.end} UTC</p>
+            </header>
+            {result.mode !== "research" && <p className="global-error">{t("Contoh sintetis / replay - bukan hasil analisis nyata untuk pilihan saat ini.", "Synthetic example / replay - not a real analysis of the current selection.")}</p>}
+            {resultKey.current !== selectionKey && result.mode === "research" && <p className="research-caveat" role="status">{t("Hasil pilihan sebelumnya tetap ditampilkan. Analisis area untuk menerapkan pilihan baru.", "Previous selection results remain visible. Analyze the area to apply the new selection.")}</p>}
+            <ResearchSummary key={`summary-${result.id}`} result={result} english={language === "en"} overview selectedMonth={days?.month} onMonth={month => void loadDays(month)}>
+              {detailStatus && <p role="status">{detailStatus === "loading" ? t("Memuat detail harian…", "Loading daily detail…") : label(detailStatus)}</p>}
+              {days ? <section className="research-daily" aria-label={t("Detail harian", "Daily detail")}>
+                <div className="research-daily-heading"><h3 ref={dailyHeading} tabIndex={-1}>{new Date(`${days.month}-01T00:00:00Z`).toLocaleDateString(language === "en" ? "en" : "id", { month: "long", year: "numeric", timeZone: "UTC" })}</h3><button type="button" className="outline" onClick={() => { resultsHost?.querySelector<HTMLButtonElement>('.calendar-cell[aria-pressed="true"]')?.focus({ preventScroll: true }); detailAbort.current?.abort(); setDays(null); setDetailStatus(""); onOverlay({ geometry: result.area.geometry, features: points, label: `${result.mode.toUpperCase()} · ${result.area.name} · ${result.primary.period.start} → ${result.primary.period.end} UTC`, onSelect: selectDetection }); }}>{t("Tampilkan semua bulan", "Show all months")}</button></div>
+                <p>{t("Deteksi asli per hari. Peta dan bukti deteksi menampilkan bulan yang dipilih.", "Original detections by day. The map and detection evidence show the selected month.")}</p>
+                <div className="table-scroll"><table>
+                  <caption className="sr-only">{t("Jumlah harian per sumber dan estimasi harmonisasi", "Daily source counts and harmonized estimates")}</caption>
+                  <thead><tr><th scope="col">{t("Tanggal UTC", "UTC date")}</th>{Object.keys(result.primary.metric.rawCountsBySource).map(source => <th scope="col" key={source}>{source}</th>)}<th scope="col">{t("Estimasi", "Estimate")}</th></tr></thead>
+                  <tbody>{days.days.map(day => <tr key={day.date}><th scope="row">{day.date}</th>{Object.keys(result.primary.metric.rawCountsBySource).map(source => <td key={source}>{day.metric.rawCountsBySource[source] ?? "-"}</td>)}<td>{day.metric.harmonizedCount?.toLocaleString(language === "en" ? "en" : "id", { maximumFractionDigits: 2 }) ?? "-"}</td></tr>)}</tbody>
+                </table></div>
+                {days.nextCursor && <p>{t("Halaman pertama saja; detail lanjutan belum dimuat.", "First page only; further daily detail has not been loaded.")}</p>}
+              </section> : <p className="research-calendar-prompt">{t("Mulai dari kalender di atas: pilih satu bulan untuk membuka rincian harian di sini.", "Start with the calendar above: select a month to open its daily breakdown here.")}</p>}
+            </ResearchSummary>
+            <details className="research-disclosure research-downloads">
+              <summary>{t("Unduh hasil", "Download results")}<span>CSV · PNG · JSON</span></summary>
+              <ResearchExports key={result.id} result={result} english={language === "en"} demoPoints={resultKey.current === "synthetic-fixture" ? researchDetectionsPageSchema.parse(demo["detections-page"]).observations : undefined} />
+            </details>
+            <details className="research-disclosure" id="research-source-coverage" open={result.primary.metric.status === "no_data"}>
+              <summary>{t("Cakupan sumber", "Source coverage")}</summary>
+              {result.sources.map(source => <p key={source.id}><strong>{source.id}</strong> · {source.status}<br />{t("Observasi snapshot", "Snapshot observations")}: {source.observedFrom ?? "-"} → {source.observedTo ?? "-"}{sourceRanges[source.id] && <><br />{t("Rentang tersedia NASA saat diambil", "NASA range available when fetched")}: {sourceRanges[source.id].join(" → ")}</>}</p>)}
+              <p>{t("Metode", "Method")}: {result.method.name} {result.method.version} · {result.method.validation}<br />{result.dataVersion} · {t("Revisi area", "Area revision")} {result.area.revision}</p>
             <div className="table-scroll">
               <table>
                 <caption>
@@ -1021,8 +1031,8 @@ function ResearchPanel({
                           {month.month}
                         </button>
                       </td>
-                      <td>{month.metric.rawCount ?? "—"}</td>
-                      <td>{month.metric.harmonizedCount ?? "—"}</td>
+                      <td>{month.metric.rawCount ?? "-"}</td>
+                      <td>{month.metric.harmonizedCount ?? "-"}</td>
                       <td>
                         {label(month.metric.status)}
                         {month.isPartialPeriod
@@ -1034,12 +1044,13 @@ function ResearchPanel({
                 </tbody>
               </table>
             </div>
-            <p>
-              {t("Metode", "Method")}: {result.method.name}{" "}
-              {result.method.version} · {result.method.validation} ·{" "}
-              {result.dataVersion}
-            </p>
-            <details open={result.primary.metric.status === "no_data"}><summary>{t("Cakupan sumber", "Source coverage")}</summary>{result.sources.map(source => <p key={source.id}>{source.id} · {source.status} · {t("Observasi snapshot", "Snapshot observations")}: {source.observedFrom ?? "—"} → {source.observedTo ?? "—"}{sourceRanges[source.id] && <> · {t("Rentang tersedia NASA saat diambil", "NASA range available when fetched")}: {sourceRanges[source.id].join(" → ")}</>}</p>)}</details>
+              <p>{t("Garis putih: area hasil sebelumnya. Garis biru putus-putus: area yang dipilih. Selama edit, hanya sketsa terbaru ditampilkan.", "White outline: previous result area. Dashed blue outline: selected area. Only the current sketch is shown while editing.")}</p>
+            </details>
+          </section>,
+          resultsHost,
+        )}
+      {resultsHost && createPortal(<details className="research-disclosure research-followup" open={monitoringOpen} onToggle={event => setMonitoringOpen(event.currentTarget.open)}>
+        <summary>{t("Lihat bukti deteksi dan pantau lokasi", "Inspect detections and track locations")}<span>{points.length} {t("titik dimuat", "points loaded")}</span></summary>
             <button
               className="outline"
               disabled={
@@ -1070,42 +1081,8 @@ function ResearchPanel({
                   ? label(mapStatus)
                   : ""}
             </p>
-            {detailStatus && (
-              <p role="status">
-                {detailStatus === "loading"
-                  ? t("Memuat detail harian…", "Loading daily detail…")
-                  : label(detailStatus)}
-              </p>
-            )}
-            {days && (
-              <details open>
-                <summary>
-                  {t("Detail harian", "Daily detail")} · {days.month}
-                </summary>
-                <ul>
-                  {days.days.map((day) => (
-                    <li key={day.date}>
-                      {day.date} · {t("mentah", "raw")}:{" "}
-                      {day.metric.rawCount ?? "—"} · {t("estimasi", "estimate")}
-                      : {day.metric.harmonizedCount ?? "—"} ·{" "}
-                      {label(day.metric.status)}
-                    </li>
-                  ))}
-                </ul>
-                {days.nextCursor && (
-                  <p>
-                    {t(
-                      "Halaman pertama saja; detail lanjutan belum dimuat.",
-                      "First page only; further daily detail has not been loaded.",
-                    )}
-                  </p>
-                )}
-              </details>
-            )}
-          </section>,
-          resultsHost,
-        )}
-      {resultsHost && createPortal(<ResearchMonitoring result={result} observations={days ? observations.filter(point => point.observedAt.startsWith(days.month)) : observations} activeDetection={activeDetection} english={language === "en"} onReuse={reuseLocation} />, resultsHost)}
+        <ResearchMonitoring result={result} observations={days ? observations.filter(point => point.observedAt.startsWith(days.month)) : observations} activeDetection={activeDetection} english={language === "en"} onReuse={reuseLocation} />
+      </details>, resultsHost)}
     </div>
   );
 }

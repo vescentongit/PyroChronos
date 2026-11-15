@@ -1,6 +1,6 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../current-status.md).
 
-# PyroChronos — API dan payload riset v2
+# PyroChronos - API dan payload riset v2
 
 **Status:** kontrak target implementasi berdasarkan [product.md](../../product.md), 10 November 2026. Schema dan contoh tersedia; endpoint v2 belum dianggap aktif. Mandat Orkhan untuk menetapkan payload tetap berlaku. Validasi metode, review kode, dan integrasi nyata merupakan pekerjaan terpisah.
 
@@ -51,10 +51,10 @@ Prefix seluruh endpoint tabel berikut: /api/v2/workspaces/:workspaceId.
 |---|---|---|
 | POST /areas | area-create: requestId, name, geometry | 201 area |
 | GET /areas | cursor/limit | 200 list area |
-| GET /areas/:areaId | — | 200 area |
+| GET /areas/:areaId | - | 200 area |
 | POST /analyses | analysis-create | 202 job; 200 job boleh untuk hasil identik yang sudah selesai |
-| GET /jobs/:jobId | — | 200 job |
-| GET /analyses/:analysisId | — | 200 result setelah publikasi |
+| GET /jobs/:jobId | - | 200 job |
+| GET /analyses/:analysisId | - | 200 result setelah publikasi |
 
 Edit geometri membuat area/revisi baru dengan hash baru; kontrak awal dapat membuat area ID baru untuk revisi tersebut. Analisis lama tetap menunjuk salinan geometri/versinya. Tidak ada daftar enum area kalteng/papua pada v2. Kedua area hanya preset/studi unggulan.
 

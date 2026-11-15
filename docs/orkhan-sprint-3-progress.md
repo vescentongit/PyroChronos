@@ -1,8 +1,8 @@
-# Orkhan Sprint 3 P2 — benchmark dan audit otomatis
+# Orkhan Sprint 3 P2 - benchmark dan audit otomatis
 
 Tanggal: 13 November 2026. Scope pekerjaan: R2-P2-O1 dan O3. Pengguna menyatakan peneliti belum tersedia dan meminta pengujian otomatis diteruskan; O2 tidak dianggap telah dijalankan. O4 tetap menunggu uji pengguna, integrasi dan bukti kesiapan rilis.
 
-## O1 — skenario dan hasil benchmark
+## O1 - skenario dan hasil benchmark
 
 Production build lokal, Chrome 157 pada Windows x64. Browser melaporkan 20 logical cores, memory hint 8 GiB dan devicePixelRatio sekitar 1. Viewport 1440×1000 dan 390×844 dijalankan pada mesin yang sama; viewport kecil **bukan perangkat mobile fisik**. Tidak ada network throttling; tile imagery eksternal dan beban mesin tidak dikontrol. Sumber data merupakan fixture sintetis berlabel DEMO, bukan FIRMS atau hasil pengolahan arsip nyata.
 
@@ -27,7 +27,7 @@ Browser mengukur **nol pembacaan IndexedDB tambahan selama paging** setelah rest
 
 Benchmark geometri Node 24.11.0 Windows x64, 20 sampel sesudah warmup: median 3 vertex 0,005 ms, 100 vertex 0,253 ms, dan 500 vertex 2,579 ms (maksimum sampel 6,468 ms). Ini hanya validasi polygon frontend; bukan query arsip, pemeriksaan server atau jaminan kapasitas global. Input 501 vertex ditolak sesuai batas editor.
 
-## O3 — audit teknis terbatas
+## O3 - audit teknis terbatas
 
 Verdict integritas implementasi: **pass dalam scope otomatis yang diuji**. Identitas NASA/Plus Jakarta Sans tetap dipertahankan. Observasi, estimasi, data hilang dan label sintetis tidak dicampur. Informasi kalender tetap memiliki angka/status dan tabel sebagai alternatif peta.
 

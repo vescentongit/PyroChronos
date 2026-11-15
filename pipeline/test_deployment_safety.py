@@ -3,6 +3,7 @@ import io
 import os
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import firms_archive
@@ -28,6 +29,10 @@ class DeploymentSafetyTests(unittest.TestCase):
         with patch.dict(os.environ, {"RESEARCH_DATA_DIR": "/missing/private-sentinel", "FIRMS_BLOB_BASE_URL": ""}):
             self.assertEqual(service.call(path="/ready", method="GET"), (503, {"status": "not_ready"}))
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {"RESEARCH_DATA_DIR": root, "FIRMS_BLOB_BASE_URL": ""}):
+            self.assertEqual(service.call(path="/ready", method="GET"), (503, {"status": "not_ready"}))
+            source = Path(root) / "MODIS_SP"
+            source.mkdir()
+            (source / "manifest.jsonl").write_text('{"detections_format":"pcd1","year":2019}\n', encoding="utf-8")
             self.assertEqual(service.call(path="/ready", method="GET"), (200, {"status": "ready"}))
 
     def test_archive_exception_is_sanitized(self):

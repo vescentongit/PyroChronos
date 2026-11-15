@@ -5,6 +5,7 @@ type ProducerInput =
 	| { action: "fingerprint"; root?: string }
 	| { action?: "analyze"; root?: string; run: unknown };
 export const producerFailureCodes = [
+	"NOT_CONFIGURED",
 	"CAPACITY_LIMIT",
 	"PAYLOAD_TOO_LARGE",
 	"RATE_LIMITED",

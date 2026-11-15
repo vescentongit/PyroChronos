@@ -8,7 +8,7 @@ related_targets: ["src/components/home-page.tsx","src/app/home.css","src/compone
 
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../../docs/current-status.md).
 
-# Home / Simulation — surface brief
+# Home / Simulation - surface brief
 
 Scope: `/` introduces PyroChronos through a real interactive geographic globe (Experience/Persuade). `/simulation` is the existing analysis workspace (Operate).
 

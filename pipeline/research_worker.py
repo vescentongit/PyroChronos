@@ -4,6 +4,7 @@ import os
 import sys
 
 from area_query import Polygon, months_between, period_minutes
+from detection_store import source_coverage
 from research_adapter import (
     build_result,
     daily_page,
@@ -24,6 +25,9 @@ def analyze(root, run):
         from firms_on_demand import prepare
 
         root = prepare(run["input"], os.environ.get("FIRMS_MAP_KEY"))
+    elif not any(source_coverage(root, source) for source in run["input"]["dataset"]["sources"]):
+        # An empty/misconfigured archive is not evidence of missing NASA coverage.
+        raise ValueError("NOT_CONFIGURED")
     pinned = fingerprint(root)
     run = {**run, "input": {**run["input"], "dataset": {**run["input"]["dataset"], "fingerprint": pinned}}}
     return {"fingerprint": pinned, "bundle": produce(root, run)}
@@ -95,6 +99,6 @@ if __name__ == "__main__":
         json.dump(result, sys.stdout, allow_nan=False)
     except Exception as error:
         # Public codes only; never forward upstream error messages or keyed URLs.
-        code = str(error) if str(error) in ("RATE_LIMITED", "CAPACITY_LIMIT", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
+        code = str(error) if str(error) in ("NOT_CONFIGURED", "RATE_LIMITED", "CAPACITY_LIMIT", "NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED") else "DEPENDENCY_UNAVAILABLE"
         json.dump({"code": code}, sys.stdout)
         sys.exit(1)

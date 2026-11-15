@@ -504,7 +504,7 @@ export default function DashboardWorkspace() {
                                   assessedAt,
                                 ) === "latest",
                             ).length
-                          : "—"}
+                          : "-"}
                         <small>{t("lokasi", "locations")}</small>
                       </strong>
                       <p>
@@ -529,7 +529,7 @@ export default function DashboardWorkspace() {
                                   assessedAt,
                                 ) === "latest",
                             ).length
-                          : "—"}
+                          : "-"}
                       </strong>
                       <p>
                         {t(
@@ -629,7 +629,7 @@ export default function DashboardWorkspace() {
                                       "Repeated observations, 7 days",
                                     )}
                                   </dt>
-                                  <dd>{active.repeats ?? "—"}</dd>
+                                  <dd>{active.repeats ?? "-"}</dd>
                                 </div>
                                 <div>
                                   <dt>
@@ -640,7 +640,7 @@ export default function DashboardWorkspace() {
                                   </dt>
                                   <dd>
                                     {active.anomaly === null
-                                      ? "—"
+                                      ? "-"
                                       : `P${active.anomaly}`}
                                   </dd>
                                 </div>
@@ -780,8 +780,8 @@ export default function DashboardWorkspace() {
                           )}
                         </p>
                         <div className="method-status">
-                          {snapshot?.method.name || "—"} ·{" "}
-                          {snapshot?.method.version || "—"}
+                          {snapshot?.method.name || "-"} ·{" "}
+                          {snapshot?.method.version || "-"}
                         </div>
                         <p>
                           {t("Baseline", "Baseline")}:{" "}
@@ -856,7 +856,7 @@ export default function DashboardWorkspace() {
                                   : t("Riwayat >7 hari", "History >7 days")}
                               <span>
                                 {unavailable
-                                  ? "—"
+                                  ? "-"
                                   : points.filter(
                                       (point) =>
                                         candidateWindow(
@@ -917,7 +917,7 @@ export default function DashboardWorkspace() {
                                   </span>
                                 </td>
                                 <td>{date(point.observedAt)}</td>
-                                <td>{point.repeats ?? "—"}</td>
+                                <td>{point.repeats ?? "-"}</td>
                                 <td>
                                   <button
                                     className="row-action"

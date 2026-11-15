@@ -33,6 +33,7 @@ test("producer uses the runtime binding, strips local paths, and bounds response
     assert.deepEqual(JSON.parse(calls[2].body), { action: "analyze", run: { id: "stage" } });
 
     for (const [response, expected] of [
+      [Response.json({ code: "NOT_CONFIGURED" }, { status: 503 }), "NOT_CONFIGURED"],
       [Response.json({ code: "CAPACITY_LIMIT" }, { status: 503 }), "CAPACITY_LIMIT"],
       [Response.json({ code: "RATE_LIMITED" }, { status: 429 }), "RATE_LIMITED"],
       [Response.json({ code: "NETWORK_ERROR" }, { status: 503 }), "NETWORK_ERROR"],

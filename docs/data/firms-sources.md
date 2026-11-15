@@ -2,7 +2,7 @@
 
 # Data FIRMS dan kalender global (Nathan, Sprint 1)
 
-> **Scope arsip/draft historis — 15 November 2026.** Format store dan perintah arsip di bawah tetap didukung, tetapi bukan prasyarat versi aktif. Adapter polygon/research-2 dan model/baseline kini sudah tersedia; analisis web memakai snapshot on-demand per bulan. Catatan “pekerjaan adaptasi” dan verifikasi terbuka di bawah merekam status saat Sprint 1 dibuat. Untuk kondisi terkini ikuti [status aktif](../current-status.md) dan [verifikasi terbaru](../verification-2026-11-15.md).
+> **Scope arsip/draft historis - 15 November 2026.** Format store dan perintah arsip di bawah tetap didukung, tetapi bukan prasyarat versi aktif. Adapter polygon/research-2 dan model/baseline kini sudah tersedia; analisis web memakai snapshot on-demand per bulan. Catatan “pekerjaan adaptasi” dan verifikasi terbuka di bawah merekam status saat Sprint 1 dibuat. Untuk kondisi terkini ikuti [status aktif](../current-status.md) dan [verifikasi terbaru](../verification-2026-11-15.md).
 
 > **Fondasi producer, belum consumer riset v2.** Draft calendar-1 di bawah masih memakai pusat grid 0,25 derajat dan pembanding semua tahun; itu belum memenuhi polygon tepat, detail harian, atau referensi bergerak 10 tahun. Target baru adalah [API v2](../contracts/api-v2.md), dengan hipotesis skala setara MODIS yang harus divalidasi. Pekerjaan adaptasi: R2-P0-N1 sampai N4 dan R2-P1-N1 sampai N4 pada [sprint Nathan](../../tasks/Nathan/SPRINT-1-P0.md).
 
@@ -27,12 +27,12 @@ Keputusan tim (10 Nov 2026): **titik api dan kalender bersifat global**. Penggun
 | ID | Sensor | Platform | Resolusi nominal | Proses | Arsip tahunan | Peran |
 |---|---|---|---|---|---|---|
 | `MODIS_SP` | MODIS | Terra/Aqua | 1 km | standard | `modis_{tahun}` (mulai Nov 2000, terverifikasi) | Riwayat panjang kalender |
-| `MODIS_NRT` | MODIS | Terra/Aqua | 1 km | NRT | — | Kondisi terbaru |
+| `MODIS_NRT` | MODIS | Terra/Aqua | 1 km | NRT | - | Kondisi terbaru |
 | `VIIRS_SNPP_SP` | VIIRS | Suomi NPP | 375 m | standard | `viirs-snpp_{tahun}` (2012 ada, terverifikasi) | Seri overlap untuk evaluasi harmonisasi; target acuan produk setara MODIS |
-| `VIIRS_SNPP_NRT` | VIIRS | Suomi NPP | 375 m | NRT | — | Kondisi terbaru |
+| `VIIRS_SNPP_NRT` | VIIRS | Suomi NPP | 375 m | NRT | - | Kondisi terbaru |
 | `VIIRS_NOAA20_SP` | VIIRS | NOAA-20 | 375 m | standard | `viirs-jpss1_{tahun}` (2023 ada, terverifikasi) | Pembanding tambahan |
-| `VIIRS_NOAA20_NRT` | VIIRS | NOAA-20 | 375 m | NRT | — | Kondisi terbaru |
-| `VIIRS_NOAA21_NRT` | VIIRS | NOAA-21 | 375 m | NRT | — | Kondisi terbaru |
+| `VIIRS_NOAA20_NRT` | VIIRS | NOAA-20 | 375 m | NRT | - | Kondisi terbaru |
+| `VIIRS_NOAA21_NRT` | VIIRS | NOAA-21 | 375 m | NRT | - | Kondisi terbaru |
 
 Feed tidak pernah dijumlahkan menjadi satu seri; kalender dibuat per sumber. Harmonisasi MODIS↔VIIRS adalah langkah berikutnya (P0-S2-N2), sehingga kalender saat ini berlabel `harmonized: false`.
 

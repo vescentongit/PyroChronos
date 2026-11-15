@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -74,6 +74,9 @@ test("liveness and readiness HTTP expose no internal configuration or errors", a
 		delete process.env.PIPELINE_URL;
 		delete process.env.RESEARCH_V2_EXPERIMENTAL;
 		process.env.RESEARCH_DATA_DIR = root;
+		assert.equal((await ready()).status, 503);
+		await mkdir(join(root, "MODIS_SP"));
+		await writeFile(join(root, "MODIS_SP", "manifest.jsonl"), '{"detections_format":"pcd1","year":2019}\n');
 		assert.equal((await ready()).status, 200);
 		process.env.RESEARCH_DATA_DIR = join(root, "missing-private-sentinel");
 		const failure = await ready();

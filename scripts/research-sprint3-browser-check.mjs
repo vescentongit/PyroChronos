@@ -25,7 +25,7 @@ async (parent) => {
       const result = bundle.result;
       result.id = `benchmark-synthetic-${viewport.width}`;
       result.jobId = `job-${result.id}`;
-      result.area.name = "Synthetic benchmark / " + "Nama wilayah panjang — long research area name ".repeat(3);
+      result.area.name = "Synthetic benchmark / " + "Nama wilayah panjang - long research area name ".repeat(3);
       const vertices = Array.from({ length: 500 }, (_, i) => {
         const angle = 2 * Math.PI * i / 500;
         return [+(114 + 0.8 * Math.cos(angle)).toFixed(6), +(-2.5 + 0.8 * Math.sin(angle)).toFixed(6)];

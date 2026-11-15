@@ -48,7 +48,7 @@ export function ConnectedWorkspace({ language, view, onAnalyze, onReuse }: {
   const reports = assignments.flatMap(assignment => assignment.reports);
   const daily = bundle?.days.find(page => page.periodRole === "primary" && page.month === month);
   const status = (value: string) => ({ available: t("Tersedia", "Available"), partial: t("Data parsial", "Partial data"), no_data: t("Tidak ada cakupan data", "No data coverage"), method_unsupported: t("Estimasi tidak didukung", "Estimate unsupported") }[value] ?? value);
-  const number = (value: number | null) => value === null ? "—" : value.toLocaleString(language === "id" ? "id-ID" : "en-GB", { maximumFractionDigits: 2 });
+  const number = (value: number | null) => value === null ? "-" : value.toLocaleString(language === "id" ? "id-ID" : "en-GB", { maximumFractionDigits: 2 });
   return <section className="research-output" aria-label={t("Ruang kerja analisis tersimpan", "Saved analysis workspace")}>
     <div className="heading">
       <div><h1>{view === "reports" ? t("Laporan lapangan", "Field reports") : view === "analysis" ? t("Perbandingan sensor", "Sensor comparison") : "Dashboard"}</h1>
@@ -64,7 +64,7 @@ export function ConnectedWorkspace({ language, view, onAnalyze, onReuse }: {
     {!loading && !result && !error && <p role="status">{t("Belum ada hasil analisis. Gambar polygon dan jalankan analisis historis; hasilnya akan muncul di sini.", "No analysis results yet. Draw a polygon and run historical analysis; its results will appear here.")}</p>}
     {view !== "reports" && <>
       <div className="metrics">
-        <article><span>{t("Deteksi asli", "Original detections")}</span><strong>{number(result?.primary.metric.rawCount ?? null)}</strong><p>{result ? status(result.primary.metric.status) : "—"}</p></article>
+        <article><span>{t("Deteksi asli", "Original detections")}</span><strong>{number(result?.primary.metric.rawCount ?? null)}</strong><p>{result ? status(result.primary.metric.status) : "-"}</p></article>
         <article><span>{t("Estimasi setara MODIS", "MODIS-equivalent estimate")}</span><strong>{number(result?.primary.metric.harmonizedCount ?? null)}</strong><p>{t("Hanya pada domain model yang mendukung", "Only within supported model domains")}</p></article>
         <article><span>{t("Lokasi tersimpan", "Saved locations")}</span><strong>{number(locations.length)}</strong><p>{t("Semua area tersimpan di browser ini", "All areas saved in this browser")}</p></article>
         <article><span>{t("Pemeriksaan lapangan", "Field inspections")}</span><strong>{number(reports.length)}</strong><p>{assignments.filter(item => ["assigned", "in_progress"].includes(item.status)).length} {t("penugasan terbuka", "open assignments")}</p></article>
@@ -74,8 +74,9 @@ export function ConnectedWorkspace({ language, view, onAnalyze, onReuse }: {
         <p>{result.primary.period.start} → {result.primary.period.end} UTC · {result.primary.days} {t("hari", "days")}</p>
         <p>{t("Hasil snapshot historis, bukan kondisi api saat ini. Nilai kosong bukan nol.", "Historical snapshot, not current fire conditions. Missing values are not zero.")}</p>
         <div className="table-scroll"><table><caption>{t("Deteksi asli per sumber untuk seluruh periode utama", "Original detections by source for the full primary period")}</caption><thead><tr><th>{t("Sumber", "Source")}</th><th>{t("Deteksi asli", "Original detections")}</th><th>Status</th></tr></thead><tbody>{result.sources.map(source => <tr key={source.id}><td>{source.id}</td><td>{number(result.primary.metric.rawCountsBySource[source.id] ?? null)}</td><td>{source.status === "unavailable" ? t("Tidak tersedia", "Unavailable") : status(source.status)}</td></tr>)}</tbody></table></div>
-        <ResearchSummary key={result.id} result={result} english={language === "en"} onMonth={setMonth} />
+        <ResearchSummary key={result.id} result={result} english={language === "en"} selectedMonth={month} onMonth={setMonth}>
         {daily && <div className="table-scroll"><table><caption>{t("Detail harian", "Daily detail")} · {month} UTC</caption><thead><tr><th>{t("Tanggal", "Date")}</th><th>{t("Deteksi asli", "Original detections")}</th><th>{t("Estimasi", "Estimate")}</th><th>Status</th></tr></thead><tbody>{daily.days.map(day => <tr key={day.date}><td>{day.date}</td><td>{number(day.metric.rawCount)}</td><td>{number(day.metric.harmonizedCount)}</td><td>{status(day.metric.status)}</td></tr>)}</tbody></table></div>}
+        </ResearchSummary>
         <ResearchExports key={`exports-${result.id}`} result={result} english={language === "en"} />
       </div>}
     </>}

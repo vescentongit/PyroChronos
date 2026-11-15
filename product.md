@@ -1,10 +1,10 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](docs/current-status.md).
 
-# PyroChronos — Product Specification
+# PyroChronos - Product Specification
 
-**Challenge:** Harmonization of MODIS and VIIRS Hot Spots — NASA Space Apps Challenge 2026\
+**Challenge:** Harmonization of MODIS and VIIRS Hot Spots - NASA Space Apps Challenge 2026\
 **Status:** Spesifikasi produk berdasarkan keputusan wawancara; kemampuan yang belum selesai tetap merupakan target implementasi\
-**Sumber utama:** NASA FIRMS — arsip MODIS/VIIRS dan feed near-real-time\
+**Sumber utama:** NASA FIRMS - arsip MODIS/VIIRS dan feed near-real-time\
 **Pengguna utama:** Peneliti yang menganalisis perubahan aktivitas api dan anomali historis\
 **Pengalaman utama:** Memilih area dan rentang tanggal, lalu membaca burning activity calendar berbasis data terharmonisasi\
 **Cakupan:** Global sejak versi pertama, dengan target historis awal 2000-an hingga sekarang sesuai ketersediaan sumber\
@@ -33,7 +33,7 @@ Keputusan berikut menjadi acuan ketika berbeda dengan rancangan lama tentang daf
 | Kepemilikan | Workspace lokal browser tanpa login; lokasi, penugasan dan pemeriksaan tersimpan pada perangkat yang sama. Kolaborasi server pada rancangan lama bukan persyaratan versi aktif |
 | Ekspor | CSV deteksi asli, hasil agregat harmonisasi, serta analisis dan visualisasi dengan provenance |
 
-### Status repository — 15 November 2026
+### Status repository - 15 November 2026
 
 Alur riset lokal sudah menyediakan polygon bebas, analisis eksplisit, kalender/detail harian, perbandingan, model retrospektif pada domain yang mendukung, baseline bergerak, bukti asli, lokasi/pemeriksaan/koreksi dan ekspor. FIRMS historis diambil on-demand per bulan tanpa arsip global permanen; hasil dan bagian selesai disimpan di browser untuk resume atau refresh. Navigasi kamera tidak mengajukan ulang analisis historis. Hotspot terbaru/NRT dan dashboard demonstrasi tetap terpisah dari hasil historis.
 
@@ -385,20 +385,20 @@ Hal-hal tersebut diperinci melalui kontrak dan pengujian; tidak membatalkan kepu
 
 Keputusan produk pada dokumen ini mengikuti wawancara tim tanggal 10 November 2026 dan objective challenge yang dibagikan pengguna dalam percakapan. Paper lokal menjadi sumber gagasan, bukan bukti bahwa seluruh klaimnya telah tervalidasi. Referensi teknis dari versi sebelumnya dipertahankan di bawah; persyaratan submission dan detail produk data tetap perlu diperiksa sebelum implementasi ilmiah atau pengumpulan.
 
-- **[S1]** [NASA Space Apps — Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/harmonization-of-modis-and-viirs-hot-spots/) — halaman challenge; objective yang dibagikan pengguna menjadi dasar lingkup produk, sedangkan ketentuan submission resmi tetap perlu diperiksa.
-- **[S2]** [NASA FIRMS — Fire Alert Notes](https://firms.modaps.eosdis.nasa.gov/alerts/notes.php) — karakteristik deteksi dan confidence.
-- **[S3]** [NASA CMR — LP DAAC Collection Directory](https://cmr.earthdata.nasa.gov/search/site/collections/directory/LPCLOUD/gov.nasa.eosdis) — identitas MOD14A1.061 dan VNP14A1.002.
-- **[S4]** [NASA — VIIRS Active Fire User Guide](https://www.earthdata.nasa.gov/s3fs-public/imported/VIIRS_activefire_User_Guide.pdf) — dokumentasi produk; acuan pemeriksaan QA/SDS sebelum implementasi.
-- **[S5]** [TROPOMI — Carbon Monoxide](https://www.tropomi.eu/data-products/carbon-monoxide) — produk CO serta pengaruh awan terhadap sensitivitas.
-- **[S6]** [NASA JPL — SMAP Handbook](https://smap.jpl.nasa.gov/files/smap2/SMAP_handbook_web.pdf) — dasar pengukuran kelembapan permukaan.
-- **[S7]** [NASA FIRMS — Data API Tutorial](https://firms2.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html) — akses API dan contoh atribut deteksi.
-- **[S8]** [NASA Earth Observatory — Fires Char New Guinea](https://science.nasa.gov/earth/earth-observatory/fires-char-new-guinea/) — 22 Oktober 2026; konteks aktivitas kebakaran di Papua dan Kalimantan. Informasi Papua Nugini dalam artikel tidak dihitung sebagai wilayah studi Indonesia.
-- **[S9]** [BNPB — Prioritas Penanganan Karhutla](https://ppid.bnpb.go.id/berita/bnpb-prioritaskan-penanganan-karhutla-di-kalimantan-tengah-sumatera-selatan-dan-kalimantan-barat-SdY0) — 24 Oktober 2026; konteks penanganan Kalimantan Tengah dan catatan Papua Selatan; data situasional bersifat sementara.
-- **[S10]** [NASA FIRMS — Archive Download](https://firms2.modaps.eosdis.nasa.gov/download/) — arsip dan penggantian NRT dengan standard science-quality.
-- **[S11]** [NASA FIRMS — Data Overview](https://firms2.modaps.eosdis.nasa.gov/content/posters/FIRMS-postcard-print.pdf) — latensi global dihitung dari observasi satelit; layanan real-time tertentu berlaku di AS/Kanada.
-- **[S12]** [NASA FIRMS — Area API](https://firms.modaps.eosdis.nasa.gov/api/area) — akses area, kredensial, serta batas transaksi.
-- **[S13]** [Next.js — Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend) — backend aplikasi dalam Next.js dan batas server/client.
-- **[S14]** [Neon — Prisma Integration](https://neon.com/docs/guides/prisma) — konfigurasi Prisma dengan Neon dan koneksi database.
-- **[S15]** [scikit-learn — QuantileTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html) — transformasi kuantil; bukan pengganti validasi harmonisasi antarsensor.
+- **[S1]** [NASA Space Apps - Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/harmonization-of-modis-and-viirs-hot-spots/) - halaman challenge; objective yang dibagikan pengguna menjadi dasar lingkup produk, sedangkan ketentuan submission resmi tetap perlu diperiksa.
+- **[S2]** [NASA FIRMS - Fire Alert Notes](https://firms.modaps.eosdis.nasa.gov/alerts/notes.php) - karakteristik deteksi dan confidence.
+- **[S3]** [NASA CMR - LP DAAC Collection Directory](https://cmr.earthdata.nasa.gov/search/site/collections/directory/LPCLOUD/gov.nasa.eosdis) - identitas MOD14A1.061 dan VNP14A1.002.
+- **[S4]** [NASA - VIIRS Active Fire User Guide](https://www.earthdata.nasa.gov/s3fs-public/imported/VIIRS_activefire_User_Guide.pdf) - dokumentasi produk; acuan pemeriksaan QA/SDS sebelum implementasi.
+- **[S5]** [TROPOMI - Carbon Monoxide](https://www.tropomi.eu/data-products/carbon-monoxide) - produk CO serta pengaruh awan terhadap sensitivitas.
+- **[S6]** [NASA JPL - SMAP Handbook](https://smap.jpl.nasa.gov/files/smap2/SMAP_handbook_web.pdf) - dasar pengukuran kelembapan permukaan.
+- **[S7]** [NASA FIRMS - Data API Tutorial](https://firms2.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html) - akses API dan contoh atribut deteksi.
+- **[S8]** [NASA Earth Observatory - Fires Char New Guinea](https://science.nasa.gov/earth/earth-observatory/fires-char-new-guinea/) - 22 Oktober 2026; konteks aktivitas kebakaran di Papua dan Kalimantan. Informasi Papua Nugini dalam artikel tidak dihitung sebagai wilayah studi Indonesia.
+- **[S9]** [BNPB - Prioritas Penanganan Karhutla](https://ppid.bnpb.go.id/berita/bnpb-prioritaskan-penanganan-karhutla-di-kalimantan-tengah-sumatera-selatan-dan-kalimantan-barat-SdY0) - 24 Oktober 2026; konteks penanganan Kalimantan Tengah dan catatan Papua Selatan; data situasional bersifat sementara.
+- **[S10]** [NASA FIRMS - Archive Download](https://firms2.modaps.eosdis.nasa.gov/download/) - arsip dan penggantian NRT dengan standard science-quality.
+- **[S11]** [NASA FIRMS - Data Overview](https://firms2.modaps.eosdis.nasa.gov/content/posters/FIRMS-postcard-print.pdf) - latensi global dihitung dari observasi satelit; layanan real-time tertentu berlaku di AS/Kanada.
+- **[S12]** [NASA FIRMS - Area API](https://firms.modaps.eosdis.nasa.gov/api/area) - akses area, kredensial, serta batas transaksi.
+- **[S13]** [Next.js - Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend) - backend aplikasi dalam Next.js dan batas server/client.
+- **[S14]** [Neon - Prisma Integration](https://neon.com/docs/guides/prisma) - konfigurasi Prisma dengan Neon dan koneksi database.
+- **[S15]** [scikit-learn - QuantileTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html) - transformasi kuantil; bukan pengganti validasi harmonisasi antarsensor.
 
 Sebelum implementasi ilmiah penuh, bekukan versi arsip dan aturan pairing, uji hipotesis setara MODIS pada data tumpang tindih dengan evaluasi terpisah, tentukan aturan baseline/anomali serta status kurang data, dan ukur kueri polygon global pada worker. Integrasikan kontrak v2, model penyimpanan, serta task/sprint yang sudah diselaraskan tanpa menganggap dokumen/schema target sebagai fitur yang sudah berjalan. Sebelum submission, periksa ketentuan resmi, atribusi, serta kesesuaian klaim demonstrasi dengan hasil pengukuran sebenarnya.

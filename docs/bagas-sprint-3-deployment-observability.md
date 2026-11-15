@@ -1,11 +1,11 @@
-# Tahap 7–8 — deployment, observabilitas dan handoff staging
+# Tahap 7–8 - deployment, observabilitas dan handoff staging
 
 R2-P2-B4 bagian 1, 15 November 2026. Persiapan teknis staging saja: tidak
 menjalankan deployment cloud, aktivasi scheduler, backfill, promosi produksi,
 atau migrasi database pengguna. Handoff lokal Tahap 8 tercatat di bawah;
 acceptance O4 bersama Orkhan/Nathan pada provider tetap memerlukan review manusia.
 
-## Tahap 8 — simulasi integrasi lokal, 15 November 2026
+## Tahap 8 - simulasi integrasi lokal, 15 November 2026
 
 Runner `scripts/verify-staging-handoff.mjs` menggunakan server **Next hasil build
 melalui HTTP**, konfigurasi sintetis, direktori dataset kosong dan artefak privat
@@ -71,7 +71,7 @@ direktori temporer dan schema runner sudah dibersihkan; container
 `pyrochronos-sprint3-handoff` dihentikan dengan `--rm` dan terkonfirmasi tidak
 tersisa pada `docker ps -a`.
 
-## Handoff Orkhan — O4 dan review PR
+## Handoff Orkhan - O4 dan review PR
 
 | Respons submission | Tindakan consumer |
 | --- | --- |
@@ -106,7 +106,7 @@ Masih memerlukan tindakan manusia:
   mengobservasi log provider, menilai tarif/kapasitas arsip nyata dan mengotorisasi
   scheduler/backfill/promosi. Simulasi lokal tidak mengaktifkan rollout cloud.
 
-## Handoff Nathan — N1–N4
+## Handoff Nathan - N1–N4
 
 Jalankan `npm run research:status` sebagai operator dengan credential privat.
 Periksa groups status ingest/job/ekspor (termasuk sukses/gagal bila ada), `dataset`

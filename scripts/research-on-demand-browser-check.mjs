@@ -32,6 +32,7 @@ const python = spawn(process.env.RESEARCH_PYTHON || "python", ["-u", "-c", [
   "    if 'data_availability' in url: return AVAILABLE",
   "    parts = urlparse(url).path.split('/')",
   "    modis = parts[-4] == 'MODIS_SP'",
+  "    if parts[-1] == '2019-05-01': return (MODIS if modis else VIIRS).encode()",
   "    west, south, east, north = map(float, parts[-3].split(','))",
   "    row = str((south + north) / 2) + ',' + str((west + east) / 2) + ',300,' + parts[-1] + ',1230,' + ('T,90' if modis else 'N,n') + ',6.1,2,D\\n'",
   "    return ((MODIS if modis else VIIRS) + row).encode()",
@@ -66,7 +67,7 @@ try {
   }
   assert.ok(ready, "production server must start");
   browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true, timezoneId: "Asia/Jakarta" });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true, timezoneId: "Asia/Jakarta", reducedMotion: "reduce" });
   await context.addInitScript(() => {
     if (localStorage.getItem("pyro-research-draft-v1")) return;
     localStorage.setItem("pyro-language", "en");
@@ -81,6 +82,7 @@ try {
     if (body.action !== "analyze") return route.continue();
     calls.push({ period: body.request.period, baseline: body.includeBaseline });
     if (mode === "network-error") return route.fulfill({ status: 503, json: { code: "NETWORK_ERROR" } });
+    if (mode === "not-configured") return route.fulfill({ status: 503, json: { code: "NOT_CONFIGURED" } });
     if (mode === "fail-second" && calls.length === 2) return route.fulfill({ status: 503, json: { code: "DEPENDENCY_UNAVAILABLE" } });
     if (["hold-second", "hold-success"].includes(mode) && calls.length === held) {
       const continueAfterHold = mode === "hold-success";
@@ -101,6 +103,14 @@ try {
   };
   const analyze = () => page.getByRole("button", { name: "Analyze area", exact: true }).click();
   const done = () => page.getByRole("status").filter({ hasText: "Analysis completed" }).waitFor();
+  const expand = async selector => {
+    const detail = page.locator(selector);
+    if (!await detail.evaluate(node => node.open)) await detail.locator("summary").first().click();
+  };
+  const refresh = async checked => {
+    await expand(".research-refresh");
+    await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).setChecked(checked);
+  };
   const storedId = () => page.evaluate(() => localStorage.getItem("pyro-last-research-v1"));
   const progress = () => page.locator("table").filter({ has: page.locator("caption", { hasText: "Calendar loading" }) });
   await open();
@@ -115,7 +125,26 @@ try {
   await analyze(); await done();
   assert.equal(calls.length, 5, "reload resumes only the three remaining months");
   assert.equal(await page.locator(".calendar-cell").count(), 2);
+  const resultView = page.getByRole("region", { name: "Analysis result", exact: true });
+  assert.equal(await resultView.getByRole("heading", { name: "Analysis result", exact: true }).evaluate(node => node === document.activeElement), true);
+  assert.equal(await page.locator(".research-downloads").evaluate(node => node.open), false);
+  assert.equal(await page.locator(".research-followup").evaluate(node => node.open), false);
+  await resultView.getByRole("heading", { name: "4 satellite detections recorded", exact: true }).waitFor();
+  await resultView.screenshot({ path: `${output}/results-desktop.png` });
+  await page.locator(".calendar-cell").first().focus();
+  await page.keyboard.press("Enter");
+  const daily = resultView.getByRole("region", { name: "Daily detail", exact: true });
+  await daily.waitFor();
+  assert.equal(await page.locator('.calendar-cell[aria-pressed="true"]').count(), 1);
+  assert.ok(await daily.evaluate(node => node.compareDocumentPosition(document.querySelector(".research-comparison")) & Node.DOCUMENT_POSITION_FOLLOWING));
+  await resultView.screenshot({ path: `${output}/results-daily-desktop.png` });
+  await page.getByRole("button", { name: "Show all months", exact: true }).click();
+  await daily.waitFor({ state: "hidden" });
+  assert.equal(await page.locator('.calendar-cell[aria-pressed="true"]').count(), 0);
+  assert.equal(await page.locator(".calendar-cell").first().evaluate(node => node === document.activeElement), true);
+  checks.push("new results receive focus, explain counts, keep secondary tools collapsed and support keyboard daily drill-down");
   const downloadBundle = async () => {
+    await expand(".research-downloads");
     const pending = page.waitForEvent("download");
     await page.getByRole("button", { name: "JSON + manifest", exact: true }).click();
     const download = await pending;
@@ -127,6 +156,7 @@ try {
   await open();
   await page.getByRole("region", { name: "Analysis result", exact: true }).getByText(/Synthetic staged Amazon/).waitFor();
   checks.push("complete saved results restore after reload and local index recovery");
+  await expand(".research-followup");
   await page.getByRole("button", { name: "View detection", exact: true }).first().waitFor();
   checks.push("first page of original points loads automatically after analysis");
   assert.equal(bundle.manifest.stages.length, 4);
@@ -148,6 +178,7 @@ try {
   assert.ok(!JSON.stringify(bundle).includes("synthetic-browser-key"));
   checks.push("real IndexedDB reload/resume, comparison and combined JSON provenance");
   for (const name of ["Original detections CSV", "Aggregate CSV", "Calendar PNG"]) {
+    await expand(".research-downloads");
     const pending = page.waitForEvent("download");
     await page.getByRole("button", { name, exact: true }).click();
     const download = await pending;
@@ -163,7 +194,7 @@ try {
     if (name === "Calendar PNG") assert.equal(bytes.subarray(1, 4).toString(), "PNG");
   }
   checks.push("original CSV, aggregate CSV and calendar PNG downloads");
-  await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).check();
+  await refresh(true);
   await analyze(); await done();
   assert.equal(calls.length, 9, "refresh must fetch all four months");
   checks.push("explicit refresh refetches every stage");
@@ -171,7 +202,7 @@ try {
   await page.getByLabel("Compare another period", { exact: true }).uncheck();
   await page.getByLabel("Start (UTC)", { exact: true }).fill("2019-05-30");
   await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2019-06-02");
-  await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).uncheck();
+  await refresh(false);
   mode = "hold-second"; held = calls.length + 2;
   await analyze();
   await page.waitForFunction(() => [...document.querySelectorAll("caption")].some(node => node.textContent.includes("Calendar loading")));
@@ -188,7 +219,7 @@ try {
   checks.push("cancel clears loading state, preserves old result and resumes after reload");
   const previousComplete = await storedId();
   await page.evaluate(() => { IDBObjectStore.prototype.put = () => { throw new DOMException("Synthetic full storage", "QuotaExceededError"); }; });
-  await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).check();
+  await refresh(true);
   await analyze();
   await page.getByRole("alert").filter({ hasText: "storage" }).waitFor();
   assert.equal(await storedId(), previousComplete);
@@ -201,7 +232,7 @@ try {
       return original.call(this, key, value);
     };
   });
-  await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).check();
+  await refresh(true);
   await analyze();
   await page.getByRole("alert").filter({ hasText: "storage" }).waitFor();
   assert.equal(await storedId(), previousComplete);
@@ -262,27 +293,44 @@ try {
   await page.getByLabel("Compare another period", { exact: true }).uncheck();
   await analyze(); await done();
   assert.match(await page.locator(".calendar-cell").innerText(), /^2\s/);
+  await expand(".research-followup");
   await page.getByRole("button", { name: "View detection", exact: true }).first().waitFor();
   const unsupported = await downloadBundle();
   assert.equal(unsupported.result.primary.metric.harmonizedCount, null);
   assert.equal(unsupported.result.primary.metric.rawCount, 2);
   checks.push("polygon apply and analysis show raw detections even when Kalteng estimates are unsupported");
+  await page.getByLabel("Start (UTC)", { exact: true }).fill("2019-05-01");
+  await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2019-05-01");
+  await analyze(); await done();
+  await resultView.getByRole("heading", { name: "No detections in available coverage", exact: true }).waitFor();
+  assert.match(await page.locator(".calendar-cell").innerText(), /^0\b/);
+  await resultView.getByText("All covered months have zero detections.", { exact: true }).waitFor();
+  await resultView.screenshot({ path: `${output}/results-zero.png` });
+  await resultView.getByRole("button", { name: "Anomaly", exact: true }).click();
+  await resultView.getByText("No values available for this view.", { exact: true }).waitFor();
+  assert.match(await page.locator(".calendar-cell").innerText(), /^-/);
+  checks.push("successful empty NASA responses show zero detections while unavailable anomaly values remain missing");
   await page.getByLabel("Start (UTC)", { exact: true }).fill("2000-01-01");
   await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2000-01-01");
   await analyze(); await done();
-  await page.getByText(/The historical dataset has no coverage/).waitFor();
+  await page.getByText(/The historical sources have no coverage/).waitFor();
   await page.getByText(/2000-11-01 → 2025-12-31/).first().waitFor();
-  assert.match(await page.locator(".calendar-cell").innerText(), /^—/);
+  assert.match(await page.locator(".calendar-cell").innerText(), /^-/);
+  await resultView.screenshot({ path: `${output}/results-no-coverage.png` });
   checks.push("unavailable dates show missing coverage and actual NASA availability instead of zero");
   const beforeNetworkFailure = await storedId();
   mode = "network-error";
   await page.getByLabel("Start (UTC)", { exact: true }).fill("2019-01-01");
   await page.getByLabel("End (UTC, inclusive)", { exact: true }).fill("2019-01-01");
-  await page.getByLabel("Fetch saved parts again from NASA", { exact: true }).check();
+  await refresh(true);
   await analyze();
   await page.getByRole("alert").filter({ hasText: "Connection to the historical service or NASA failed" }).waitFor();
   assert.equal(await storedId(), beforeNetworkFailure);
   checks.push("NASA connectivity error is visible and preserves the previous complete result");
+  mode = "not-configured";
+  await analyze(); await page.getByText(/historical source is not ready or its archive is empty/).waitFor();
+  assert.equal(await storedId(), beforeNetworkFailure);
+  checks.push("empty archive configuration failure is distinct from missing coverage and preserves the previous result");
   await page.evaluate(() => {
     const original = window.fetch;
     window.researchSelectionAborted = false;
@@ -344,6 +392,9 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator(".language-switch select").selectOption("id");
   await page.getByRole("button", { name: "Analisis area", exact: true }).waitFor();
+  assert.equal(await page.locator(".research-source-counts > div").evaluateAll(nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1 && node.querySelector("dt").getBoundingClientRect().bottom <= node.querySelector("dd").getBoundingClientRect().top + 1)), true);
+  assert.equal(await page.locator(".calendar-cell").evaluateAll(nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)), true);
+  checks.push("mobile source counts and calendar values fit without clipping or overlapping");
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   assert.equal(await page.locator(".profile").count(), 0);
   const navigationToggle = page.getByRole("button", { name: "Buka/tutup navigasi", exact: true });
@@ -361,6 +412,14 @@ try {
   assert.equal(await page.locator("main").evaluate(node => node.inert), false);
   checks.push("account-free mobile navigation keeps focus in the drawer and restores access after Escape");
   await page.screenshot({ path: `${output}/mobile-id.png`, fullPage: true });
+  const mobileResult = page.getByRole("region", { name: "Hasil analisis", exact: true });
+  await mobileResult.screenshot({ path: `${output}/results-mobile-id.png` });
+  await mobileResult.getByRole("heading", { name: "Hasil analisis", exact: true }).scrollIntoViewIfNeeded();
+  writeFileSync(`${output}/results-mobile-layout.json`, JSON.stringify(await page.evaluate(() => {
+    const link = document.querySelector(".skip-link");
+    return { skipLinkFocused: link === document.activeElement, skipLinkTop: getComputedStyle(link).top, skipLinkViewportTop: link.getBoundingClientRect().top, viewport: innerWidth, pageWidth: document.documentElement.scrollWidth };
+  }), null, 2));
+  await page.screenshot({ path: `${output}/results-mobile-viewport.png` });
   checks.push("Indonesian labels and mobile viewport without page overflow");
   assert.deepEqual(exceptions, []);
   writeReport("passed");

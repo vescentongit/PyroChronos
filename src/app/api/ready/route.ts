@@ -1,5 +1,5 @@
-import { realpath, stat } from "node:fs/promises";
-import { relative, resolve } from "node:path";
+import { readFile, realpath, stat } from "node:fs/promises";
+import { join, relative, resolve } from "node:path";
 import { readiness } from "../../../lib/research-deployment.ts";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +20,11 @@ export async function GET() {
 		} else if (process.env.RESEARCH_DATA_DIR) {
 			if (!(await stat(process.env.RESEARCH_DATA_DIR)).isDirectory())
 				throw new Error("UNAVAILABLE");
+			await Promise.any(["MODIS_SP", "VIIRS_SNPP_SP"].map(async source => {
+				const manifest = await readFile(join(process.env.RESEARCH_DATA_DIR!, source, "manifest.jsonl"), "utf8");
+				if (!manifest.split(/\r?\n/).filter(Boolean).some(line => JSON.parse(line).detections_format === "pcd1"))
+					throw new Error("UNAVAILABLE");
+			}));
 		} else if (!process.env.FIRMS_MAP_KEY?.trim())
 			throw new Error("UNAVAILABLE");
 		// On-demand readiness checks configuration only, never consumes upstream quota.

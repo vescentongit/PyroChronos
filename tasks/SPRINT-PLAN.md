@@ -1,12 +1,12 @@
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](../docs/current-status.md).
 
-# PyroChronos — Rencana 3 Sprint Riset v2
+# PyroChronos - Rencana 3 Sprint Riset v2
 
-> **Scope aktif — 15 November 2026:** alur lokal tanpa login dan FIRMS on-demand menggantikan arsip permanen, akun/workspace server serta antrean persisten sebagai prasyarat. Pembagian tim di bawah mencatat scope awal; task server merupakan legacy/opsional. Gerbang rilis aktif mengikuti [status aktif](../docs/current-status.md).
+> **Scope aktif - 15 November 2026:** alur lokal tanpa login dan FIRMS on-demand menggantikan arsip permanen, akun/workspace server serta antrean persisten sebagai prasyarat. Pembagian tim di bawah mencatat scope awal; task server merupakan legacy/opsional. Gerbang rilis aktif mengikuti [status aktif](../docs/current-status.md).
 
 Acuan: [product.md](../product.md), diperbarui 10 November 2026. Kontrak integrasi baru: [API v2](../docs/contracts/api-v2.md). Kontrak v1 tetap untuk kompatibilitas prototype.
 
-| Anggota | Sprint 1 — P0 | Sprint 2 — P1 | Sprint 3 — P2 |
+| Anggota | Sprint 1 - P0 | Sprint 2 - P1 | Sprint 3 - P2 |
 |---|---|---|---|
 | Nathan | [Data global/polygon](Nathan/SPRINT-1-P0.md) | [Harmonisasi/baseline/kalender](Nathan/SPRINT-2-P1.md) | [Sensitivitas dan reproduksibilitas](Nathan/SPRINT-3-P2.md) |
 | Bagas | [Workspace/AOI/job/API](Bagas/SPRINT-1-P0.md) | [Publikasi/lokasi/pemeriksaan/ekspor](Bagas/SPRINT-2-P1.md) | [Kapasitas/ketahanan/deployment](Bagas/SPRINT-3-P2.md) |
@@ -14,9 +14,9 @@ Acuan: [product.md](../product.md), diperbarui 10 November 2026. Kontrak integra
 
 ## Arti prioritas dan gerbang integrasi
 
-- **P0 — fondasi:** navigasi dan AOI terpisah dari job, arsip/provenance dan kueri polygon tepat, kontrak v2, akun/workspace serta pengajuan analisis. Integrasi raw/demo berlabel diperbolehkan; kalender terharmonisasi belum diklaim selesai.
-- **P1 — nilai inti versi pertama:** estimasi count setara MODIS yang lolos evaluasi domain, kalender bulanan/detail harian, tanggal bebas, anomali bergerak 10 tahun, penandaan, penugasan, laporan dan ekspor. P1 bukan fitur opsional setelah versi pertama.
-- **P2 — penguatan:** benchmark, reproduksibilitas, review pengguna, tambahan validasi, ketahanan dan kesiapan rilis sesuai kebutuhan. Eksperimen QA/konteks dapat berakhir no-go. Core P0/P1 tidak boleh dipindah ke P2 atau dipotong menjadi dua wilayah tanpa keputusan scope baru.
+- **P0 - fondasi:** navigasi dan AOI terpisah dari job, arsip/provenance dan kueri polygon tepat, kontrak v2, akun/workspace serta pengajuan analisis. Integrasi raw/demo berlabel diperbolehkan; kalender terharmonisasi belum diklaim selesai.
+- **P1 - nilai inti versi pertama:** estimasi count setara MODIS yang lolos evaluasi domain, kalender bulanan/detail harian, tanggal bebas, anomali bergerak 10 tahun, penandaan, penugasan, laporan dan ekspor. P1 bukan fitur opsional setelah versi pertama.
+- **P2 - penguatan:** benchmark, reproduksibilitas, review pengguna, tambahan validasi, ketahanan dan kesiapan rilis sesuai kebutuhan. Eksperimen QA/konteks dapat berakhir no-go. Core P0/P1 tidak boleh dipindah ke P2 atau dipotong menjadi dua wilayah tanpa keputusan scope baru.
 
 Selesainya Sprint 1 tidak berarti seluruh MVP selesai. Target historis global berlaku sejak versi pertama; job area baru boleh asinkron dan status model unsupported tetap jujur. Dua wilayah Indonesia menjadi contoh evaluasi, bukan allowlist pengguna.
 

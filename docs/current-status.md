@@ -1,4 +1,4 @@
-# Keputusan dan status aktif — 15 November 2026
+# Keputusan dan status aktif - 15 November 2026
 
 Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual, kolaborasi workspace server dan arsip global permanen sebagai prasyarat pada dokumen/rencana lama. Versi aktif memakai analisis historis on-demand dan penyimpanan pengguna lokal tanpa login.
 
@@ -38,7 +38,7 @@ Dokumen progres lama mencatat bukti pada saat dibuat. Angka tes/build historis t
 
 Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah, cache satu bundle aktif, dedup linear dan pemeriksaan edge ID/EN. [Laporan Sprint 3](orkhan-sprint-3-progress.md). O2 belum dijalankan karena peneliti belum tersedia menurut pengguna; O4 dan review manusia tetap terbuka. Tidak ada klaim performa mobile fisik, SLA global atau sustained 60 FPS.
 
-## Bukti historis — checkout Orkhan, 13 November 2026
+## Bukti historis - checkout Orkhan, 13 November 2026
 
 Daftar berikut adalah bukti sesi lama, bukan verifikasi commit on-demand `4b8a2a5` atau checkout setelahnya.
 
@@ -146,11 +146,11 @@ Catatan verifikasi checkout Orkhan sebelumnya (bukan hasil run Bagas di atas):
 - Suite Node terbaru pada checkout Orkhan: 127 kasus, 125 lulus dan dua skip integrasi native yang tidak dikonfigurasi. Tes mencakup monitoring lokal, ekspor, kontras dan cache bundle.
 - Playwright MCP kini berhasil: alur sintetis desktop/mobile, heatmap ke bukti asli, persistensi, koreksi, unduhan dan EN/ID lulus tanpa exception runtime. Pemeriksaan tambahan ekspor seluruh halaman dan kegagalan penyimpanan lulus. Database remote dan arsip aktif tidak diuji oleh pekerjaan ini.
 
-## Bukti commit on-demand — 14 November 2026
+## Bukti commit on-demand - 14 November 2026
 
 Handoff commit `4b8a2a5` mencatat typecheck/kontrak lulus; Node 259 kasus (231 lulus, 28 skip), Python 171 kasus (154 lulus, 17 skip). Ini catatan handoff, bukan pengujian ulang 15 November. Production build Linux belum terverifikasi: Turbopack gagal membuat port lokal, termasuk setelah eskalasi. Build Windows sebelumnya bukan bukti build commit ini. Integrasi baru memakai respons NASA sintetis, bukan layanan live atau routing hosted.
 
-## Verifikasi terbaru dan gerbang versi aktif — 15 November 2026
+## Verifikasi terbaru dan gerbang versi aktif - 15 November 2026
 
 Resolusi PR #15 menggabungkan `d94a567` dengan Sprint 3 Bagas: pemulihan indeks/checkpoint dan backpressure dipertahankan bersama pengaman storage/cancel/pergantian hasil. Regresi reload memperbaiki pemulihan hasil yang sebelumnya dibatalkan oleh pemulihan draft. Bukti gabungan terbaru: Node 271 lulus/39 skip, Python 164 lulus/17 skip, build Webpack/typecheck/kontrak/frontend checks lulus, serta 19 checkpoint browser sintetis tanpa exception runtime. [Rincian dan batas bukti](verification-2026-11-15.md). Daftar bug sweep berikut tetap merupakan catatan pengujian sebelum integrasi PR.
 

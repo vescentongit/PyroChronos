@@ -257,7 +257,7 @@ try {
       await page1.evaluate(
         'document.querySelector(".location-detail dl").textContent',
       )
-    ).includes("—"),
+    ).includes("-"),
   );
   passed.push(
     "Live synthetic snapshot and nullable evidence render without fabricated zeroes",

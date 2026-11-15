@@ -2,7 +2,7 @@
 
 Dokumen ini mencatat keputusan dan bukti R2-P2-N1, N3 dan N4. Benchmark transfer (N2) ada di [harmonization.md](harmonization.md).
 
-## N1 — Sensitivitas NRT versus standard
+## N1 - Sensitivitas NRT versus standard
 
 **Hasil: revisi NRT ke standard belum dapat diukur; tidak ada angka revisi yang diklaim. Yang tersedia adalah snapshot beku dan analisis sensitivitas penilaian periode berjalan terhadap skala asumsi.**
 
@@ -42,7 +42,7 @@ Pembacaan yang boleh diambil:
 
 Batas: skala asumsi tidak menyatakan seberapa besar revisi nyata; bobot tiga kotak dan satu bulan tidak mewakili wilayah lain; jendela 33 hari mencakup akhir Oktober saat NRT terakhir yang tersedia, sehingga hari terakhir dapat belum lengkap.
 
-## N3 — Eksperimen QA coverage
+## N3 - Eksperimen QA coverage
 
 **Keputusan: no-go untuk jadwal ini.**
 
@@ -50,7 +50,7 @@ Batas: skala asumsi tidak menyatakan seberapa besar revisi nyata; bobot tiga kot
 - Tanpa QA, denominator valid tidak dapat diturunkan. Coverage tetap `null`, bukan nol, dan unit kalender utama tidak diganti.
 - Tidak ada CO, SMAP atau ML yang ditambahkan. Pertanyaan yang jelas bila eksperimen dibuka kembali: apakah fraksi piksel valid per sel-bulan menjelaskan galat residual domain yang gagal (terutama Asia Tenggara maritim) lebih baik daripada rasio global; uji pada tahun yang belum terlihat.
 
-## N4 — Paket reproduksibilitas
+## N4 - Paket reproduksibilitas
 
 Satu hasil dapat direproduksi dengan `python pipeline/reproduce_check.py`. Skrip menghitung ulang evaluasi dan benchmark transfer dari tabel pasangan lokal dan membandingkannya dengan artefak yang di-commit. Keluaran terakhir: enam pemeriksaan OK.
 

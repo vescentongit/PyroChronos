@@ -16,7 +16,7 @@ Konfigurasi dibekukan sebelum hasil evaluasi dilihat: [harmonize_config.py](../.
 | [harmonize_polygon_check.py](../../pipeline/harmonize_polygon_check.py) | Diagnostik polygon kecil pada tahun uji |
 | [pipeline/models/](../../pipeline/models/) | Model, kebijakan referensi, evaluasi, dan manifest pasangan yang dikomit |
 
-## N1 — Pairing dan konfigurasi beku
+## N1 - Pairing dan konfigurasi beku
 
 - **Acuan:** `MODIS_SP` (Terra + Aqua, nominal 4 lintasan/hari). **Masukan:** `VIIRS_SNPP_SP` (Suomi NPP, 2 lintasan/hari). NOAA-20/21 belum diproses ke store sehingga tidak dipakai.
 - **Unit pasangan:** satu sel 1° × satu bulan kalender UTC, memakai kebijakan kualitas `quality-policy-1` (vegetasi/tak diketahui; confidence nominal/tinggi). Hanya bulan yang seluruhnya tercakup kedua arsip dan memakai set satelit beku yang dipakai; 156 bulan (2013-01 sampai 2025-12) memenuhi syarat, tidak ada yang dikeluarkan.
@@ -36,7 +36,7 @@ python pipeline/reference_baseline.py --minimum-years
 python pipeline/harmonize_polygon_check.py --polygons 120
 ```
 
-## N2 — Evaluasi
+## N2 - Evaluasi
 
 Kandidat pada sampel yang sama (MAE dan bias per sel-bulan, satuan deteksi):
 
@@ -63,7 +63,7 @@ Aturan domain tervalidasi (beku, `decision-rule-1`), pada tahun uji: minimal 500
 | europe_mediterranean | 32.542 | 3,23 | 17,9 | −17,2% | −17,3% | ditolak: bias, transfer |
 | **maritime_southeast_asia** (Indonesia, Kalteng, Papua) | 20.843 | 4,11 | 33,3 | **+25,3%** | +26,8% | **ditolak: bias, transfer** |
 | south_and_mainland_southeast_asia | 43.085 | 14,27 | 120,8 | +25,1% | +27,3% | ditolak: bias, transfer |
-| other | 51.361 | 4,96 | 28,2 | +2,9% | — | tidak pernah divalidasi |
+| other | 51.361 | 4,96 | 28,2 | +2,9% | - | tidak pernah divalidasi |
 
 Temuan yang tidak disembunyikan:
 
@@ -75,7 +75,7 @@ Temuan yang tidak disembunyikan:
 
 **Diagnostik polygon kecil** (bukan bagian aturan penerimaan, tidak dipakai menyetel apa pun; [polygon-check](../../pipeline/harmonize_polygon_check.py), 120 kotak 0,5° acak seed `20261112` di domain tervalidasi × 5 tahun uji): dari 185 polygon-tahun dengan ≥ 30 deteksi MODIS, bias relatif −0,5%, median rasio 1,00, tetapi hanya **61%** yang berada dalam ±25% dari MODIS asli (per domain 50–77%). Maka estimasi untuk area kecil bersifat perkiraan; kalimat itu ikut di `method.validationDomain`.
 
-## N3 — Referensi bergerak 10 tahun
+## N3 - Referensi bergerak 10 tahun
 
 Kebijakan `reference-policy-1`, dibekukan:
 
@@ -87,7 +87,7 @@ Kebijakan `reference-policy-1`, dibekukan:
 - `insufficient_history` bila tahun referensi valid < minimum; nilai, selisih, skor `null` dan `referenceYears` menunjukkan tahun yang ada.
 - **Minimum tahun valid = 4**, dipilih dengan aturan beku: k terkecil yang MAE backtest prakiraan mediannya ≤ 110% MAE k = 10, pada seri MODIS asli per domain-bulan 2000–2025 dan target tahun validasi saja. MAE relatif k = 3..10: 0,274; 0,256; 0,256; 0,245; 0,243; 0,241; 0,243; 0,239. Konsekuensi: referensi 4 tahun lebih berisik daripada 10; berkas [baseline-a34f51d0a650.json](../../pipeline/models/baseline-a34f51d0a650.json) menyimpan angka lengkapnya.
 
-## N4 — Kalender, detail, perbandingan
+## N4 - Kalender, detail, perbandingan
 
 - **Bulanan:** semua bulan pada periode primer hadir, termasuk `no_data` (count `null`). `status`: `available` bila estimasi ada; `partial` bila sumber hilang/sebagian atau jendela VIIRS belum tercakup; `method_unsupported` bila polygon di luar domain tervalidasi; `no_data` bila tidak ada sumber.
 - **Aturan agregasi:** estimasi = pengali × deteksi VIIRS yang diterima di dalam polygon (aditif). Total hari = total bulan = total periode; total kalender cocok dengan ringkasan. Nilai harian dibulatkan 6 desimal hanya untuk tampilan dan merupakan alokasi aditif, bukan validasi harian terpisah.
