@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { geoGraticule10, geoOrthographic, geoPath } from "d3-geo";
+import { geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from "d3-geo";
 import type { FeatureCollection } from "geojson";
 import {
   Globe2,
@@ -22,8 +22,12 @@ interface RotatingEarthProps {
   language?: Language;
   hotspots: GlobeHotspot[];
   onHotspotChange?: (point: GlobeHotspot | null) => void;
-  onLocationSelect?: (point: GlobeLocation) => void;
+  onLocationSelect?: (point: GlobeLocation, hotspot?: GlobeHotspot) => void;
+  onFlightStart?: (point: GlobeLocation) => void;
+  onRelease?: () => void;
+  controlRef?: React.MutableRefObject<GlobeHandle | null>;
 }
+export type GlobeHandle = { release: () => void };
 type Controls = {
   zoom: (factor: number) => void;
   reset: () => void;
@@ -40,6 +44,9 @@ export default function RotatingEarth({
   hotspots,
   onHotspotChange,
   onLocationSelect,
+  onFlightStart,
+  onRelease,
+  controlRef,
 }: RotatingEarthProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -82,6 +89,10 @@ export default function RotatingEarth({
     let navigationDone = false;
     let navigationTimer: number | null = null;
     let flight: { target: GlobeLocation; start: number; rotation: [number, number, number]; zoom: number } | null = null;
+    let held: GlobeLocation | null = null;
+    let pending: GlobeHotspot | undefined;
+    let home: { rotation: [number, number, number]; zoom: number } | null = null;
+    let ret: { from: [number, number, number]; fromZoom: number; start: number } | null = null;
     let hover = false;
     let focused = false;
     let inView = true;
@@ -256,6 +267,70 @@ export default function RotatingEarth({
       context.fillRect(cx - scaled * 1.4, cy - scaled * 1.3, scaled * 1.2, scaled * 1.2);
       context.globalCompositeOperation = "source-over";
 
+      const places = [
+        { name: "RONDÔNIA", at: [-62, -11] as [number, number] },
+        { name: "MIOMBO", at: [28, -12] as [number, number] },
+        { name: "KALIMANTAN", at: [113.4, -1.75] as [number, number] },
+        { name: "PAPUA", at: [140.25, -8.1] as [number, number] },
+      ];
+      const arc = (from: [number, number], to: [number, number], tone: string, index: number) => {
+        const route = geoInterpolate(from, to);
+        let moved = false;
+        context.beginPath();
+        for (let step = 0; step <= 48; step++) {
+          const t = step / 48;
+          const coordinates = route(t);
+          if (!isFrontFacing(coordinates, center)) {
+            moved = false;
+            continue;
+          }
+          const xy = projection(coordinates);
+          if (!xy) continue;
+          const lift = 1 + 0.2 * Math.sin(Math.PI * t);
+          const x = cx + (xy[0] - cx) * lift;
+          const y = cy + (xy[1] - cy) * lift;
+          if (!moved) context.moveTo(x, y);
+          else context.lineTo(x, y);
+          moved = true;
+        }
+        context.strokeStyle = tone;
+        context.lineWidth = 1.4;
+        context.shadowColor = tone;
+        context.shadowBlur = 8;
+        context.setLineDash([6, 8]);
+        context.lineDashOffset = calm ? 0 : -(now / 38 + index * 9);
+        context.stroke();
+        context.setLineDash([]);
+        context.shadowBlur = 0;
+      };
+      if (!flight) {
+        arc(places[0].at, places[1].at, "#ff7a1a", 0);
+        arc(places[1].at, places[2].at, "#ff7a1a", 1);
+        arc(places[2].at, places[3].at, "#ff7a1a", 2);
+      }
+
+      const revealed = show || hover || focused || flight;
+      for (const [index, place] of places.entries()) {
+        if (flight || !isFrontFacing(place.at, center)) continue;
+        const xy = projection(place.at);
+        if (!xy) continue;
+        const phase = calm ? 0.3 : (now / 2200 + index * 0.27) % 1;
+        context.beginPath();
+        context.arc(xy[0], xy[1], 5 + phase * 13, 0, Math.PI * 2);
+        context.strokeStyle = `rgba(94,234,212,${0.8 * (1 - phase)})`;
+        context.lineWidth = 1;
+        context.stroke();
+        context.beginPath();
+        context.arc(xy[0], xy[1], 3.2, 0, Math.PI * 2);
+        context.fillStyle = "#5eead4";
+        context.shadowColor = "#5eead4";
+        context.shadowBlur = 10;
+        context.fill();
+        context.shadowBlur = 0;
+        context.font = `600 9.5px ${family}`;
+        context.fillStyle = "rgba(255,255,255,0.88)";
+        context.fillText(place.name, xy[0] + 8, xy[1] - 7);
+      }
       projected = [];
       if (show) {
         for (const [index, point] of pointsRef.current.entries()) {
@@ -265,31 +340,10 @@ export default function RotatingEarth({
           if (!xy) continue;
           projected.push({ point, x: xy[0], y: xy[1] });
           const isActive = active?.id === point.id;
-          const base = Math.min(5, 2 + Math.log10(point.count + 1)) * Math.min(1, size.radius / 250);
-          const radius = isActive ? 20 : 4 + base * 1.7;
-          const glow = context.createRadialGradient(xy[0], xy[1], 0, xy[0], xy[1], radius);
-          glow.addColorStop(0, "rgba(255,190,100,0.95)");
-          glow.addColorStop(0.35, "rgba(252,60,35,0.5)");
-          glow.addColorStop(1, "rgba(252,60,35,0)");
-          context.globalCompositeOperation = "lighter";
-          context.fillStyle = glow;
+          const base = Math.min(3.2, 1.1 + Math.log10(point.count + 1) * 0.55) * Math.min(1, size.radius / 250);
           context.beginPath();
-          context.arc(xy[0], xy[1], radius, 0, Math.PI * 2);
-          context.fill();
-          context.globalCompositeOperation = "source-over";
-          if (!calm && isActive) {
-            const phase = (now / 1600 + index * 0.173) % 1;
-            context.beginPath();
-            context.arc(xy[0], xy[1], 4 + phase * (8 + base * 2), 0, Math.PI * 2);
-            context.strokeStyle = "#fc3c23";
-            context.globalAlpha = (1 - phase) * 0.55;
-            context.lineWidth = 1.2;
-            context.stroke();
-            context.globalAlpha = 1;
-          }
-          context.beginPath();
-          context.arc(xy[0], xy[1], isActive ? 3.6 : Math.max(1.6, base * 0.55), 0, Math.PI * 2);
-          context.fillStyle = "#fff7ed";
+          context.arc(xy[0], xy[1], isActive ? 4.2 : base, 0, Math.PI * 2);
+          context.fillStyle = isActive ? "#fff7ed" : "rgba(255,112,64,0.92)";
           context.fill();
           if (isActive) {
             context.beginPath();
@@ -298,6 +352,27 @@ export default function RotatingEarth({
             context.lineWidth = 1;
             context.stroke();
           }
+        }
+      }
+      const lock = held ?? flight?.target ?? null;
+      if (lock && isFrontFacing([lock.lng, lock.lat], center)) {
+        const at = projection([lock.lng, lock.lat]);
+        if (at) {
+          const beat = motion.matches ? 0 : (performance.now() / 900) % 1;
+          const reach = 24 - 7 * Math.sin(beat * Math.PI);
+          context.strokeStyle = "#ffffff";
+          context.lineWidth = 1.6;
+          for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+            context.beginPath();
+            context.moveTo(at[0] + sx * reach, at[1] + sy * (reach - 9));
+            context.lineTo(at[0] + sx * reach, at[1] + sy * reach);
+            context.lineTo(at[0] + sx * (reach - 9), at[1] + sy * reach);
+            context.stroke();
+          }
+          context.beginPath();
+          context.arc(at[0], at[1], 3, 0, Math.PI * 2);
+          context.fillStyle = "#ffffff";
+          context.fill();
         }
       }
     }
@@ -314,8 +389,36 @@ export default function RotatingEarth({
       frame = null;
       const elapsed = previousTime ? Math.min(time - previousTime, 60) : 0;
       previousTime = time;
+      if (ret && home) {
+        const back = Math.min(1, (time - ret.start) / 1100);
+        const eased = 1 - (1 - back) ** 3;
+        rotation = [
+          ret.from[0] + (home.rotation[0] - ret.from[0]) * eased,
+          ret.from[1] + (home.rotation[1] - ret.from[1]) * eased,
+          0,
+        ];
+        zoom = ret.fromZoom + (home.zoom - ret.fromZoom) * eased;
+        render();
+        if (back >= 1) {
+          ret = null;
+          held = null;
+          home = null;
+          navigating = false;
+          navigationDone = false;
+          setActive(null);
+          onRelease?.();
+          render();
+          schedule();
+        } else schedule();
+        return;
+      }
+      if (held && !flight) {
+        render();
+        if (!motion.matches) schedule();
+        return;
+      }
       if (flight) {
-        const progress = motion.matches ? 1 : Math.min(1, (time - flight.start) / 650);
+        const progress = motion.matches ? 1 : Math.min(1, (time - flight.start) / 1200);
         const eased = 1 - (1 - progress) ** 3;
         const delta = ((-flight.target.lng - flight.rotation[0] + 540) % 360 + 360) % 360 - 180;
         rotation = [flight.rotation[0] + delta * eased,
@@ -421,7 +524,7 @@ export default function RotatingEarth({
         setActive(hit?.point || null);
         const location = projection.invert([x, y]);
         if (Math.hypot(x - size.width / 2, y - size.height / 2) <= size.radius * zoom && location)
-          openLocation(hit?.point ?? { lng: location[0], lat: location[1] });
+          openLocation(hit?.point ?? { lng: location[0], lat: location[1] }, hit?.point);
       }
       render();
       schedule();
@@ -495,22 +598,40 @@ export default function RotatingEarth({
       render();
       schedule();
     }
-    function openLocation(target: GlobeLocation) {
+    function openLocation(target: GlobeLocation, hotspot?: GlobeHotspot) {
       if (navigating) return;
       navigating = true;
-      setOpening(true);
+      pending = hotspot;
+      home = { rotation: [...rotation], zoom };
+      onFlightStart?.(target);
       if (motion.matches) { finishLocation(target); return; }
       flight = { target, start: performance.now(), rotation: [...rotation], zoom };
-      // Explicit navigation must finish even when the browser throttles Canvas frames.
-      navigationTimer = window.setTimeout(() => finishLocation(target), 650);
+      // The card must open even when the browser throttles Canvas frames.
+      navigationTimer = window.setTimeout(() => finishLocation(target), 1250);
+      schedule();
+    }
+    function release() {
+      if (!held || ret) return;
+      if (motion.matches || !home) {
+        held = null;
+        home = null;
+        navigating = false;
+        navigationDone = false;
+        setActive(null);
+        onRelease?.();
+        render();
+        return;
+      }
+      ret = { from: [...rotation], fromZoom: zoom, start: performance.now() };
       schedule();
     }
     function finishLocation(target: GlobeLocation) {
       if (navigationDone || controller.signal.aborted) return;
       navigationDone = true;
       flight = null;
+      held = target;
       if (navigationTimer !== null) clearTimeout(navigationTimer);
-      onLocationSelect?.(target);
+      onLocationSelect?.(target, pending);
     }
     controls.current = {
       redraw() { setActive(null); render(); },
@@ -539,6 +660,7 @@ export default function RotatingEarth({
         render();
       },
     };
+    if (controlRef) controlRef.current = { release };
     const listeners = {
       pointerdown: pointerDown,
       pointermove: pointerMove,
@@ -605,8 +727,9 @@ export default function RotatingEarth({
       intersection.disconnect();
       motion.removeEventListener("change", motionChange);
       controls.current = null;
+      if (controlRef) controlRef.current = null;
     };
-  }, [width, height, onHotspotChange, onLocationSelect]);
+  }, [width, height, onHotspotChange, onLocationSelect, onFlightStart, onRelease, controlRef]);
 
   return (
     <div ref={hostRef} className={`earth-visualization ${opening ? "earth-opening" : ""} ${className}`} aria-busy={opening}>
