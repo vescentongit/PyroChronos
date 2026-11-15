@@ -4,6 +4,8 @@ Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual, ko
 
 ## Penyimpanan dan akses
 
+Home menggunakan snapshot statis FIRMS global VIIRS NOAA-20 tanggal 8–14 November 2026 UTC, sesuai permintaan terbaru pengguna. Sebanyak 372.148 deteksi nyata dibundel dalam 2.379 bin area 2° pada `src/data/globe-hotspots.json` (sekitar 93 KB), bersumber dari NASA melalui Esri Living Atlas. Tidak ada fetch FIRMS atau pembaruan harian saat Home dibuka. Label tanggal dan atribusi terlihat. Klik globe tetap memberi zoom lalu membuka peta NRT pada koordinat pilihan; peta tujuan memakai aliran data terpisah. [Verifikasi snapshot dan bukti unduhan](verification-globe-2026-11-15.md).
+
 UI memakai workspace lokal, localStorage dan IndexedDB. Area, hasil, riwayat serta laporan disimpan pada browser perangkat yang digunakan. Menghapus data browser dapat menghapus catatan tersebut. Sinkronisasi perangkat, keanggotaan tim, identitas terverifikasi dan penugasan lintas pengguna belum tersedia; nama pemeriksa lokal tidak boleh diklaim sebagai identitas akun terverifikasi.
 
 API Auth.js/Google, workspace server dan laporan koordinator dipertahankan sebagai legacy. UI aktif tidak membutuhkannya. Data server terdahulu tetap disimpan; menghilangkan login dari UI tidak memberi akses publik ke catatan privat lama. Kontrak v2 server tetap berlaku bagi endpoint legacy tersebut, tetapi bukan prasyarat penggunaan web sekarang.

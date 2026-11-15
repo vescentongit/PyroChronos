@@ -15,7 +15,25 @@ colors:
   quiet: "#aaaaaa"
   baseline: "#7897c9"
   signal-hover: "#ff705d"
+  navigation: "#132a4c"
+  navigation-line: "#315b96"
+  navigation-hover: "#17355f"
+  navigation-ink: "#e3edff"
 typography:
+  sidebar-brand:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "20px"
+    fontWeight: 750
+    letterSpacing: "-0.03em"
+  sidebar-navigation:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "13px"
+    fontWeight: 500
+    lineHeight: 1.5
+  sidebar-caption:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "12px"
+    lineHeight: 1.6
   display:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "clamp(44px, 5vw, 80px)"
@@ -87,10 +105,11 @@ components:
     rounded: "{rounded.control}"
     padding: "9px 12px"
   navigation-active:
-    backgroundColor: "{colors.mission}"
-    textColor: "{colors.white}"
+    backgroundColor: "{colors.navigation}"
+    textColor: "{colors.navigation-ink}"
+    borderColor: "{colors.navigation-line}"
     rounded: "{rounded.navigation}"
-    padding: "13px 14px"
+    padding: "12px"
   panel:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.white}"
@@ -107,6 +126,8 @@ components:
 > **Keputusan aktif 13 November 2026:** seluruh fitur web tanpa login; Google OAuth bukan persyaratan. Penyimpanan pengguna lokal di browser. Ketentuan akun/kolaborasi server dan status implementasi di bawah merupakan konteks rencana/riwayat sebelumnya; untuk keputusan dan status terbaru ikuti [status aktif](docs/current-status.md).
 
 # Design System: PyroChronos
+
+The user-supplied dark-background variant in `public/logo-light.png` is the source of the brand mark. Home and Simulation headers/footers share `BrandMark`, using an optimized transparent PNG without any background, padding or frame. The favicon is a transparent 32px PNG; the Apple touch icon is a transparent 180px PNG using the same artwork. The original logo files remain intact. Functional fire icons remain separate from the brand mark.
 
 ## Overview
 
@@ -213,7 +234,9 @@ Priority badges combine a written category with a subtle red or blue tint. Tiny 
 
 The signature visual uses `d3-geo` orthographic Canvas projection, local Natural Earth land geometry, and (2934) locally precomputed land dots. Land and hotspot points are culled on the back hemisphere. This is geographic rendering; no generated raster asset is required for this implementation.
 
-Hover or focus reveals illustrative points; dragging rotates, the wheel or plus/minus controls zoom, arrows rotate from keyboard focus, and Home resets the view. The explicit hotspot toggle supports touch discovery; pause/play and reset remain visible below the globe. Rotation pauses during hover, focus, dragging, reduced-motion preference, hidden-tab state, and offscreen state as implemented. Reduced-motion users start paused. A polite readout describes the active point. Pointer release hit-tests the current position before selecting a region; a drag must not accidentally navigate. Study-region links offer the keyboard destination alongside the general Simulation CTA. Keep loading and geographic-failure messaging visible when necessary.
+The Home globe bundles a fixed worldwide NASA FIRMS VIIRS NOAA-20 snapshot for 8–14 November 2026 UTC in `src/data/globe-hotspots.json`. The 372,148 detections are grouped into 2,379 two-degree spatial bins with exact counts. Data was obtained once through Esri Living Atlas's NASA feed. This is a historical snapshot, with visible dates and source attribution; it has no daily refresh or runtime FIRMS request. Points are visible by default and scale down with the globe on mobile so adjacent areas remain legible. Bins represent detected heat, not individual confirmed fires. The destination map retains its separate current-data behavior.
+
+Dragging rotates, the wheel or plus/minus controls zoom, arrows rotate from keyboard focus, and Home resets the view. Hotspot visibility, pause/play and reset controls remain below the globe. Rotation pauses during hover, focus, dragging, reduced-motion preference, hidden-tab state, and offscreen state. Reduced-motion users start paused. Clicking anywhere on the sphere rotates toward that location and zooms for 650 ms before opening the NRT map at the same coordinates. A drag or a click outside the sphere must not navigate. Enter or Space opens the centered location; reduced motion navigates directly. Study-region links and the general map CTA remain available independently of the globe.
 
 ### Operational Map and Evidence
 
@@ -251,7 +274,7 @@ Keep density kernels compact so they do not obscure the satellite map: MapLibre 
 ### Don't:
 
 - **Don't** reintroduce the superseded forest-green visual identity or an unrelated font pairing.
-- **Don't** present the globe's illustrative points or dashboard fixtures as current fire conditions or validated rankings.
+- **Don't** present dashboard fixtures as current conditions, substitute them for a failed FIRMS globe feed, or describe heat detections as confirmed fires.
 - **Don't** claim the real snapshot analytics API, individual authentication, or production report-correction workflow is complete; those integrations remain pending.
 - **Don't** show interactive fallback-map controls over a working map or infer a click from stale hover state.
 - **Don't** make animation, hover, or color the only way to understand evidence or reach Simulation.

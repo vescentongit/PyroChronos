@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Flame,
@@ -16,6 +16,8 @@ import {
   Satellite,
   Info,
   Menu,
+  X,
+  HardDrive,
   LocateFixed,
   RefreshCw,
   Globe2,
@@ -40,6 +42,7 @@ import {
 import { useSnapshot } from "./use-snapshot";
 import { InspectionReports } from "./inspection-reports";
 import { ConnectedWorkspace } from "./connected-workspace";
+import { BrandMark } from "./brand-mark";
 import type { LocalLocation } from "@/lib/local-monitoring";
 
 const GlobalHeatmap = dynamic(() => import("./global-heatmap"), { ssr: false });
@@ -62,6 +65,7 @@ export default function DashboardWorkspace() {
   const [selected, setSelected] = useState("");
   const [tab, setTab] = useState<Tab>("latest");
   const [menu, setMenu] = useState(false);
+  const menuToggle = useRef<HTMLButtonElement>(null);
   const [refresh, setRefresh] = useState(0);
   const [reportRequest, setReportRequest] = useState(0);
   const [now, setNow] = useState(Date.now());
@@ -100,8 +104,9 @@ export default function DashboardWorkspace() {
         ? t("Sedang", "Medium")
         : t("Belum dinilai", "Not assessed");
   const navigation = [
-    { id: "overview" as const, name: "Dashboard", icon: LayoutDashboard },
+    { id: "global" as const, name: t("Peta aktivitas", "Activity map"), icon: Globe2 },
     { id: "research" as const, name: t("Riset historis", "Historical research"), icon: Clock3 },
+    { id: "overview" as const, name: "Dashboard", icon: LayoutDashboard },
     {
       id: "analysis" as const,
       name: t("Perbandingan sensor", "Sensor comparison"),
@@ -112,12 +117,35 @@ export default function DashboardWorkspace() {
       name: t("Laporan lapangan", "Field reports"),
       icon: ClipboardList,
     },
-    {
-      id: "global" as const,
-      name: t("Peta aktivitas", "Activity map"),
-      icon: Globe2,
-    },
   ];
+
+  useEffect(() => {
+    if (!menu) return;
+    const sidebar = document.getElementById("workspace-navigation");
+    const desktop = window.matchMedia("(min-width: 851px)");
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebar?.querySelector<HTMLButtonElement>(".sidebar-close")?.focus();
+    const dismissOnDesktop = () => { if (desktop.matches) setMenu(false); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); setMenu(false); }
+      if (event.key !== "Tab") return;
+      const controls = sidebar?.querySelectorAll<HTMLElement>('a[href], button, select');
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dismissOnDesktop();
+    desktop.addEventListener("change", dismissOnDesktop);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      desktop.removeEventListener("change", dismissOnDesktop);
+      document.removeEventListener("keydown", onKey);
+      menuToggle.current?.focus();
+    };
+  }, [menu]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -189,39 +217,36 @@ export default function DashboardWorkspace() {
 
   return (
     <div className="shell">
-      <a className="skip-link" href="#workspace-content">
+      <a className="skip-link" href="#workspace-content" inert={menu}>
         {t("Lewati ke konten", "Skip to content")}
       </a>
-      <aside className={menu ? "sidebar open" : "sidebar"}>
-        <a className="brand" href="/">
-          <span className="brand-icon">
-            <Flame size={22} />
-          </span>{" "}
-          PyroChronos<span className="brand-period">.</span>
-        </a>
-        <div className="workspace">
-          {t("RUANG KERJA", "WORKSPACE")}
-          <span>
-            {t("Observatorium api Indonesia", "Indonesia Fire Observatory")}
-          </span>
+      <button className="sidebar-backdrop" hidden={!menu} tabIndex={-1} aria-label={t("Tutup navigasi", "Close navigation")} onClick={() => setMenu(false)} />
+      <aside id="workspace-navigation" className={menu ? "sidebar open" : "sidebar"}>
+        <div className="sidebar-heading">
+          <a className="brand" href="/">
+            <BrandMark />{" "}
+            PyroChronos<span className="brand-period">.</span>
+          </a>
+          <button type="button" className="sidebar-close" aria-label={t("Tutup menu", "Close menu")} onClick={() => setMenu(false)}><X size={20} /></button>
         </div>
+        <p className="workspace">{t("Ruang riset aktivitas api", "Fire research workspace")}</p>
         <nav aria-label={t("Navigasi utama", "Main navigation")}>
           {navigation.map((item) => (
             <button
               key={item.id}
-              className={view === item.id ? "nav-item active" : "nav-item"}
+              className={`nav-item${view === item.id ? " active" : ""}${item.id === "overview" ? " nav-secondary-start" : ""}`}
               aria-current={view === item.id ? "page" : undefined}
               onClick={() => {
                 setView(item.id);
                 setMenu(false);
               }}
             >
-              <item.icon size={18} />
-              {item.name}
+              <item.icon size={18} aria-hidden="true" />
+              <span>{item.name}</span>
             </button>
           ))}
         </nav>
-        <label className="mode-select">
+        <label className="mode-select sidebar-data">
           <span>{t("Data ruang kerja", "Workspace data")}</span>
           <select value={mode} onChange={event => setMode(event.target.value as DataMode)}>
             <option value="operational">{t("Analisis tersimpan", "Saved analyses")}</option>
@@ -229,46 +254,28 @@ export default function DashboardWorkspace() {
           </select>
         </label>
         <div className="sidebar-bottom">
-          <div className="mission">
-            <Satellite size={20} />
-            <strong>
-              {t("Dari orbit, untuk bumi.", "From orbit, for Earth.")}
-            </strong>
-            <p>
-              {t(
-                "Data lintas sensor untuk keputusan yang lebih terarah.",
-                "Cross-sensor evidence for informed decisions.",
-              )}
-            </p>
-            <a
-              href="https://firms.modaps.eosdis.nasa.gov/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              NASA FIRMS <ArrowUpRight size={14} />
-            </a>
+          <div className="local-workspace">
+            <HardDrive size={17} aria-hidden="true" />
+            <div><strong>{t("Workspace lokal", "Local workspace")}</strong><p>{t("Hasil dan catatan tersimpan di browser ini.", "Results and notes stay in this browser.")}</p></div>
           </div>
-          <div className="profile">
-            <span>KO</span>
-            <div>
-              {t("Koordinator observasi", "Observation coordinator")}
-              <small>
-                {view === "global" || view === "research"
-                  ? "NASA FIRMS"
-                  : mode === "demo"
-                    ? t("Ruang kerja demo", "Demo workspace")
-                    : t("Pemantauan", "Monitoring")}
-              </small>
-            </div>
-          </div>
+          <a
+            className="sidebar-source"
+            href="https://firms.modaps.eosdis.nasa.gov/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Satellite size={16} aria-hidden="true" /> NASA FIRMS <ArrowUpRight size={14} aria-hidden="true" />
+          </a>
         </div>
       </aside>
-      <main>
+      <main inert={menu}>
         <header className="topbar">
           <button
             className="mobile-toggle"
+            ref={menuToggle}
             aria-label={t("Buka/tutup navigasi", "Toggle navigation")}
             aria-expanded={menu}
+            aria-controls="workspace-navigation"
             onClick={() => setMenu(!menu)}
           >
             <Menu />
@@ -987,7 +994,7 @@ export default function DashboardWorkspace() {
           )}
           <footer>
             <span>
-              <Flame size={14} /> PyroChronos ·{" "}
+              <BrandMark size={24} /> PyroChronos ·{" "}
               {t("Observatorium api Indonesia", "Indonesia Fire Observatory")}
             </span>
             <span>

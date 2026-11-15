@@ -12,29 +12,24 @@ import {
   RotateCcw,
   Flame,
 } from "lucide-react";
-import type { Language, RegionId } from "@/lib/regions";
-import { candidates } from "@/lib/data";
-import { constrainZoom, isFrontFacing } from "@/lib/globe-geometry";
-
-export const globeHotspots = Object.entries(candidates).flatMap(
-  ([region, points]) =>
-    points.map((point) => ({ ...point, region: region as RegionId })),
-);
-export type GlobeHotspot = (typeof globeHotspots)[number];
+import type { Language } from "@/lib/regions";
+import { constrainZoom, isFrontFacing, type GlobeHotspot, type GlobeLocation } from "@/lib/globe-geometry";
 
 interface RotatingEarthProps {
   width?: number;
   height?: number;
   className?: string;
   language?: Language;
+  hotspots: GlobeHotspot[];
   onHotspotChange?: (point: GlobeHotspot | null) => void;
-  onHotspotSelect?: (point: GlobeHotspot) => void;
+  onLocationSelect?: (point: GlobeLocation) => void;
 }
 type Controls = {
   zoom: (factor: number) => void;
   reset: () => void;
   pause: () => void;
   hotspots: () => void;
+  redraw: () => void;
 };
 
 export default function RotatingEarth({
@@ -42,8 +37,9 @@ export default function RotatingEarth({
   height = 650,
   className = "",
   language = "id",
+  hotspots,
   onHotspotChange,
-  onHotspotSelect,
+  onLocationSelect,
 }: RotatingEarthProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -51,7 +47,13 @@ export default function RotatingEarth({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [pinned, setPinned] = useState(false);
+  const [pinned, setPinned] = useState(true);
+  const [opening, setOpening] = useState(false);
+  const pointsRef = useRef(hotspots);
+  useEffect(() => {
+    pointsRef.current = hotspots;
+    controls.current?.redraw();
+  }, [hotspots]);
   const t = (id: string, en: string) => (language === "id" ? id : en);
 
   useEffect(() => {
@@ -75,7 +77,11 @@ export default function RotatingEarth({
     let rotation: [number, number, number] = [-119, 4, 0];
     let zoom = 1;
     let isPaused = motion.matches;
-    let show = false;
+    let show = true;
+    let navigating = false;
+    let navigationDone = false;
+    let navigationTimer: number | null = null;
+    let flight: { target: GlobeLocation; start: number; rotation: [number, number, number]; zoom: number } | null = null;
     let hover = false;
     let focused = false;
     let inView = true;
@@ -133,8 +139,8 @@ export default function RotatingEarth({
         context.fill();
       }
       projected = [];
-      if (show || hover || focused) {
-        for (const point of globeHotspots) {
+      if (show) {
+        for (const point of pointsRef.current) {
           const coordinates: [number, number] = [point.lng, point.lat];
           if (!isFrontFacing(coordinates, center)) continue;
           const xy = projection(coordinates);
@@ -144,11 +150,11 @@ export default function RotatingEarth({
           context.arc(
             xy[0],
             xy[1],
-            active?.id === point.id ? 5 : 3.2,
+            active?.id === point.id ? 6 : Math.min(5, 2 + Math.log10(point.count + 1)) * Math.min(1, size.radius / 250),
             0,
             Math.PI * 2,
           );
-          context.fillStyle = point.hours <= 24 ? "#fc3c23" : "#ba1e68";
+          context.fillStyle = "#fc563e";
           context.fill();
           if (active?.id === point.id) {
             context.beginPath();
@@ -156,19 +162,6 @@ export default function RotatingEarth({
             context.strokeStyle = "#ffffff";
             context.lineWidth = 1;
             context.stroke();
-          }
-        }
-        // Named study regions stay legible when points cluster at global scale.
-        for (const [name, coordinates] of [
-          ["KALIMANTAN", [113.8, 2.5]],
-          ["PAPUA", [143, -11.5]],
-        ] as [string, [number, number]][]) {
-          if (!isFrontFacing(coordinates, center)) continue;
-          const xy = projection(coordinates);
-          if (xy) {
-            context.font = `600 10px ${getComputedStyle(canvas).fontFamily}`;
-            context.fillStyle = "#ffffff";
-            context.fillText(name, xy[0] - name.length * 3, xy[1]);
           }
         }
       }
@@ -186,6 +179,20 @@ export default function RotatingEarth({
       frame = null;
       const elapsed = previousTime ? Math.min(time - previousTime, 60) : 0;
       previousTime = time;
+      if (flight) {
+        const progress = motion.matches ? 1 : Math.min(1, (time - flight.start) / 650);
+        const eased = 1 - (1 - progress) ** 3;
+        const delta = ((-flight.target.lng - flight.rotation[0] + 540) % 360 + 360) % 360 - 180;
+        rotation = [flight.rotation[0] + delta * eased,
+          flight.rotation[1] + (-flight.target.lat - flight.rotation[1]) * eased, 0];
+        zoom = flight.zoom + (4.5 - flight.zoom) * eased;
+        render();
+        if (progress === 1) {
+          const target = flight.target;
+          finishLocation(target);
+        } else schedule();
+        return;
+      }
       if (!isPaused && !hover && !focused && !dragging)
         rotation[0] += elapsed * 0.004;
       render();
@@ -209,7 +216,7 @@ export default function RotatingEarth({
       onHotspotChange?.(next);
     }
     function pointerMove(event: PointerEvent) {
-      if (!canvas) return;
+      if (!canvas || navigating) return;
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left,
         y = event.clientY - rect.top;
@@ -241,8 +248,11 @@ export default function RotatingEarth({
       if (!hover) schedule();
     }
     function pointerDown(event: PointerEvent) {
-      if (!canvas || (event.pointerType === "mouse" && event.button !== 0))
+      if (!canvas || navigating || (event.pointerType === "mouse" && event.button !== 0))
         return;
+      const rect = canvas.getBoundingClientRect();
+      if (Math.hypot(event.clientX - rect.left - size.width / 2,
+        event.clientY - rect.top - size.height / 2) > size.radius * zoom) return;
       canvas.setPointerCapture(event.pointerId);
       dragging = {
         id: event.pointerId,
@@ -274,7 +284,9 @@ export default function RotatingEarth({
             : best;
         }, null);
         setActive(hit?.point || null);
-        if (hit) onHotspotSelect?.(hit.point);
+        const location = projection.invert([x, y]);
+        if (Math.hypot(x - size.width / 2, y - size.height / 2) <= size.radius * zoom && location)
+          openLocation(hit?.point ?? { lng: location[0], lat: location[1] });
       }
       render();
       schedule();
@@ -296,6 +308,7 @@ export default function RotatingEarth({
     }
     function wheel(event: WheelEvent) {
       event.preventDefault();
+      if (navigating) return;
       zoom = constrainZoom(zoom * (event.deltaY > 0 ? 0.94 : 1.06));
       render();
     }
@@ -310,6 +323,13 @@ export default function RotatingEarth({
       schedule();
     }
     function keyboard(event: KeyboardEvent) {
+      if (navigating) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const location = projection.invert([size.width / 2, size.height / 2]);
+        if (location) openLocation({ lng: location[0], lat: location[1] });
+        return;
+      }
       const actions: Record<string, () => void> = {
         ArrowLeft: () => (rotation[0] -= 8),
         ArrowRight: () => (rotation[0] += 8),
@@ -340,12 +360,32 @@ export default function RotatingEarth({
       render();
       schedule();
     }
+    function openLocation(target: GlobeLocation) {
+      if (navigating) return;
+      navigating = true;
+      setOpening(true);
+      if (motion.matches) { finishLocation(target); return; }
+      flight = { target, start: performance.now(), rotation: [...rotation], zoom };
+      // Explicit navigation must finish even when the browser throttles Canvas frames.
+      navigationTimer = window.setTimeout(() => finishLocation(target), 650);
+      schedule();
+    }
+    function finishLocation(target: GlobeLocation) {
+      if (navigationDone || controller.signal.aborted) return;
+      navigationDone = true;
+      flight = null;
+      if (navigationTimer !== null) clearTimeout(navigationTimer);
+      onLocationSelect?.(target);
+    }
     controls.current = {
+      redraw() { setActive(null); render(); },
       zoom(factor) {
+        if (flight) return;
         zoom = constrainZoom(zoom * factor);
         render();
       },
       reset() {
+        if (flight) return;
         rotation = [-119, 4, 0];
         zoom = 1;
         setActive(null);
@@ -360,10 +400,7 @@ export default function RotatingEarth({
       hotspots() {
         show = !show;
         setPinned(show);
-        if (show) {
-          rotation = [-119, 4, 0];
-          setActive(globeHotspots[0]);
-        } else setActive(null);
+        if (!show) setActive(null);
         render();
       },
     };
@@ -427,25 +464,27 @@ export default function RotatingEarth({
       });
     return () => {
       controller.abort();
+      if (navigationTimer !== null) clearTimeout(navigationTimer);
       if (frame !== null) cancelAnimationFrame(frame);
       observer.disconnect();
       intersection.disconnect();
       motion.removeEventListener("change", motionChange);
       controls.current = null;
     };
-  }, [width, height, onHotspotChange, onHotspotSelect]);
+  }, [width, height, onHotspotChange, onLocationSelect]);
 
   return (
-    <div ref={hostRef} className={`earth-visualization ${className}`}>
+    <div ref={hostRef} className={`earth-visualization ${opening ? "earth-opening" : ""} ${className}`} aria-busy={opening}>
       <canvas
         ref={canvasRef}
         tabIndex={0}
-        role="img"
+        role="link"
         aria-label={t(
-          "Globe interaktif. Tombol panah memutar; plus/minus untuk zoom. Hotspot ilustratif terlihat saat fokus. Pilih wilayah dari tautan di bawah globe.",
-          "Interactive globe. Arrow keys rotate; plus/minus zoom. Illustrative hotspots appear on focus. Choose a region using the links below the globe.",
+          "Globe hotspot FIRMS global. Geser atau tombol panah untuk memutar; plus/minus untuk zoom. Klik lokasi atau tekan Enter untuk membuka peta.",
+          "Global FIRMS hotspot globe. Drag or use arrow keys to rotate; plus/minus zoom. Click a location or press Enter to open the map.",
         )}
       />
+      {opening && <div className="earth-opening-label" role="status">{t("Membuka peta lokasi…", "Opening location map…")}</div>}
       {loading && (
         <div className="earth-load" role="status">
           <Globe2 size={20} />
@@ -462,6 +501,7 @@ export default function RotatingEarth({
       )}
       <div
         className="earth-controls"
+        inert={opening}
         aria-label={t("Kontrol globe", "Globe controls")}
       >
         <button
@@ -503,7 +543,7 @@ export default function RotatingEarth({
           onClick={() => controls.current?.hotspots()}
         >
           <Flame size={15} />
-          {t("Hotspot demo", "Demo hotspots")}
+          {t("Hotspot FIRMS", "FIRMS hotspots")}
         </button>
       </div>
     </div>

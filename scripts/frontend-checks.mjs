@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { studyRegions } from "../src/lib/regions.ts";
-import { isFrontFacing, constrainZoom } from "../src/lib/globe-geometry.ts";
+import { isFrontFacing, constrainZoom, globeMapHref, readGlobeLocation, globeLocationBounds, globePoints } from "../src/lib/globe-geometry.ts";
 import {
   candidateWindow,
   parseSnapshot,
@@ -17,6 +17,45 @@ const example = JSON.parse(
 );
 const region = studyRegions[0];
 const make = () => structuredClone(example);
+
+test("globe navigation preserves worldwide coordinates and rejects malformed links", () => {
+  for (const point of [{ lng: -63.25, lat: -14.5 }, { lng: 179.99, lat: 20 }, { lng: -180, lat: 90 }]) {
+    const params = new URLSearchParams(globeMapHref(point).split("?")[1]);
+    assert.deepEqual(readGlobeLocation(params), point);
+    const bounds = globeLocationBounds(point);
+    assert(bounds[1] >= -85 && bounds[3] <= 85);
+  }
+  assert(globeLocationBounds({ lng: 179.99, lat: 20 })[0] > globeLocationBounds({ lng: 179.99, lat: 20 })[2]);
+  for (const input of ["", "lng=&lat=0", "lng=1", "lng=NaN&lat=0", "lng=1&lat=Infinity", "lng=181&lat=0", "lng=0&lat=-91", "lng=1&lng=2&lat=3"]) {
+    assert.equal(readGlobeLocation(new URLSearchParams(input)), null, input);
+  }
+});
+
+test("globe uses every spatial bin and preserves counts rather than the preview sample", () => {
+  const rows = [-120, 20, 119].map(lng => [lng, -4, 12, "2026-11-15T00:00:00.000Z"]);
+  const points = globePoints(rows);
+  assert.equal(points.length, 3);
+  assert.equal(points.reduce((sum, point) => sum + point.count, 0), 36);
+  assert.deepEqual(points.map(point => point.lng), [-120, 20, 119]);
+});
+
+test("bundled FIRMS snapshot has a fixed seven-day period, worldwide coverage and exact counts", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../src/data/globe-hotspots.json", import.meta.url)));
+  assert.equal(snapshot.schemaVersion, "globe-snapshot-1");
+  assert.equal(snapshot.source, "VIIRS_NOAA20_NRT");
+  assert.equal(Date.parse(snapshot.periodEnd) - Date.parse(snapshot.periodStart), 7 * 86400000);
+  assert.match(snapshot.checksum, /^sha256:[a-f0-9]{64}$/);
+  assert.equal(snapshot.total, 372148);
+  const points = globePoints(snapshot.points);
+  assert.equal(points.reduce((sum, p) => sum + p.count, 0), snapshot.total);
+  assert(points.length > 1000 && points.length <= 6000);
+  assert.equal(new Set(points.map(p => p.id)).size, points.length);
+  assert(points.every(p => Number.isInteger(p.count) && p.count > 0 && Math.abs(p.lng) <= 180 && Math.abs(p.lat) <= 90 &&
+    Date.parse(p.observedAt) >= Date.parse(snapshot.periodStart) && Date.parse(p.observedAt) < Date.parse(snapshot.periodEnd)));
+  for (const quadrant of [p => p.lng < 0 && p.lat < 0, p => p.lng < 0 && p.lat > 0,
+    p => p.lng > 0 && p.lat < 0, p => p.lng > 0 && p.lat > 0]) assert(points.some(quadrant));
+  assert(points.filter(p => isFrontFacing([p.lng, p.lat], [119, -4])).length > 100);
+});
 
 test("globe clips the far hemisphere and bounds interactive zoom", () => {
   assert.equal(isFrontFacing([119, -4], [119, -4]), true);
