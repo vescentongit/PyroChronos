@@ -33,13 +33,31 @@ def accepts(policy):
     return lambda item: item["fireType"] in types and item["confidenceClass"] in classes
 
 
-def month_status(coverage, month):
+def fetched_status(coverage, start, end):
+    """Request coverage, independent of whether a fire was observed."""
+    covered = 0
+    cursor = start
+    while cursor <= end:
+        entry = coverage.get(cursor.year, {})
+        if any(first <= cursor.isoformat() <= last for first, last in entry.get("fetched_intervals", [])):
+            covered += 1
+        cursor += timedelta(days=1)
+    return "observed" if covered == (end - start).days + 1 else "partial" if covered else "no_data"
+
+
+def month_status(coverage, month, period=None):
     """observed: the year archive spans the whole month; partial: only part of it; no_data: none of it.
 
     Coverage comes from the archive's first/last observed day, so a covered month that has no
     detection inside a polygon (or even globally) is observed with a count of zero, not no_data.
     """
     entry = coverage.get(int(month[:4]))
+    if any("fetched_intervals" in value for value in coverage.values()):
+        start = date.fromisoformat(month + "-01")
+        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        if period:
+            start, end = max(start, date.fromisoformat(period[0])), min(end, date.fromisoformat(period[1]))
+        return fetched_status(coverage, start, end)
     if entry is None or not entry.get("first_observed"):
         return "no_data"
     first = date.fromisoformat(entry["first_observed"][:10])
@@ -73,7 +91,7 @@ def count_source(store_dir, source_id, polygon, start, end, policy=QUALITY_POLIC
             excluded["lowConfidence"] += 1
     months = {}
     for month in months_between(start_minute, end_minute):
-        status = month_status(coverage, month)
+        status = month_status(coverage, month, (start, end))
         total = None if status == "no_data" else sum(n for day, n in days.items() if day.startswith(month))
         months[month] = {"status": status, "count": total, "satellites": month_satellites(coverage, month)}
     return {"source": source_id, "months": months, "days": dict(sorted(days.items())), "excluded": excluded, "coverage": coverage}
@@ -88,7 +106,10 @@ def count_area(store_dir, polygon, start, end, sources=DEFAULT_SOURCES, policy=Q
     for source_id in sources:
         get_source(source_id)
     per_source = {source_id: count_source(store_dir, source_id, polygon, start, end, policy) for source_id in sources}
-    return {"period": {"start": start, "end": end}, "sources": per_source, "policy": policy}
+    result = {"period": {"start": start, "end": end}, "sources": per_source, "policy": policy}
+    if hasattr(store_dir, "provenance"):
+        result["snapshot"] = store_dir.provenance
+    return result
 
 
 def build_manifest(result, polygon, generated_at, comparison=None, harmonization=None):
@@ -133,5 +154,7 @@ def build_manifest(result, polygon, generated_at, comparison=None, harmonization
         content["comparison"] = {"period": compared["period"], "sources": compared["sources"]}
     if harmonization is not None:
         content["harmonization"] = harmonization
+    if "snapshot" in result:
+        content["snapshot"] = result["snapshot"]
     digest = hashlib.sha256(json.dumps(content, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return {"id": f"manifest-{digest[:16]}", "contentSha256": digest, "generatedAt": generated_at, **content}

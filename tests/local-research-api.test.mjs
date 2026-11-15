@@ -15,7 +15,30 @@ registerHooks({ resolve(specifier, context, next) {
   return next(specifier, context);
 } });
 const { POST } = await import("../src/app/api/local-research/route.ts");
+const { researchErrorSchema } = await import("../src/lib/research-contracts.ts");
 const call = body => POST(new Request("http://localhost/api/local-research", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }));
+
+test("anonymous route preserves safe upstream error codes and hides arbitrary diagnostics", async () => {
+  const previous = { url: process.env.PIPELINE_URL, data: process.env.RESEARCH_DATA_DIR, fetch: globalThis.fetch };
+  process.env.PIPELINE_URL = "https://internal.invalid/";
+  delete process.env.RESEARCH_DATA_DIR;
+  try {
+    const area = await (await call({ action: "area", workspaceId: "diagnostic-test", area: { requestId: randomUUID(), name: "Test", geometry: { type: "Polygon", coordinates: [[[113,-3],[114,-3],[114,-2],[113,-3]]] } } })).json();
+    const request = { requestId: randomUUID(), areaId: area.id, areaRevision: 1, period: { start: "2019-01-01", end: "2019-01-01" }, comparisonPeriod: null, baseline: { kind: "rolling-same-calendar-period", windowYears: 10 }, referenceScale: "MODIS-equivalent", qualityPolicyVersion: "quality-policy-1", monitoringLocationId: null };
+    for (const code of ["NETWORK_ERROR", "TIMEOUT", "UPSTREAM_DENIED", "CAPACITY_LIMIT", "RATE_LIMITED", "PAYLOAD_TOO_LARGE", "private-diagnostic-with-key"]) {
+      globalThis.fetch = async () => Response.json({ code }, { status: 503 });
+      const response = await call({ action: "analyze", workspaceId: "diagnostic-test", area, request });
+      const expected = code.startsWith("private") ? "DEPENDENCY_UNAVAILABLE" : code;
+      assert.equal(response.status, code === "PAYLOAD_TOO_LARGE" ? 413 : code === "RATE_LIMITED" ? 429 : 503);
+      assert.deepEqual(researchErrorSchema.parse(await response.json()), { schemaVersion: "research-2", error: expected.replaceAll("_", " "), code: expected, retryable: ["DEPENDENCY_UNAVAILABLE", "CAPACITY_LIMIT", "RATE_LIMITED"].includes(expected), requestId: request.requestId });
+      assert.equal(response.headers.get("Retry-After"), code === "CAPACITY_LIMIT" ? "2" : code === "RATE_LIMITED" ? "60" : null);
+    }
+  } finally {
+    globalThis.fetch = previous.fetch;
+    if (previous.url === undefined) delete process.env.PIPELINE_URL; else process.env.PIPELINE_URL = previous.url;
+    if (previous.data === undefined) delete process.env.RESEARCH_DATA_DIR; else process.env.RESEARCH_DATA_DIR = previous.data;
+  }
+});
 
 test("anonymous analysis uses an isolated dataset and returns a validated raw result", async () => {
   const root = mkdtempSync(join(tmpdir(), "pyro-local-test-"));

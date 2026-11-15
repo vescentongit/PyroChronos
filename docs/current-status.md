@@ -1,6 +1,6 @@
-# Keputusan dan status aktif — 14 November 2026
+# Keputusan dan status aktif — 15 November 2026
 
-Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual dan kolaborasi workspace server pada dokumen/rencana lama. Keputusan pengguna: seluruh fitur web harus dapat diakses dan digunakan tanpa login.
+Dokumen ini mengesampingkan persyaratan login, Google OAuth, akun individual, kolaborasi workspace server dan arsip global permanen sebagai prasyarat pada dokumen/rencana lama. Versi aktif memakai analisis historis on-demand dan penyimpanan pengguna lokal tanpa login.
 
 ## Penyimpanan dan akses
 
@@ -10,15 +10,21 @@ API Auth.js/Google, workspace server dan laporan koordinator dipertahankan sebag
 
 ## Analisis aktif
 
-Browser mengirim polygon dan periode secara eksplisit ke `/api/local-research`. Server memvalidasi geometri dan menjalankan Python terhadap `RESEARCH_DATA_DIR`; hasil divalidasi lalu disimpan di IndexedDB. Request ini menunggu proses selesai, belum menggunakan antrean persisten. Batas: satu analisis per proses server, timeout producer 120 detik per pemanggilan dan maksimum 100.000 observasi per bundle. Ini batas implementasi, bukan SLA global.
+Browser mengirim polygon dan periode secara eksplisit ke `/api/local-research`. Server memvalidasi origin, schema dan geometri, lalu Python menyiapkan snapshot FIRMS Area API untuk area/periode tersebut dan memprosesnya dalam satu pemanggilan. Fingerprint mengikat checksum respons yang benar-benar diproses, termasuk referensi dan respons sukses tanpa observasi. Tidak diperlukan arsip global permanen. `RESEARCH_DATA_DIR` tetap memilih dataset lokal; adapter Blob lama dipertahankan sebagai opsi ketika dataset lokal dan key on-demand tidak dikonfigurasi.
 
-Konfigurasi Vercel kini menyediakan `app` publik dan `pipeline` internal melalui binding. Untuk hosting, adapter dataset privat Vercel Blob dan workflow GitHub Actions harian sudah ditambahkan: arsip FIRMS standard MODIS/S-NPP diproses per tahun, terbit sebagai snapshot immutable, lalu tile sesuai kueri dibaca dengan verifikasi checksum. Jalur lokal tetap tersedia. Aktivasi memerlukan proyek/store dan secret; store cloud, backfill global, jadwal aktif dan deployment belum diverifikasi atau diklaim berjalan. Hosted bundle dibatasi 4 MB. [Panduan aktivasi dan batas cakupan](vercel-deployment.md).
+Browser memuat bulan primer dan pembanding secara berurutan, menyimpan setiap bagian yang berhasil di IndexedDB, lalu menggabungkannya menjadi kalender/hasil lengkap dengan manifest per bagian. Jika gagal atau dihentikan, bagian berikutnya tetap belum dimuat; Analisis area melanjutkan bagian yang belum tersimpan, termasuk sesudah reload. Pilihan ambil ulang mengunduh ulang semua bagian untuk memeriksa revisi NASA. Hasil lengkap sebelumnya tetap terpisah sampai seluruh pilihan baru selesai. Cache bukan janji data NASA selalu terbaru; umur data mengikuti timestamp snapshot.
+
+Hanya MODIS_SP dan VIIRS_SNPP_SP dipakai untuk riset historis; NRT tidak disambung secara diam-diam. Ketersediaan sumber diambil dari NASA sebelum kueri; bbox antimeridian dipecah, titik difilter polygon tepat dan overlap dideduplikasi. Cakupan mengikuti interval request sukses, bukan tanggal titik pertama/terakhir. Jendela sukses dengan nol observasi, sumber tidak tersedia, request gagal dan bagian belum dimuat dibedakan. Riwayat baseline hanya diambil untuk bulan primer pada domain model yang mendukung, sesuai jendela tahun yang dipilih. Seluruh referensi yang tersedia dalam kebijakan tersebut diminta; kegagalan request tidak dianggap tahun kosong.
+
+Batas per bagian: request input 100 KB, response hosted 4 MB, panggilan producer 120 detik dan budget fetch 95 detik (maksimum enam request FIRMS paralel, 512 request, 24 MB respons mentah, 150.000 observasi snapshot termasuk referensi). Satu hasil gabungan dibatasi 32 MB bagian dan 100.000 observasi primer/pembanding; melampaui batas gagal eksplisit tanpa membuang bukti. Browser dapat mencapai kuota penyimpanan lebih dahulu. Tidak ada SLA kalender multidekade atau batas konkurensi global lintas instance. Hasil dan laporan tetap lokal di perangkat.
+
+Konfigurasi Vercel mempertahankan `app` publik dan `pipeline` internal melalui binding. `FIRMS_MAP_KEY` diperlukan pada Python untuk analisis historis dan pada Next.js untuk proxy hotspot terbaru. `PIPELINE_URL` dihasilkan Vercel. Jadwal penerbit arsip global dihapus; workflow arsip lama hanya manual dan tetap gated. Tidak ada deployment atau operasi resource cloud dilakukan oleh migrasi ini. [Panduan deployment dan verifikasi](vercel-deployment.md).
 
 Peta density memakai gradasi hijau → kuning → oranye → merah (rendah → tinggi), radius kernel 4–14 px dan opacity 0,6; fallback 3–10 px. Label ID/EN menjelaskan kedua ujung skala dan bahwa density bukan tingkat bahaya. Titik asli serta skala kalender/anomali tetap memiliki arti masing-masing.
 
 Jalur anonim kini memuat model harmonisasi dan kebijakan baseline dari `pipeline/models`. Kalender tahun × bulan membuka detail harian; ringkasan perbandingan menampilkan durasi, estimasi, laju per hari dan persentase total bila dua estimasi lengkap dengan pembanding positif. Tabel anomali menampilkan median, delta, persentil dan tahun referensi aktual. Hasil lama di browser tidak dihitung ulang otomatis.
 
-Harmonisasi retrospektif memakai VIIRS S-NPP ke skala MODIS, model ratio_global. Estimasi ditahan di luar domain tervalidasi, termasuk Kalteng/Papua. Minimum referensi default empat tahun valid dalam sepuluh tahun sebelumnya. Tanpa arsip hasil no_data; tanpa model/dukungan estimasi tetap null. Data mentah tidak menjadi titik harmonisasi sintetis.
+Harmonisasi retrospektif memakai VIIRS S-NPP ke skala MODIS, model ratio_global. Estimasi ditahan di luar domain tervalidasi, termasuk Kalteng/Papua. Minimum referensi default empat tahun valid dalam sepuluh tahun sebelumnya. Sumber tanpa cakupan menghasilkan no_data; request gagal menghasilkan error, bukan no_data atau nol. Tanpa model/dukungan estimasi tetap null. Data mentah tidak menjadi titik harmonisasi sintetis.
 
 ## Status sprint dan sisa pekerjaan
 
@@ -30,7 +36,9 @@ Dokumen progres lama mencatat bukti pada saat dibuat. Angka tes/build historis t
 
 Sprint 3 Orkhan O1/O3 otomatis kini memiliki benchmark sintetis sebelum/sesudah, cache satu bundle aktif, dedup linear dan pemeriksaan edge ID/EN. [Laporan Sprint 3](orkhan-sprint-3-progress.md). O2 belum dijalankan karena peneliti belum tersedia menurut pengguna; O4 dan review manusia tetap terbuka. Tidak ada klaim performa mobile fisik, SLA global atau sustained 60 FPS.
 
-## Verifikasi kelanjutan ini
+## Bukti historis — checkout Orkhan, 13 November 2026
+
+Daftar berikut adalah bukti sesi lama, bukan verifikasi commit on-demand `4b8a2a5` atau checkout setelahnya.
 
 Bagas Sprint 3 Tahap 8: handoff teknis lokal B1–B4 dikonsolidasikan pada
 [runbook dan daftar review](bagas-sprint-3-deployment-observability.md#handoff-orkhan--o4-dan-review-pr).
@@ -135,3 +143,20 @@ Catatan verifikasi checkout Orkhan sebelumnya (bukan hasil run Bagas di atas):
 - Python harmonisasi: 27 kasus, 26 lulus dan satu skip kondisional; mencakup handoff model worker anonim, anomali, dua periode dan kesesuaian jumlah harian.
 - Suite Node terbaru pada checkout Orkhan: 127 kasus, 125 lulus dan dua skip integrasi native yang tidak dikonfigurasi. Tes mencakup monitoring lokal, ekspor, kontras dan cache bundle.
 - Playwright MCP kini berhasil: alur sintetis desktop/mobile, heatmap ke bukti asli, persistensi, koreksi, unduhan dan EN/ID lulus tanpa exception runtime. Pemeriksaan tambahan ekspor seluruh halaman dan kegagalan penyimpanan lulus. Database remote dan arsip aktif tidak diuji oleh pekerjaan ini.
+
+## Bukti commit on-demand — 14 November 2026
+
+Handoff commit `4b8a2a5` mencatat typecheck/kontrak lulus; Node 259 kasus (231 lulus, 28 skip), Python 171 kasus (154 lulus, 17 skip). Ini catatan handoff, bukan pengujian ulang 15 November. Production build Linux belum terverifikasi: Turbopack gagal membuat port lokal, termasuk setelah eskalasi. Build Windows sebelumnya bukan bukti build commit ini. Integrasi baru memakai respons NASA sintetis, bukan layanan live atau routing hosted.
+
+## Verifikasi terbaru dan gerbang versi aktif — 15 November 2026
+
+[Bukti, cara mengulang dan batas pengujian](verification-2026-11-15.md). Perubahan storage, status cancel dan layout riwayat hasil sudah diuji; hasil lengkap sebelumnya dipertahankan ketika penulisan gagal. Ini bukan penutupan acceptance manusia atau hosted.
+
+- [x] Dokumen aktif disinkronkan; rencana worker/database server tetap scope legacy.
+- [x] Build produksi Webpack lengkap lulus; typecheck, kontrak dan frontend checks lulus. Node: 232 lulus/28 skip; Python: 154 lulus/17 skip.
+- [x] Browser QA sintetis pada server produksi: cancel, reload/resume, refresh, storage gagal, ekspor dan viewport ID/EN lulus tanpa exception runtime. Artefak lokal di `.cache/verification-2026-11-15/browser/`.
+- [x] `vercel.json` lulus schema resmi; service, binding dan rewrite publik tetap sama.
+- [ ] Build default Turbopack tetap dibatasi lingkungan saat membuat port lokal; build Webpack tidak membuktikan bundler default berhasil.
+- [ ] FIRMS live: request availability gagal pada koneksi HTTPS dari lingkungan ini. Belum ada respons live yang diproses; key tidak disalahkan tanpa bukti.
+- [ ] Periksa project hosting yang sudah ada, secret, binding/routing privat, kapasitas/kuota dan acceptance Preview. Akses akun/link Vercel belum tersedia pada sesi Linux; jangan membuat resource pengganti secara otomatis.
+- [ ] Review manusia Nathan/Bagas, demonstrasi dataset nyata, uji peneliti serta mobile fisik/screen reader. Domain ditolak tidak dibuka hanya karena data tersedia.

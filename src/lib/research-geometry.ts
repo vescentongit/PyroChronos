@@ -3,6 +3,13 @@ import type { FeatureCollection } from "geojson";
 export type Vertex = [number, number];
 export type AreaPolygon = { type: "Polygon"; coordinates: Vertex[][] };
 
+export function polygonViewport(geometry: AreaPolygon): [number, number, number, number] {
+  const ring = unwrapVertices(geometry.coordinates[0]);
+  const wrap = (value: number) => ((value + 180) % 360 + 360) % 360 - 180;
+  return [wrap(Math.min(...ring.map(point => point[0]))), Math.min(...ring.map(point => point[1])),
+    wrap(Math.max(...ring.map(point => point[0]))), Math.max(...ring.map(point => point[1]))];
+}
+
 export function researchMapGeometry(vertices: Vertex[], draft: AreaPolygon | null, active: AreaPolygon | null, drawing: boolean) {
   const editing = drawing || JSON.stringify(vertices) !== JSON.stringify(draft?.coordinates[0].slice(0, -1) ?? []);
   const edits: FeatureCollection = { type: "FeatureCollection", features: [] };

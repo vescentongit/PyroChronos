@@ -3,7 +3,23 @@ import { capacityPolicy } from "./research-capacity.ts";
 
 type ProducerInput =
 	| { action: "fingerprint"; root?: string }
-	| { root?: string; run: unknown };
+	| { action?: "analyze"; root?: string; run: unknown };
+export const producerFailureCodes = [
+	"CAPACITY_LIMIT",
+	"PAYLOAD_TOO_LARGE",
+	"RATE_LIMITED",
+	"NETWORK_ERROR",
+	"TIMEOUT",
+	"UPSTREAM_DENIED",
+];
+function failure(value: unknown) {
+	return value &&
+		typeof value === "object" &&
+		"code" in value &&
+		producerFailureCodes.includes(String(value.code))
+		? String(value.code)
+		: "PRODUCER_FAILED";
+}
 const maxLocalBytes = capacityPolicy.localBundleBytes;
 // Keep hosted JSON bundles below Vercel's non-streaming response limit.
 export const maxHostedBundleBytes = capacityPolicy.hostedBundleBytes;
@@ -16,7 +32,7 @@ export async function researchProducer(
 	if (base) {
 		const body =
 			"run" in input
-				? { action: "produce", run: input.run }
+				? { action: input.action ?? "produce", run: input.run }
 				: { action: "fingerprint" };
 		const response = await fetch(
 			new URL("produce", base.endsWith("/") ? base : `${base}/`),
@@ -52,12 +68,7 @@ export async function researchProducer(
 		}
 		if (!response.ok) {
 			if (response.status === 413) throw new Error("PAYLOAD_TOO_LARGE");
-			const capacity =
-				value &&
-				typeof value === "object" &&
-				"code" in value &&
-				value.code === "CAPACITY_LIMIT";
-			throw new Error(capacity ? "CAPACITY_LIMIT" : "PRODUCER_FAILED");
+			throw new Error(failure(value));
 		}
 		return value;
 	}
@@ -92,9 +103,10 @@ export async function researchProducer(
 		});
 		child.on("error", () => finish(new Error("PRODUCER_FAILED")));
 		child.on("close", (code) => {
-			if (code !== 0) return finish(new Error("PRODUCER_FAILED"));
 			try {
-				finish(undefined, JSON.parse(Buffer.concat(chunks).toString("utf8")));
+				const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+				if (code !== 0) return finish(new Error(failure(value)));
+				finish(undefined, value);
 			} catch {
 				finish(new Error("PRODUCER_FAILED"));
 			}

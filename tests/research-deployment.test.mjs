@@ -1,17 +1,23 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { readFile, readdir } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { test } from "node:test";
 import {
-	validateRuntime,
 	readiness,
 	safeOperationalEvent,
+	validateRuntime,
 } from "../src/lib/research-deployment.ts";
-import { spawnSync } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { operationalStatus } from "../src/lib/research-operational-status.ts";
+
 test("runtime checks are role-aware and never include synthetic credentials", () => {
+	for (const role of ["app", "pipeline"]) {
+		assert.equal(
+			validateRuntime({ FIRMS_MAP_KEY: "synthetic-on-demand-key" }, role).ok,
+			true,
+		);
+	}
 	assert.equal(
 		validateRuntime({ RESEARCH_DATA_DIR: "/synthetic/store" }, "app").ok,
 		true,
@@ -35,6 +41,26 @@ test("runtime checks are role-aware and never include synthetic credentials", ()
 		).ok,
 		true,
 	);
+});
+
+test("local on-demand readiness checks configuration without requesting NASA or exposing its key", async () => {
+	const { GET } = await import("../src/app/api/ready/route.ts");
+	const old = { ...process.env };
+	try {
+		for (const key of [
+			"VERCEL",
+			"PIPELINE_URL",
+			"RESEARCH_DATA_DIR",
+			"RESEARCH_V2_EXPERIMENTAL",
+		])
+			delete process.env[key];
+		process.env.FIRMS_MAP_KEY = "synthetic-on-demand-key";
+		const result = await GET();
+		assert.equal(result.status, 200);
+		assert.deepEqual(await result.json(), { status: "ready" });
+	} finally {
+		process.env = old;
+	}
 });
 
 test("liveness and readiness HTTP expose no internal configuration or errors", async () => {

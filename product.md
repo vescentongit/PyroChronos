@@ -10,7 +10,7 @@
 **Cakupan:** Global sejak versi pertama, dengan target historis awal 2000-an hingga sekarang sesuai ketersediaan sumber\
 **Area unggulan:** Kalimantan Tengah dan Papua Selatan untuk studi, demonstrasi, serta evaluasi; bukan batas cakupan produk\
 **Dasar:** Objective challenge yang dibagikan pengguna, keputusan wawancara tim, dan *PyroChronos Technical Research & Feasibility Paper.pdf*\
-**Diperbarui:** 10 November 2026
+**Diperbarui:** 15 November 2026 (sinkronisasi arsitektur dan status; keputusan ilmiah tetap mengikuti evaluasi yang tercatat)
 
 ## 0. Keputusan produk dan status implementasi
 
@@ -33,13 +33,11 @@ Keputusan berikut menjadi acuan ketika berbeda dengan rancangan lama tentang daf
 | Kepemilikan | Workspace lokal browser tanpa login; lokasi, penugasan dan pemeriksaan tersimpan pada perangkat yang sama. Kolaborasi server pada rancangan lama bukan persyaratan versi aktif |
 | Ekspor | CSV deteksi asli, hasil agregat harmonisasi, serta analisis dan visualisasi dengan provenance |
 
-### Status repository saat pembaruan dokumen
+### Status repository — 15 November 2026
 
-Repository menyediakan Next.js/Tailwind, Prisma/Neon, pilihan bahasa Indonesia/English, font Plus Jakarta Sans, peta MapLibre dengan basemap satelit, endpoint FIRMS mentah untuk dua area contoh, endpoint hotspot global berdasarkan bounding box, endpoint laporan, serta pipeline dan modul EQM eksperimental. Respons hotspot terbaru bukan hasil harmonisasi historis. Data dashboard regional dan beberapa alur UI masih memakai fixture demonstrasi.
+Alur riset lokal sudah menyediakan polygon bebas, analisis eksplisit, kalender/detail harian, perbandingan, model retrospektif pada domain yang mendukung, baseline bergerak, bukti asli, lokasi/pemeriksaan/koreksi dan ekspor. FIRMS historis diambil on-demand per bulan tanpa arsip global permanen; hasil dan bagian selesai disimpan di browser untuk resume atau refresh. Navigasi kamera tidak mengajukan ulang analisis historis. Hotspot terbaru/NRT dan dashboard demonstrasi tetap terpisah dari hasil historis.
 
-Pengambilan data terbaru sudah dibatasi menurut bounding box, tetapi perubahan viewport/zoom masih dapat memicu request baru. Activity Map dan Global Heatmap masih memiliki alur data terpisah. Keduanya merupakan masalah implementasi yang harus diperbaiki, bukan perilaku target produk.
-
-Kalender historis global, analisis polygon bebas, harmonisasi tervalidasi, baseline bergerak 10 tahun, job analisis pengguna, penandaan persisten berbasis workspace, penugasan, dan akun individual belum dianggap selesai. Kode akses koordinator bersama yang ada merupakan mekanisme pengembangan sementara, bukan autentikasi workspace tim. Dokumen ini tidak menyatakan seluruh fitur target sudah tersedia.
+Implementasi bukan bukti acceptance live, hosted atau ilmiah global. Domain ditolak, termasuk Kalteng/Papua, mempertahankan estimasi `null`. Akun, kolaborasi lintas perangkat, database dan antrean server merupakan legacy/opsional; tanpa login bukan janji sinkronisasi tim. Bukti build/tes serta sisa gerbang rilis mengikuti [status aktif](docs/current-status.md).
 
 ## 1. Ringkasan produk
 
@@ -143,7 +141,8 @@ UI mempertahankan bahasa Indonesia/English, font Plus Jakarta Sans, dan istilah 
 | Data | Fungsi | Kebijakan dan batasan |
 |---|---|---|
 | FIRMS MODIS/VIIRS Archive | Fondasi seri historis, pelatihan/evaluasi, kalender, dan pembanding musiman | Catat produk, satelit, versi, periode tersedia, checksum, serta revisi standard science-quality |
-| FIRMS NRT / Area API | Melengkapi seri sampai kondisi terbaru dan mendukung eksplorasi | Jendela terbaru tidak menggantikan kebutuhan arsip panjang; key server-only, quota dan kegagalan ditangani |
+| FIRMS Area API standard | Snapshot historis area/periode dan referensi yang diperlukan | Hanya MODIS_SP dan VIIRS_SNPP_SP; availability diperiksa, provenance respons dibekukan, key server-only |
+| FIRMS NRT | Eksplorasi hotspot terbaru terpisah | Tidak disambung ke seri historis atau menggantikan data standard yang belum tersedia |
 | Polygon pengguna dan batas administrasi | Area penelitian, agregasi, label, dan konteks wilayah | Geometri analisis tetap sepanjang perbandingan; sumber/versi/lisensi batas administrasi dicatat |
 | Citra satelit dan label tempat | Basemap dan orientasi lokasi | Atribusi dipertahankan; umur imagery tidak dianggap sama dengan waktu deteksi hotspot |
 | MOD14A1/MYD14A1 Collection 6.1 dan VNP14A1 Version 2 | Pelengkap FireMask/QA untuk eksperimen observabilitas | Periksa metadata, waktu, serta pemetaan QA. VNP14A1 grid 1 km berbeda dari titik FIRMS VIIRS 375 m [S3][S4] |
@@ -152,11 +151,11 @@ UI mempertahankan bahasa Indonesia/English, font Plus Jakarta Sans, dan istilah 
 
 ### Akses, arsip, dan revisi
 
-FIRMS menjadi sumber utama yang direkomendasikan untuk challenge, bukan satu-satunya sumber yang boleh dipakai. Arsip historis dan feed terbaru disimpan sebagai lapisan yang dapat ditelusuri. NRT dapat diganti data standard ketika tersedia; perubahan tersebut dicatat sebagai revisi, bukan langsung ditafsirkan sebagai perubahan fenomena. [S7][S10][S12]
+FIRMS menjadi sumber utama yang direkomendasikan untuk challenge, bukan satu-satunya sumber yang boleh dipakai. Jalur aktif membekukan snapshot historis standard beserta provenance respons; feed NRT terbaru tetap terpisah. Pada studi revisi atau jalur arsip legacy, pergantian NRT ke standard dicatat sebagai revisi, bukan langsung ditafsirkan sebagai perubahan fenomena. [S7][S10][S12]
 
 Simpan satelit, sensor, product/version, waktu akuisisi UTC, lokasi asli, confidence sumber, FRP beserta unit, status NRT/standard, waktu ingest, manifest, checksum, serta referensi arsip. Pertahankan kategori confidence masing-masing produk; nilainya tidak dianggap probabilitas yang identik. FRP bukan luas terbakar atau energi kumulatif dari penjumlahan lintasan.
 
-Arsip besar ditempatkan pada object storage/Parquet yang dapat dipartisi untuk kueri spasial dan waktu. Dataset mentah global tidak seluruhnya dimasukkan ke repository, browser, atau tabel aplikasi Neon. Kredensial NASA/Earthdata dan database tidak dikirim ke frontend, ekspor, maupun log URL.
+Jalur aktif tidak mensyaratkan object storage atau arsip permanen: respons mentah hanya berada dalam memori request Python, sedangkan hasil/bukti yang dipilih serta manifest disimpan di browser. Store deteksi lokal dan adapter Blob legacy tetap alternatif. Dataset mentah global tidak dimasukkan ke repository, browser atau Neon. Kredensial NASA/Earthdata dan database tidak dikirim ke frontend, ekspor maupun log URL.
 
 ## 6. Tools, bahasa, dan arsitektur
 
@@ -166,42 +165,38 @@ Arsip besar ditempatkan pada object storage/Parquet yang dapat dipartisi untuk k
 | Styling | Tailwind CSS, Plus Jakarta Sans | UI responsif dan konsistensi Indonesia/English |
 | Peta | MapLibre GL JS | Citra satelit, label, polygon, heatmap/titik; rendering tambahan hanya bila benchmark membutuhkannya |
 | Grafik/kalender | Recharts dan komponen kalender | Deret waktu, tahun × bulan, detail harian, serta anomali |
-| Database aplikasi | Neon PostgreSQL dan Prisma | Workspace, keanggotaan, AOI, job, metadata hasil, lokasi, penugasan, dan laporan |
+| Penyimpanan aktif | IndexedDB dan localStorage | Workspace, AOI, hasil/bagian bulanan, lokasi, pemeriksaan dan riwayat pada browser perangkat yang sama |
+| Database legacy | Neon PostgreSQL dan Prisma | API privat akun/workspace server; bukan prasyarat UI lokal |
 | Akses dan identitas | Semua fitur UI tanpa login; penyimpanan lokal browser | Nama pemeriksa/pencatat diberikan pengguna dan tidak diverifikasi sebagai akun. Auth.js hanya untuk endpoint legacy privat |
 | Validasi/otorisasi | Zod dan pemeriksaan akses server | Batas payload, status, geometri, serta isolasi workspace |
-| Pengolahan ilmiah | Python, NumPy, SciPy, scikit-learn | Agregasi count, baseline statistik, kandidat EQM, dan evaluasi |
-| Arsip/kueri | Polars, DuckDB, Parquet, object storage | Kueri spasial/waktu dan agregasi tanpa memuat seluruh arsip di web request |
+| Pengolahan ilmiah aktif | Modul Python repository dan model JSON terbitan | Agregasi count, baseline statistik, model ratio_global dan evaluasi; kandidat EQM lama tetap terpisah |
+| Snapshot/kueri aktif | Python, FIRMS Area API standard, filter polygon tepat | Respons mentah sementara dalam memori; checksum, cakupan dan hasil disimpan sebagai provenance. Store arsip lokal dan Blob lama tetap opsi |
 | Koordinat/raster opsional | PyProj, GDAL/Rasterio | CRS, grid, serta QA pelengkap |
-| Job analisis | Worker Python di luar request Next.js, antrean persisten | Pengolahan asinkron, deduplikasi permintaan, retry, dan penerbitan hasil |
-| Hosting | Vercel untuk aplikasi; runtime worker ditetapkan melalui uji kapasitas | Pekerjaan ilmiah panjang tidak bergantung pada umur request aplikasi |
+| Analisis aktif | Request Python terbatas per bulan, orkestrasi browser | Simpan bagian sukses, resume dan refresh eksplisit; hasil lengkap dipublikasikan setelah semua bagian selesai |
+| Hosting | Konfigurasi Vercel `app` publik + `pipeline` privat melalui binding | Deployment/routing dan batas kapasitas harus diverifikasi; tidak ada SLA kalender multidekade |
 | Pengujian | Node, pengujian Python, dan browser | Kebenaran data/metode, hak akses, serta pengalaman pengguna |
 
 Stack Next.js, Tailwind, Prisma, dan Neon dipertahankan. PyTorch, Hugging Face, serta LLM tidak diperlukan untuk harmonisasi statistik dan kalender ini. Kandidat EQM tetap membutuhkan pengujian; transformasi kuantil generik saja bukan bukti harmonisasi tervalidasi. [S15]
 
-### Alur arsitektur target
-
-    FIRMS Archive + NRT
-      -> ingest tervalidasi -> arsip berpartisi + manifest
-      -> agregasi count -> kalibrasi/evaluasi -> hasil terbitan berversi
+### Alur arsitektur aktif
 
     Browser: polygon + periode + konfigurasi
-      -> Next.js: validasi, autentikasi bila diperlukan, lookup hasil/job
-      -> antrean persisten -> worker Python -> hasil + provenance
-      -> kalender, peta, perbandingan, anomali, dan ekspor
+      -> pecah primer/pembanding menjadi bulan; gunakan bagian tersimpan atau fetch
+      -> Next.js /api/local-research: validasi origin, schema dan geometri
+      -> Python: availability + FIRMS standard area/periode + referensi didukung
+      -> snapshot aktual + fingerprint -> count/model/baseline -> bundle tervalidasi
+      -> IndexedDB per bagian -> hasil lengkap + manifest per bagian
+      -> kalender, peta, perbandingan, anomali dan ekspor lokal
 
-    Next.js -> Prisma -> Neon
-      -> workspace/anggota, AOI, job, metadata hasil
-      -> lokasi pemantauan, penugasan, pemeriksaan, riwayat koreksi
+Pengolahan ilmiah berjalan di Python, bukan browser atau request render halaman. Lokal memakai subprocess; konfigurasi hosted memakai service privat. Setiap request memiliki batas waktu/byte/observasi, dan hasil setengah jadi tidak menggantikan hasil lengkap sebelumnya. [Batas tepat dan konfigurasi](docs/vercel-deployment.md).
 
-Pengolahan ilmiah dan arsip besar tidak dijalankan dalam browser atau request render halaman. Publikasikan hasil secara atomik setelah validasi; hasil setengah jadi tidak menggantikan run aktif. Job gagal tidak menghapus hasil atau laporan sebelumnya. Semua migrasi skema aplikasi tetap dimiliki Prisma; role worker dibatasi sesuai kontrak.
-
-Scheduler/manual workflow seperti GitHub Actions dapat membantu ingest terjadwal atau persiapan data. Penyedia worker/antrean interaktif, biaya, concurrency, batas area/volume, dan waktu tunggu baru dibekukan setelah benchmark; dokumen ini tidak menjanjikan SLA pemrosesan historis global.
+Ingest arsip, antrean persisten, publikasi database dan API akun/workspace server dipertahankan sebagai jalur legacy terpisah. Migrasinya tidak dijalankan oleh request atau diwajibkan oleh analisis lokal. Workflow penerbit arsip global hanya manual dan gated; jadwal global dinonaktifkan. Tidak diperlukan backfill atau object store permanen untuk memulai.
 
 ### Identitas job dan cache
 
-Permintaan analisis ditentukan oleh polygon/revisinya, periode, konfigurasi sensor, kebijakan kualitas, versi arsip, metode/model, serta konfigurasi baseline. Cache hasil identik tidak memakai zoom kamera sebagai identitas analisis. Perubahan sumber atau metode tidak mengembalikan hasil lama seolah-olah masih sesuai.
+Identitas hasil mencakup geometri/periode, sumber, checksum snapshot aktual, metode/model, kebijakan kualitas dan baseline. Zoom kamera bukan identitas analisis. Bagian tersimpan dapat dipakai ulang tanpa mengecek revisi NASA otomatis; umur dan metode snapshot tetap dapat diaudit. Refresh eksplisit mengambil ulang semua bagian. Perubahan konfigurasi metode antarbagiannya ditolak saat penggabungan; hasil lama tidak dihitung ulang otomatis.
 
-Status minimum job: antre, diproses, selesai, atau gagal. Tampilkan progres bila dapat diukur dan alasan kegagalan yang aman; jangan mengarang persentase atau ETA. Permintaan identik yang berjalan dapat memakai job yang sama sesuai hak akses. Tindakan berulang tidak menggandakan pekerjaan atau laporan. Retry dan batas volume harus jelas tanpa mengubah polygon pengguna diam-diam.
+Status pemuatan aktif membedakan belum dimuat, memuat, tersimpan dan gagal/dihentikan per bulan. Hasil lengkap dipublikasikan setelah seluruh bagian selesai. Progres adalah jumlah bagian yang tersimpan, bukan ETA atau persentase waktu pemrosesan. Cache menghindari pengambilan ulang bagian sukses kecuali refresh eksplisit; tidak ada jaminan deduplikasi global antarbrowser/instance. Antrean dan identitas job persisten tetap berlaku hanya pada jalur server legacy.
 
 Data satelit/hasil umum dapat memakai cache bersama jika aman. Metadata workspace, penandaan, penugasan, dan pemeriksaan tidak ikut terbuka melalui cache atau ekspor publik.
 
@@ -270,11 +265,11 @@ Model status awal untuk implementasi mencakup belum ditugaskan, ditugaskan, seda
 
 Simpan lokasi, pemeriksa/penanggung jawab, pencatat, waktu pemeriksaan sebenarnya, waktu input, catatan, hasil, serta riwayat koreksi. Pencatat dapat berbeda dari pemeriksa. Penugasan selesai tidak berarti api padam. Deteksi baru setelah pemeriksaan tetap terlihat dan dapat memerlukan pemeriksaan baru. Refresh data, pergantian hasil analisis, atau keluarnya deteksi dari periode tampilan tidak menghapus lokasi/laporan.
 
-### Hak akses
+### Penyimpanan lokal dan akses legacy
 
-Workspace tim menjadi batas kepemilikan lokasi, penugasan, status, dan hasil pemeriksaan. Anggota tim mendapat akses sesuai kewenangannya; pengguna workspace lain tidak dapat membaca atau mengubah catatan tersebut hanya dengan mengetahui ID. Identitas individual diperlukan untuk atribusi dan pemeriksaan server. Peneliti tidak wajib berperan sebagai koordinator operasional.
+Versi aktif menyimpan workspace, lokasi dan pemeriksaan di browser yang sama. Nama pencatat/pemeriksa diberikan pengguna dan bukan identitas terverifikasi; data tidak disinkronkan atau dibagikan antarperangkat. Hapus data situs dapat menghapusnya. Pada API server legacy, membership workspace dan identitas individual tetap wajib untuk melindungi catatan privat lama; UI tanpa login tidak membukanya ke publik.
 
-Hak akses diterapkan pada endpoint, job, hasil tersimpan, cache, dan ekspor yang memuat catatan tim. Idempotensi mencegah penandaan/pengiriman laporan ganda akibat retry. Koreksi mempertahankan jejak perubahan. Catatan demo tidak tercampur dengan hasil pemeriksaan nyata.
+Pada jalur server legacy, hak akses diterapkan pada endpoint, job, cache dan ekspor privat. Pada jalur lokal, simpan/gagal simpan serta jejak koreksi harus jelas; nama lokal bukan bukti autentikasi atau isolasi tim server. Catatan demo tidak tercampur dengan hasil pemeriksaan nyata.
 
 ### Keluaran analisis dan ekspor
 
@@ -312,10 +307,10 @@ Entitas target meliputi User, Workspace/Membership, AnalysisArea, AnalysisJob/Ru
 ### Tahapan
 
 1. **Fondasi pengalaman peta:** satukan Activity Map/Global Heatmap, perbaiki navigasi/cache/rendering dan label, tambahkan polygon serta penerapan area/periode secara eksplisit. Navigasi tidak menghapus hasil.
-2. **Arsip dan harmonisasi:** siapkan ingest/partisi global, job asinkron, count dan provenance, evaluasi acuan setara MODIS, serta status ketersediaan/validasi. Dua area unggulan menjadi contoh uji, bukan allowlist pengguna.
+2. **Data dan harmonisasi:** ambil FIRMS standard sesuai area/periode dan referensi, bekukan snapshot/count/provenance, evaluasi acuan setara MODIS, serta pertahankan status ketersediaan/validasi. Arsip untuk pelatihan/evaluasi tidak menjadi prasyarat penggunaan web; dua area unggulan bukan allowlist pengguna.
 3. **Kalender dan analisis:** kalender tahun × bulan dan detail harian, perbandingan tanggal bebas, referensi bergerak 10 tahun, status data tidak cukup, serta ekspor CSV/visualisasi.
-4. **Workspace dan pemeriksaan:** akun individual, isolasi tim, lokasi tersimpan, penugasan, beberapa pemeriksaan per lokasi, status/hasil, serta audit/idempotensi.
-5. **Integrasi dan evaluasi:** replay historis, benchmark data nyata, kegagalan jaringan/job, akses tim, reproduksibilitas ekspor, dan demonstrasi.
+4. **Workspace dan pemeriksaan lokal:** lokasi tersimpan, penugasan, beberapa pemeriksaan, status/hasil dan riwayat koreksi pada browser yang sama. Akun individual/kolaborasi server tetap scope legacy terpisah.
+5. **Integrasi dan evaluasi:** build, data nyata, batas request/kuota, kegagalan jaringan/storage, resume, reproduksibilitas ekspor dan demonstrasi; review manusia tetap terpisah dari tes sintetis.
 
 Tahapan ini menggantikan batas lama MVP dua wilayah/daftar patroli. Cakupan global historis merupakan target versi pertama yang disepakati; pengiriman internal dapat bertahap tanpa menyebut subset demo sebagai implementasi global yang sudah lengkap.
 
@@ -326,7 +321,7 @@ Rencana lama 48 jam merupakan asumsi hackathon, bukan estimasi tervalidasi untuk
 | Anggota | Tanggung jawab utama | Keluaran |
 |---|---|---|
 | Nathan | Arsip/ingest FIRMS, partisi dan agregasi count, baseline bergerak, harmonisasi, evaluasi ilmiah | Dataset dan keluaran analisis berversi, pengujian, serta laporan dukungan metode |
-| Bagas | Prisma/Neon, autentikasi dan workspace, antrean/status job, API hasil, lokasi/penugasan/pemeriksaan, deployment | Layanan persisten dengan isolasi tim dan integrasi worker yang dapat diuji |
+| Bagas | Producer/API analisis, batas layanan, deployment dan integrasi hasil; API Prisma/Neon/akun/antrean lama tetap legacy | Jalur on-demand yang dapat diuji, konfigurasi dan bukti routing/kapasitas; layanan privat lama tidak dibuka ke publik |
 | Orkhan | Satu workspace peta, polygon, kalender dan perbandingan, detail/penandaan, UI penugasan/pemeriksaan, integrasi dan pengujian UX | Alur penelitian dan tindak lanjut yang konsisten, aksesibel, serta responsif |
 
 Beban total dibagi rata menjadi sepertiga per anggota, termasuk coding, pengujian, dokumentasi, integrasi, dan presentasi. Tinjau estimasi bersama dan pindahkan potongan implementasi bila suatu jalur menjadi bottleneck; pembagian modul saja tidak membuktikan beban seimbang.
@@ -361,7 +356,7 @@ Orkhan tetap memiliki porsi coding penuh. Kemampuan bisnis/desain/presentasi mem
 - Hasil lama tetap dapat dibuka dengan label konteks/versinya. Kegagalan tile, ingest, atau worker tidak menghapus lokasi dan laporan.
 - Lokasi tetap ada setelah refresh, pergantian periode, serta update data. Bukti awal dan analisis berikutnya dapat ditelusuri.
 - Satu lokasi dapat memiliki beberapa pemeriksaan. Status pekerjaan tidak dianggap status api; deteksi setelah pemeriksaan tidak disembunyikan.
-- Pengguna workspace lain tidak dapat membaca/mengubah lokasi, job privat, penugasan, atau laporan melalui tebakan ID, cache, maupun ekspor.
+- Data aktif tetap lokal pada browser yang digunakan dan tidak diklaim tersinkron. API server legacy tetap menolak akses privat lintas workspace melalui ID, cache dan unduhan.
 - Pemeriksa, pencatat, waktu pemeriksaan, dan waktu input tidak tercampur. Retry tidak menggandakan laporan; koreksi mempertahankan audit dan kegagalan simpan terlihat.
 
 Keberhasilan produk adalah seri dan pengalaman penelitian yang transparan, konsisten, serta dapat diuji. Klaim akurasi seluruh kebakaran atau dampak operasional memerlukan referensi independen dan validasi tambahan.

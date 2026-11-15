@@ -12,6 +12,10 @@ import test_service
 
 
 class DeploymentSafetyTests(unittest.TestCase):
+    def test_on_demand_readiness_never_fetches_nasa_or_exposes_key(self):
+        with patch.dict(os.environ, {"RESEARCH_DATA_DIR": "", "FIRMS_MAP_KEY": "synthetic-on-demand-key", "FIRMS_BLOB_BASE_URL": ""}):
+            self.assertEqual(test_service.ServiceTests().call(path="/ready", method="GET"), (200, {"status": "ready"}))
+
     def test_cli_argument_errors_never_echo_secret_values(self):
         for module in (firms_archive, firms_ingest, sync_firms_dataset):
             output = io.StringIO()
@@ -33,7 +37,7 @@ class DeploymentSafetyTests(unittest.TestCase):
         self.assertNotIn("private-sentinel", output.getvalue())
 
     def test_empty_dataset_is_not_ready(self):
-        with patch.dict(os.environ, {"RESEARCH_DATA_DIR": "", "FIRMS_BLOB_BASE_URL": ""}):
+        with patch.dict(os.environ, {"RESEARCH_DATA_DIR": "", "FIRMS_BLOB_BASE_URL": "", "FIRMS_MAP_KEY": ""}):
             self.assertEqual(test_service.ServiceTests().call(path="/ready", method="GET")[0], 503)
 
     def test_archive_manifest_failure_is_sanitized(self):

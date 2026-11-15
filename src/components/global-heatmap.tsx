@@ -8,9 +8,11 @@ import type { Language } from "@/lib/regions";
 import ResearchPanel, { type ResearchOverlay } from "./research-panel";
 import {
   researchMapGeometry,
+  polygonViewport,
   type Vertex,
   type AreaPolygon,
 } from "@/lib/research-geometry";
+import type { LocalLocation } from "@/lib/local-monitoring";
 import { satelliteStyle } from "@/lib/map-style";
 import {
   boundsSchema,
@@ -119,6 +121,10 @@ function HeatSurface({
   researchRef.current = research;
   const sketch = researchMapGeometry(vertices, draft, research?.geometry ?? null, drawing);
   const features = sketch.editing ? [] : research ? research.features : (data?.features ?? []);
+  const resultGeometry = JSON.stringify(research?.geometry ?? null);
+  useEffect(() => {
+    if (ready && research?.geometry) controller.current?.fit(polygonViewport(research.geometry));
+  }, [ready, resultGeometry]);
   useEffect(() => {
     const abort = new AbortController();
     fetch("/geo/ne_110m_land.json", { signal: abort.signal })
@@ -512,7 +518,13 @@ function HeatSurface({
   );
 }
 
-export default function GlobalHeatmap({ language }: { language: Language }) {
+export default function GlobalHeatmap({ language, requestedMode, onModeChange, reuse, active = true }: {
+  language: Language;
+  requestedMode?: "nrt" | "research";
+  onModeChange?: (mode: "nrt" | "research") => void;
+  reuse?: { location: LocalLocation } | null;
+  active?: boolean;
+}) {
   const [query, setQuery] = useState<HotspotQuery>(initial),
     [refresh, setRefresh] = useState(0),
     [now, setNow] = useState(Date.now()),
@@ -528,6 +540,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
   const [setupHost, setSetupHost] = useState<HTMLDivElement | null>(null);
   const [toolsHost, setToolsHost] = useState<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<"nrt" | "research">("nrt");
+  useEffect(() => { if (requestedMode) setMode(requestedMode); }, [requestedMode]);
   const [layer, setLayer] = useState<"heatmap" | "points">("heatmap");
   const [vertices, setVertices] = useState<Vertex[]>([]);
   const [drawing, setDrawing] = useState(false);
@@ -573,12 +586,19 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       ),
     [],
   );
+  const resultGeometry = JSON.stringify(researchOverlay.geometry);
+  useEffect(() => {
+    if (mode === "research" && researchOverlay.geometry) {
+      const bbox = polygonViewport(researchOverlay.geometry);
+      setQuery(previous => ({ ...previous, bbox }));
+    }
+  }, [mode, resultGeometry]);
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
-    if (mode !== "nrt") return;
+    if (!active || mode !== "nrt") return;
     const abort = new AbortController();
     let cancelled = false;
     const cached = cache.current.get(key);
@@ -658,7 +678,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
       clearTimeout(debounce);
       abort.abort();
     };
-  }, [key, query, refresh, mode]);
+  }, [key, query, refresh, mode, active]);
   function area(bbox: Bounds) {
     setBoundsError(false);
     if (controller.current) controller.current.fit(bbox);
@@ -714,6 +734,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           aria-pressed={mode === "nrt"}
           onClick={() => {
             setMode("nrt");
+            onModeChange?.("nrt");
             setDrawing(false);
           }}
         >
@@ -722,7 +743,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
         <button
           className="outline"
           aria-pressed={mode === "research"}
-          onClick={() => setMode("research")}
+          onClick={() => { setMode("research"); onModeChange?.("research"); }}
         >
           {t("Analisis historis", "Historical analysis")}
         </button>
@@ -739,6 +760,7 @@ export default function GlobalHeatmap({ language }: { language: Language }) {
           setupHost={setupHost}
           resultsHost={resultsHost}
           toolsHost={toolsHost}
+          reuse={reuse}
         />
       </div>
       <div hidden={mode !== "nrt"}>

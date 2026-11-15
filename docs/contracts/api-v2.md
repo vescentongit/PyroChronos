@@ -183,6 +183,15 @@ submission. Error ekspor terminal memiliki retryable=false.
 
 Error menggunakan schema error v2: schemaVersion, error aman, code, retryable, requestId trace nullable. requestId trace respons tidak menjadi pengganti idempotency key body. Tidak ada raw exception atau kredensial di dalam error.
 
+Jalur anonim on-demand memakai envelope yang sama dan menambahkan diagnostik
+allowlist `NOT_CONFIGURED`, `NETWORK_ERROR`, `TIMEOUT`, `UPSTREAM_DENIED` (503).
+Nilai diagnostik ini tidak membawa exception, URL sumber atau key dan tidak
+mengiklankan retry otomatis (`retryable=false`). Kode lain yang tidak dikenal
+tetap menjadi `DEPENDENCY_UNAVAILABLE`. Batas B1 tetap 503 `CAPACITY_LIMIT` +
+Retry-After: 2, 429 `RATE_LIMITED` + Retry-After: 60, serta 413
+`PAYLOAD_TOO_LARGE` non-retryable tanpa Retry-After. Snapshot fingerprint berasal
+dari respons sumber pada satu invocation analyze, bukan request time/key.
+
 | HTTP | Code |
 |---|---|
 | 400 | INVALID_REQUEST: geometri/parameter/referensi salah |

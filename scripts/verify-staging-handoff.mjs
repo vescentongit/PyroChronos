@@ -36,6 +36,7 @@ async function verify() {
 		VERCEL: "",
 		FIRMS_BLOB_BASE_URL: "",
 		BLOB_READ_WRITE_TOKEN: "",
+		FIRMS_MAP_KEY: "",
 	};
 	const privateValues = [
 		url.href,

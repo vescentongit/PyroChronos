@@ -12,8 +12,7 @@ on:
         description: Last archive year (empty means current UTC year)
         default: ''
         type: string
-  schedule:
-    - cron: '23 19 * * *'
+  # Manual legacy archive publisher only. On-demand analysis has no scheduled global archive.
 
 permissions:
   contents: read

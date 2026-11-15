@@ -2,6 +2,8 @@
 
 # Data FIRMS dan kalender global (Nathan, Sprint 1)
 
+> **Scope arsip/draft historis — 15 November 2026.** Format store dan perintah arsip di bawah tetap didukung, tetapi bukan prasyarat versi aktif. Adapter polygon/research-2 dan model/baseline kini sudah tersedia; analisis web memakai snapshot on-demand per bulan. Catatan “pekerjaan adaptasi” dan verifikasi terbuka di bawah merekam status saat Sprint 1 dibuat. Untuk kondisi terkini ikuti [status aktif](../current-status.md) dan [verifikasi terbaru](../verification-2026-11-15.md).
+
 > **Fondasi producer, belum consumer riset v2.** Draft calendar-1 di bawah masih memakai pusat grid 0,25 derajat dan pembanding semua tahun; itu belum memenuhi polygon tepat, detail harian, atau referensi bergerak 10 tahun. Target baru adalah [API v2](../contracts/api-v2.md), dengan hipotesis skala setara MODIS yang harus divalidasi. Pekerjaan adaptasi: R2-P0-N1 sampai N4 dan R2-P1-N1 sampai N4 pada [sprint Nathan](../../tasks/Nathan/SPRINT-1-P0.md).
 
 Versi katalog: `firms-catalog-2`. Grid: `grid-0.25deg-monthly-1`. Kalender: `calendar-1` (draft, belum kontrak tim).

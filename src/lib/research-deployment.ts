@@ -42,7 +42,11 @@ export function validateRuntime(env: RuntimeEnv, role = "app") {
 		url("DATABASE_URL", ["postgres:", "postgresql:"]);
 	}
 	if (role === "app") {
-		if (!env.PIPELINE_URL && !env.RESEARCH_DATA_DIR)
+		if (
+			!env.PIPELINE_URL &&
+			!env.RESEARCH_DATA_DIR &&
+			!env.FIRMS_MAP_KEY?.trim()
+		)
 			errors.push("DATASET_BINDING");
 		if (env.VERCEL && !env.PIPELINE_URL) errors.push("PIPELINE_URL");
 		if (env.PIPELINE_URL) {
@@ -72,7 +76,9 @@ export function validateRuntime(env: RuntimeEnv, role = "app") {
 		need("FIRMS_MAP_KEY");
 	}
 	if (role === "pipeline") {
-		if (env.FIRMS_BLOB_BASE_URL) {
+		if (env.RESEARCH_DATA_DIR || env.FIRMS_MAP_KEY?.trim()) {
+			// Same local/on-demand precedence as the Python analyze action.
+		} else if (env.FIRMS_BLOB_BASE_URL) {
 			url("FIRMS_BLOB_BASE_URL", ["https:"]);
 			need("BLOB_READ_WRITE_TOKEN");
 		} else need("RESEARCH_DATA_DIR");

@@ -18,7 +18,7 @@ from pathlib import Path
 from statistics import median
 
 import harmonize_config as config
-from area_counts import QUALITY_POLICY, accepts, source_coverage
+from area_counts import QUALITY_POLICY, accepts, fetched_status, source_coverage
 from area_query import Polygon as Polygon
 from area_query import query
 from detection_store import minute_to_iso
@@ -69,6 +69,8 @@ def support(polygon, model):
 
 
 def window_covered(coverage, start, end):
+    if any("fetched_intervals" in value for value in coverage.values()):
+        return fetched_status(coverage, start, end) == "observed"
     entry = coverage.get(start.year)
     if entry is None or end.year != start.year or not entry.get("first_observed"):
         return False

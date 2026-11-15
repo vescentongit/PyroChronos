@@ -1,4 +1,4 @@
-import { stat, realpath } from "node:fs/promises";
+import { realpath, stat } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import { readiness } from "../../../lib/research-deployment.ts";
 export const runtime = "nodejs";
@@ -17,8 +17,12 @@ export async function GET() {
 			);
 			if (!response.ok || (await response.json()).status !== "ready")
 				throw new Error("UNAVAILABLE");
-		} else if (!(await stat(process.env.RESEARCH_DATA_DIR || "")).isDirectory())
+		} else if (process.env.RESEARCH_DATA_DIR) {
+			if (!(await stat(process.env.RESEARCH_DATA_DIR)).isDirectory())
+				throw new Error("UNAVAILABLE");
+		} else if (!process.env.FIRMS_MAP_KEY?.trim())
 			throw new Error("UNAVAILABLE");
+		// On-demand readiness checks configuration only, never consumes upstream quota.
 		if (process.env.RESEARCH_V2_EXPERIMENTAL === "true") {
 			const { getDb } = await import("../../../lib/db.ts");
 			await getDb().$queryRaw`SELECT 1`;

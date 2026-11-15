@@ -132,10 +132,10 @@ koneksi jaringan dan bukan bukti credential benar-benar berfungsi.
 
 | Role | Konfigurasi minimum |
 | --- | --- |
-| app anonim lokal | RESEARCH_DATA_DIR atau PIPELINE_URL binding; database/OAuth tidak diwajibkan |
+| app anonim lokal | RESEARCH_DATA_DIR, PIPELINE_URL binding, atau FIRMS_MAP_KEY server-only untuk on-demand; database/OAuth tidak diwajibkan |
 | app hosted | PIPELINE_URL disuntik runtime Vercel; URL tanpa credentials/query/fragment. Jangan set binding manual di konfigurasi hosting |
 | app legacy aktif | RESEARCH_V2_EXPERIMENTAL=true, DATABASE_URL PostgreSQL, AUTH_SECRET minimal 32 karakter, Google provider ID/secret, RESEARCH_ARTIFACT_ROOT absolut privat |
-| pipeline | RESEARCH_DATA_DIR lokal, atau FIRMS_BLOB_BASE_URL HTTPS dan BLOB_READ_WRITE_TOKEN; pemeriksaan Blob hostname/token detail dilakukan adapter Python |
+| pipeline | RESEARCH_DATA_DIR lokal, FIRMS_MAP_KEY server-only untuk on-demand, atau fallback FIRMS_BLOB_BASE_URL HTTPS dan BLOB_READ_WRITE_TOKEN; pemeriksaan Blob hostname/token detail dilakukan adapter Python |
 | worker / export-worker | DATABASE_URL dan root artefak privat; worker analisis juga membutuhkan RESEARCH_DATA_DIR; RESEARCH_PYTHON/PYTHON sesuai lingkungan |
 | ingest | DATABASE_URL, FIRMS_RAW_DIR dan FIRMS_MAP_KEY; arsip standard/scheduled Blob publisher memakai konfigurasi pipeline, bukan MAP_KEY live |
 | migration | DATABASE_URL PostgreSQL; eksekusi juga memerlukan opt-in RESEARCH_DEPLOY_MIGRATIONS=true |
@@ -159,11 +159,16 @@ pada request; belum ada custom instrumentation startup yang mengaktifkan legacy.
 | GET /api/health | Publik, 200 `{status:ok}`; hanya membuktikan handler Node hidup, tanpa query DB/ingest |
 | GET /api/ready | Publik, 200 ready atau 503 not_ready, Cache-Control no-store; tidak mengungkap field gagal, path, URL, token atau exception |
 | GET /health Python | Internal pipeline, liveness saja; tetap tidak punya rewrite publik |
-| GET /ready Python | Internal: local directory harus dikonfigurasi dan tersedia; hosted Blob mencoba membaca pointer/catalog pinned melalui adapter terbatasi. Empty env tidak dianggap directory siap |
+| GET /ready Python | Internal: mengikuti prioritas local directory → key on-demand → Blob. Directory harus tersedia; mode key hanya kesiapan konfigurasi, tanpa request NASA; Blob membaca pointer/catalog pinned melalui adapter terbatasi. Empty env tetap tidak ready |
 | npm run research:status | CLI operator privat: counts ingest/job/ekspor, fingerprint/sources/mode dataset terdaftar dan catatan N1–N4. Global/operator scope, **tidak** dijadikan HTTP workspace API |
 | /api/v2/workspaces/.../jobs/:id dan result/days/detections/exports | Status individual lewat kontrak legacy berotorisasi yang sudah ada; membership/scope dan pencabutan B3 tetap berlaku. Result/manifest memuat sumber, versi/metode, status data serta provenance frozen hasil tersebut |
 
-Ready lokal memeriksa directory, bukan kelengkapan semua arsip, checksum setiap
+Setelah integrasi on-demand dari dev, readiness Node/Python dengan key saja
+memeriksa konfigurasi, bukan validitas credential, kuota atau availability NASA.
+Probe tidak mengirim request ke NASA. Pada hosted app, binding privat tetap
+diwajibkan; web anonim tetap tanpa login. Legacy tetap memerlukan pemeriksaan DB.
+
+Ready lokal berbasis store memeriksa directory, bukan kelengkapan semua arsip, checksum setiap
 tile, kemampuan disk menulis atau validitas model global. Legacy aktif juga
 menguji SELECT 1, keberadaan tabel P1AnalysisJob/ResearchExport dan root artefak
 canonical yang tersedia; tidak menjalankan schema repair. Ini pemeriksaan inti,

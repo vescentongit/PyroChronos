@@ -1,9 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { polygonFromVertices, researchMapGeometry } from "../src/lib/research-geometry.ts";
+import { polygonFromVertices, polygonViewport, researchMapGeometry } from "../src/lib/research-geometry.ts";
 
 const vertices = [[112, -4], [118, -4], [118, 3], [112, 3]];
 const polygon = polygonFromVertices(vertices);
+
+test("result viewport follows the selected polygon including the date line", () => {
+  assert.deepEqual(polygonViewport(polygon), [112, -4, 118, 3]);
+  assert.deepEqual(polygonViewport(polygonFromVertices([[179,-2],[-179,-2],[-179,-1],[179,-1]])), [179,-2,-179,-1]);
+});
 
 test("undo replaces the sketch and hides both old boundaries", () => {
   const next = researchMapGeometry(vertices.slice(0, -1), polygon, polygon, false);
